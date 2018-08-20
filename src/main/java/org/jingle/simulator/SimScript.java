@@ -151,7 +151,7 @@ public class SimScript {
 			Map<String, Object> context = pair.getReq().match(request);
 			if (context != null) {
 				logger.info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");
-				request.fillRsponse(context, pair.getResp());
+				request.fillResponse(context, pair.getResp());
 				return;
 			}
 		}
