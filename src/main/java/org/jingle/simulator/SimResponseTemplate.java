@@ -46,11 +46,7 @@ public class SimResponseTemplate {
 						sb = new StringBuffer();
 					}
 				} else {
-					if (line.isEmpty()) {
-						sb.append(line).append("\n");
-					} else {
-						sb.append(line).append("\n");
-					}
+					sb.append(line).append("\n");
 				}
 				lineNum++;
 			}

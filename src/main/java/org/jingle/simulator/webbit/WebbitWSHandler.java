@@ -1,10 +1,9 @@
 package org.jingle.simulator.webbit;
 
 import org.apache.log4j.Logger;
+import org.jingle.simulator.SimScript;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
-
-import org.jingle.simulator.SimScript;
 
 public class WebbitWSHandler extends BaseWebSocketHandler {
 	private final static String TYPE_OPEN = "OPEN";

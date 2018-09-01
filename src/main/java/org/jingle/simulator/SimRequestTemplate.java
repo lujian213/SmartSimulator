@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 public class SimRequestTemplate {
 	private static final Logger logger = Logger.getLogger(SimRequestTemplate.class);
-	private SimTeplate topLineTemplate;
+	private SimTemplate topLineTemplate;
 	private Map<String, SimTemplate> headerTemplates = new HashMap<>();
 	private SimTemplate authenticationsTemplate = null;
 	private SimTemplate bodyTemplate;
@@ -27,7 +27,7 @@ public class SimRequestTemplate {
 			while ((line = reader.readLine()) != null) {
 				if (lineNum == 1) {
 					topLineTemplate = new SimTemplate(line);
-				} else {
+				} else if (body == null) {
 					int index = line.indexOf(':');
 					if (index != -1) {
 						String headerName = line.substring(0, index);
@@ -36,23 +36,17 @@ public class SimRequestTemplate {
 						} else {
 							this.headerTemplates.put(headerName, new SimTemplate(line));
 						}
-					} else {
-						if (line.isEmpty()) {
-							if (body == null)
-								body = new StringBuffer();
-							else
-								body.append(line).append("\n");
-						} else {
-							if (body != null) {
-								body.append(line).append("\n");
-							}
-						}
 					}
+					if (line.isEmpty()) {
+						body = new StringBuffer();
+					}
+				} else {
+					body.append(line).append("\n");
 				}
 				lineNum++;
 			}
 			if (body != null && !body.toString().isEmpty()) {
-				this.bodyTemplate = new SimTemplate(body.toString());
+				this.bodyTemplate = new SimTemplate(body.toString().trim());
 			}
 		}
 	}
@@ -79,11 +73,11 @@ public class SimRequestTemplate {
 		if (res == null)
 			return null;
 		ret.putAll(res);
-		logger.info("topline template [" + topLineTemplate + "] match with [" + request.getTopLine());
+		logger.info("topline template [" + topLineTemplate + "] match with [" + request.getTopLine() + "]");
 		for (Map.Entry<String, SimTemplate> entry: headerTemplates.entrySet()) {
 			res = entry.getValue().parse(request.getHeaderLine(entry.getKey()));
 			if (res == null) {
-				logger.info("header template [" + entry.getValue() + "] does not match [" + request.getHeaderLine(entry.getKey()));
+				printMismatchInfo("header does not match", entry.getValue().toString(), request.getHeaderLine(entry.getKey()));
 				return null; 
 			} else {
 				ret.putAll(res);
@@ -92,7 +86,7 @@ public class SimRequestTemplate {
 		if (authenticationsTemplate != null) {
 			res = authenticationsTemplate.parse(request.getAutnenticationLine());
 			if (res == null) {
-				logger.info("authentication template [" + authenticationsTemplate + "] does not match [" + request.getAutnenticationLine());
+				printMismatchInfo("authentication template", authenticationsTemplate.toString(), request.getAutnenticationLine());
 				return null; 
 			} else {
 				ret.putAll(res);
@@ -101,7 +95,7 @@ public class SimRequestTemplate {
 		if (bodyTemplate != null) {
 			res = bodyTemplate.parse(request.getBody());
 			if (res == null) {
-				logger.info("body template [" + bodyTemplate + "] does not match [" + request.getBody());
+				printMismatchInfo("body template", bodyTemplate .toString(), request.getBody());
 				return null; 
 			} else {
 				ret.putAll(res);
@@ -110,4 +104,10 @@ public class SimRequestTemplate {
 		return ret;
 	}
 
+	protected void printMismatchInfo(String msg, String s1, String s2) {
+		logger.info(msg);
+		logger.info("[" + s1 + "]");
+		logger.info("VS");
+		logger.info("[" + s2 + "]");
+	}
 }

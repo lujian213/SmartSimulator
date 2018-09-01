@@ -5,21 +5,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.velocity.VelocityContext;
+import org.apache.log4j.Logger;
+import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.util.SimUtils;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
-import org.jingle.simulator.SimRequest;
-import org.jingle.simulator.SimResponseTemplate;
-import org.jingle.simulator.util.SimUtils;
-
 @SuppressWarnings("restriction")
 public class SimpleSimRequest implements SimRequest {
+	private static final Logger logger = Logger.getLogger(SimpleSimRequest.class);
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String AUTHENTICATION_LINE_FORMAT = "Authentication: %s,%s";
@@ -42,6 +43,21 @@ public class SimpleSimRequest implements SimRequest {
 	
 	protected SimpleSimRequest() {
 		
+	}
+	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(this.topLine).append("\n");
+		for (String key: headers.keySet()) {
+			sb.append(this.getHeaderLine(key)).append("\n");
+		}
+		sb.append("\n");
+		if (body != null) {
+			sb.append(body);
+		}
+		sb.append("\n");
+		return sb.toString();
 	}
 	
 	protected void genHeaders(HttpExchange exchange) {
@@ -103,20 +119,26 @@ public class SimpleSimRequest implements SimRequest {
 		return this.body;
 	}
 	
-	public void fillResponse(Map<String, Object> context, SimResponseTemplate response) throws IOException {
-		VelocityContext vc = new VelocityContext();
-		for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
-			vc.put(contextEntry.getKey(), contextEntry.getValue());
-		}
+	public void fillResponse(SimResponse response) throws IOException {
 		Headers respHeaders = httpExchange.getResponseHeaders();
-		for (Map.Entry<String, String> entry : response.getHeaders().entrySet()) {
-			respHeaders.add(entry.getKey(), SimUtils.mergeResult(vc, entry.getKey(), entry.getValue()));
+		for (Map.Entry<String, Object> entry : response.getHeaders().entrySet()) {
+			respHeaders.add(entry.getKey(), entry.getValue().toString());
 		}
-		String bodyResult = SimUtils.mergeResult(vc, "body", response.getBody());
-		byte[] body = bodyResult.getBytes();
-		httpExchange.sendResponseHeaders(response.getCode(), body.length);
+		byte[] body = response.getBody();
+		long length = body.length;
+		List<String> values = respHeaders.get("Transfer-Encoding");
+		if (values != null && values.contains("chunked")) {
+			logger.info("set contentLength to 0 since TransferEncoding is chunked");
+			length = 0;
+		}
+		httpExchange.sendResponseHeaders(response.getCode(), length);
 		try (OutputStream os = httpExchange.getResponseBody()) {
 			os.write(body);
 		}
+	}
+
+	@Override
+	public List<String> getAllHeaderNames() {
+		return new ArrayList<>(headers.keySet());
 	}
 }

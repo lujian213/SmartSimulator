@@ -1,15 +1,16 @@
 package org.jingle.simulator.webbit;
 
 import java.io.IOException;
-import java.util.Map;
-
-import org.apache.velocity.VelocityContext;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jingle.simulator.SimRequest;
-import org.jingle.simulator.SimResponseTemplate;
+import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.util.SimUtils;
 
 public class WebbitWSSimRequest implements SimRequest {
+	private static final String HEADER_NAME_CHANNEL = "Channel";
+
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private WebbitWSHandlerBundle bundle; 
 	private String topLine;
@@ -28,6 +29,18 @@ public class WebbitWSSimRequest implements SimRequest {
 		
 	}
 	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(this.topLine).append("\n");
+		sb.append("\n");
+		if (body != null) {
+			sb.append(body);
+		}
+		sb.append("\n");
+		return sb.toString();
+	}
+	
 	public String getTopLine() {
 		return this.topLine;
 	}
@@ -44,14 +57,13 @@ public class WebbitWSSimRequest implements SimRequest {
 		return this.body;
 	}
 	
-	public void fillResponse(Map<String, Object> context, SimResponseTemplate resp) throws IOException {
-		VelocityContext vc = new VelocityContext();
-		for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
-			vc.put(contextEntry.getKey(), contextEntry.getValue());
-		}
-		String bodyResult = SimUtils.mergeResult(vc, "body", resp.getBody());
-		String actualChannel = resp.getHeaders().get("Channel");
-		
-		bundle.sendMessage(actualChannel == null ? channel : actualChannel, bodyResult);
+	public void fillResponse(SimResponse resp) throws IOException {
+		String actualChannel = (String) resp.getHeaders().get(HEADER_NAME_CHANNEL);
+		bundle.sendMessage(actualChannel == null ? channel : actualChannel, resp.getBodyAsString());
+	}
+
+	@Override
+	public List<String> getAllHeaderNames() {
+		return new ArrayList<>();
 	}
 }

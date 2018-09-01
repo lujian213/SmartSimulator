@@ -1,17 +1,16 @@
 package org.jingle.simulator.webbit;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.velocity.VelocityContext;
+import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
-
-import org.jingle.simulator.SimRequest;
-import org.jingle.simulator.SimResponseTemplate;
-import org.jingle.simulator.util.SimUtils;
 
 public class WebbitSimRequest implements SimRequest {
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
@@ -36,6 +35,21 @@ public class WebbitSimRequest implements SimRequest {
 	
 	protected WebbitSimRequest() {
 		
+	}
+	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(this.topLine).append("\n");
+		for (Map.Entry<String, String> entry: request.allHeaders()) {
+			sb.append(this.getHeaderLine(entry.getKey())).append("\n");
+		}
+		sb.append("\n");
+		if (body != null) {
+			sb.append(body);
+		}
+		sb.append("\n");
+		return sb.toString();
 	}
 	
 	protected void genAuthentications() {
@@ -84,18 +98,22 @@ public class WebbitSimRequest implements SimRequest {
 		return this.body;
 	}
 	
-	public void fillResponse(Map<String, Object> context, SimResponseTemplate resp) throws IOException {
-		VelocityContext vc = new VelocityContext();
-		for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
-			vc.put(contextEntry.getKey(), contextEntry.getValue());
+	public void fillResponse(SimResponse resp) throws IOException {
+		for (Map.Entry<String, Object> entry : resp.getHeaders().entrySet()) {
+			response.header(entry.getKey(), entry.getValue().toString());
 		}
-		for (Map.Entry<String, String> entry : resp.getHeaders().entrySet()) {
-			response.header(entry.getKey(), SimUtils.mergeResult(vc, entry.getKey(), entry.getValue()));
-		}
-		String bodyResult = SimUtils.mergeResult(vc, "body", resp.getBody());
-		byte[] body = bodyResult.getBytes();
+		byte[] body = resp.getBody();
 		response.content(body);
 		response.status(resp.getCode());
 		response.end();
+	}
+
+	@Override
+	public List<String> getAllHeaderNames() {
+		List<String> ret = new ArrayList<>(); 
+		for (Map.Entry<String, String> entry : request.allHeaders()) {
+			ret.add(entry.getKey());
+		}
+		return ret;
 	}
 }

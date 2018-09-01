@@ -127,6 +127,8 @@ public class SimTemplate {
 	}
 	
 	public Map<String, Object> parse(String content) throws IOException {
+		if (content == null)
+			return null;
 		try (BufferedReader contentReader = new BufferedReader(new StringReader(content))) {
 			return parse(contentReader);
 		}
@@ -146,18 +148,15 @@ public class SimTemplate {
 				} else {
 					ret = null;
 					break;
-//					throw new RuntimeException("template and actual content does not match @ line " + lineNum);
 				}
 			} else {
 				ret = null;
 				break;
-//				throw new RuntimeException("template and actual content does not match @ line " + lineNum + ", no more template lines");
 			}
 			lineNum++;
 		}
 		if (allTokens.size() >= lineNum) {
 			ret = null;
-//			throw new RuntimeException("template and actual content does not match @ line " + lineNum + ", no more content lines");
 		}
 		return ret;
 	}

@@ -31,5 +31,29 @@
             <artifactId>velocity</artifactId>
             <version>1.7</version>
         </dependency>
+        		<!-- https://mvnrepository.com/artifact/openjms/openjms-client -->
+		<dependency>
+		    <groupId>openjms</groupId>
+		    <artifactId>openjms-client</artifactId>
+		    <version>0.7.6</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.jms/jms-api -->
+		<dependency>
+		    <groupId>javax.jms</groupId>
+		    <artifactId>jms-api</artifactId>
+		    <version>1.1-rev-1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+		<dependency>
+		    <groupId>commons-logging</groupId>
+		    <artifactId>commons-logging</artifactId>
+		    <version>1.2</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/exolabcore/exolabcore -->
+		<dependency>
+		    <groupId>exolabcore</groupId>
+		    <artifactId>exolabcore</artifactId>
+		    <version>0.3.7</version>
+		</dependency>
     </dependencies>
 </project>
