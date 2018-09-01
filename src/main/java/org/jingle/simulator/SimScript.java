@@ -48,15 +48,18 @@ public class SimScript {
 	Map<String, SimScript> subScripts = new HashMap<>();
 	Properties props = new Properties();
 	
-	public SimScript(File file) throws IOException {
-		loadFolder(file);
+	public SimScript(File parent, File file) throws IOException {
+		if (parent != null) {
+			loadFolder(parent, false);
+		}
+		loadFolder(file, true); 
 	}
 	
 	protected SimScript() {
 		
 	}
 	
-	protected void loadFolder(File folder) throws IOException {
+	protected void loadFolder(File folder, boolean includeSubFolder) throws IOException {
 		if (!folder.exists() || !folder.isDirectory()) {
 			throw new IOException("no folder [" + folder + "] exists");
 		}
@@ -64,7 +67,7 @@ public class SimScript {
 
 			@Override
 			public boolean accept(File file) {
-				if (file.isFile() && (file.getName().endsWith(SCRIPT_EXT) || file.getName().equals(INIT_FILE)) || file.isDirectory()) {
+				if (file.isFile() && (file.getName().endsWith(SCRIPT_EXT) || file.getName().equals(INIT_FILE)) || (includeSubFolder && file.isDirectory())) {
 					return true;
 				}
 				return false;
@@ -76,7 +79,9 @@ public class SimScript {
 				if (INIT_FILE.equals(file.getName())) {
 					logger.info("loadint init file [" + file.getName() + "] in [" + folder + "]");
 					try (InputStream is = new FileInputStream(file)) {
-						props.load(is);
+						Properties p = new Properties();
+						p.load(is);
+						props.putAll(p);
 					}
 				} else {
 					logger.info("loading script file [" + file + "] in [" + folder + "]");
@@ -85,7 +90,7 @@ public class SimScript {
 					}
 				}
 			} else {
-				subScripts.put(file.getName(), new SimScript(file));
+				subScripts.put(file.getName(), new SimScript(null, file));
 			}
 		}
 		logger.info("Total " + total + " req/resp pairs loaded in [" + folder + "]");

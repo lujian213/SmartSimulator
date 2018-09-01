@@ -27,8 +27,8 @@ public abstract class SimSimulator {
 	
 	public abstract void start() throws IOException;
 	
-	public static SimSimulator createSimulator(File folder) throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException {
-		SimScript script = new SimScript(folder);
+	public static SimSimulator createSimulator(File home, File folder) throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException {
+		SimScript script = new SimScript(home, folder);
 		Class<? extends SimSimulator> clazz = script.getSimulatorClass();
 		Constructor<? extends SimSimulator> con = clazz.getConstructor(SimScript.class);
 		try {
@@ -41,7 +41,7 @@ public abstract class SimSimulator {
 	}
 	
 	public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException {
-		SimSimulator inst = SimSimulator.createSimulator(new File(args[0]));
+		SimSimulator inst = SimSimulator.createSimulator(new File(args[0]), new File(args[1]));
 		inst.start();
 	}
 }

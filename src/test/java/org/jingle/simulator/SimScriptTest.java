@@ -160,8 +160,8 @@ public class SimScriptTest {
 	@Test
 	public void test7() {
 		try {
-			SimScript script = new SimScript(new File("scripts/websocket"));
-			assertEquals(1, script.templatePairs.size());
+			SimScript script = new SimScript(new File("scripts"), new File("scripts/websocket"));
+			assertEquals(2, script.templatePairs.size());
 			assertEquals(2, script.getSubScripts().size());
 			assertEquals(4, script.getSubScripts().get("hellowebsocket.1").templatePairs.size());
 		} catch (IOException e) {
