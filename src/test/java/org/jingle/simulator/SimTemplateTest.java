@@ -110,44 +110,11 @@ public class SimTemplateTest {
 	}
 	
 	@Test
-	public void testParse2() {
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader("template/req1.json"));
-			SimTemplate template = new SimTemplate(reader);
-			BufferedReader reader2 = new BufferedReader(new FileReader("sample/req1.json"));
-			Map<String, Object> map = template.parse(reader2);
-			assertEquals(3, map.size());
-			assertEquals("on", map.get("state"));
-			assertEquals("dummy", map.get("title"));
-			assertEquals("123", map.get("size"));
-		} catch (IOException e) {
-			fail("unexpected exception:" + e);
-		}
-	}
-	
-	@Test
 	public void testParse3() {
 		try {
 			SimTemplate template = new SimTemplate("GET {$url}/granite/cash/{$type}/{$value}/figure?t={$qt}&v=0&td={$td}&sd={$sd}&valuationdate=20180823&n={$n} HTTP/1.1");
 			
 			Map<String, Object> map = template.parse("GET http://APACCNSHLZN0099:443/granite/cash/SCSP/08051R9T0/figure?t=price&v=0&td=20180823&sd=20180827&valuationdate=20180823&n=100000 HTTP/1.1");
-//			assertEquals(3, map.size());
-//			assertEquals("apple", map.get("name"));
-//			assertEquals("100", map.get("value"));
-//			assertEquals("banana", map.get("name2"));
-//			
-//			map = template.parse("Line 1: This is an apple. And it's price is 100\n" 
-//						+ "Line2: There is nothing here.\n" 
-//						+ "banana is cheaper");
-//			assertNull(map);
-//
-//			map = template.parse("Line 1: This is an apple. And it's price is 100.\n" 
-//						+ "Line2: There is nothing here.\n" 
-//						+ "banana is cheaper\n"
-//						+ "line 4");
-//				assertNull(map);
-//			map = template.parse("Line 1: This is an apple. And it's price is 100\n" 
-//						+ "Line2: There is nothing here."); 
 			assertNotNull(map);
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
