@@ -1,0 +1,17 @@
+MESSAGE /hellowebsocket/1 HTTP/1.1
+
+abcdefg
+HTTP/1.1 200 OK
+
+ABCDEFG
+
+------------------------------------------------------------------
+
+MESSAGE /hellowebsocket/1 HTTP/1.1
+
+ssss
+HTTP/1.1 200 OK
+
+SSSS
+
+------------------------------------------------------------------

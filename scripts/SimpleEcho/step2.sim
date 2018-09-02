@@ -1,0 +1,23 @@
+GET {$url}/hello/{$name} HTTP/1.1
+
+HTTP/1.1 200 OK
+
+Hello! $name
+
+------------------------------------------------------------------
+
+GET {$url}/favicon.ico HTTP/1.1
+
+HTTP/1.1 200 OK
+Bridge: file:///C:/applications/projects/oxygen/Simulator/scripts/SimpleEcho/favicon.ico
+Bridge.Content-Type: Binary
+
+------------------------------------------------------------------
+
+GET {$url}/hi/{$name} HTTP/1.1
+
+HTTP/1.1 200 OK
+
+Good morning! $name
+
+------------------------------------------------------------------

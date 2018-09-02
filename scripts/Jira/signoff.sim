@@ -1,0 +1,191 @@
+GET {$url}/jira/api/qasignoff?version={$version} HTTP/1.1
+
+HTTP/1.1 200 OK
+
+{
+    "version": "$version",
+    "content": [
+        {
+            "title": "Regression Testing Cycyle I",
+            "type": "table",
+            "cols": [ 
+                {"header": "Stream", "field": "stream", "group": true, "width":150, "align": "left"},
+                {"header": "Domain", "field": "domain", "group": false, "width":50, "align": "left"},
+                {"header": "Tests", "field": "tests", "group": false, "width":50, "align": "left"},
+                {"header": "Pass", "field": "pass", "group": false, "width":50, "align": "left"},
+                {"header": "Fail", "field": "fail", "group": false, "width":50, "align": "left"},
+                {"header": "Pass%", "field": "passPercent", "group": false, "width":50, "align": "left"},
+                {"header": "Tests%", "field": "testPercent", "group": false, "width":50, "align": "left"}
+            ],
+            "datas": [
+                
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},{"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "All", "domain": "Total", "tests": 4948, "pass": 4948, "fail":0, "passPercent": "100%", "testPercent": "100%"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "Regression Testing Cycyle II",
+            "type": "table",
+            "cols": [ 
+                {"header": "Stream", "field": "stream", "group": true, "width":150, "align": "left"},
+                {"header": "Domain", "field": "domain", "group": false, "width":50, "align": "left"},
+                {"header": "Tests", "field": "tests", "group": false, "width":50, "align": "left"},
+                {"header": "Pass", "field": "pass", "group": false, "width":50, "align": "left"},
+                {"header": "Fail", "field": "fail", "group": false, "width":50, "align": "left"},
+                {"header": "Pass%", "field": "passPercent", "group": false, "width":50, "align": "left"},
+                {"header": "Tests%", "field": "testPercent", "group": false, "width":50, "align": "left"}
+            ],
+            "datas": [
+                
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Deriv(65% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},{"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Cash(57% Hammer Automation 29% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "TPS-Exotics(82% QTP Automation", "domain": "Rates", "tests": 830, "pass": 830, "fail": 0, "passPercent": "100%", "testPercent": "100%"},
+                {"stream": "All", "domain": "Total", "tests": 4948, "pass": 4948, "fail":0, "passPercent": "100%", "testPercent": "100%"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "Hammer Prod Trade Replay Testing",
+            "type": "table",
+            "cols": [
+                {"header": "Flow", "field": "flow", "width":150, "align": "left"},
+                {"header": "Passed #", "field": "passedNo", "width":150, "align": "left"}
+            ],
+            "datas": [
+                {"flow": "eDealer Replay", "passedNo": "983"},
+                {"flow": "eDealer Replay", "passedNo": "983"},
+                {"flow": "eDealer Replay", "passedNo": "983"},
+                {"flow": "eDealer Replay", "passedNo": "983"},
+                {"flow": "Total Passed Trades", "passedNo": "4781"}
+            ],
+            "note":""
+        },
+        {
+            "title": "New Feature Testing",
+            "type": "table",
+            "cols": [
+                {"header": "Domain", "field": "domain", "width":150, "align": "left"},
+                {"header": "Tests", "field": "tests", "width":150, "align": "left"},
+                {"header": "Pass", "field": "pass", "width":150, "align": "left"},
+                {"header": "Fail", "field": "fail", "width":150, "align": "left"},
+                {"header": "Pass Percent", "field": "passPercent", "width":150, "align": "left"},
+                {"header": "Tests Covered", "field": "testCovered", "width":150, "align": "left"}
+            ],
+            "datas": [
+                {"domain": "eDealer Replay", "tests": 82, "pass": 82, "fail": 0, "passPercent": "100%", "testCovered": "100%"},
+                {"domain": "eDealer Replay", "tests": 82, "pass": 82, "fail": 0, "passPercent": "100%", "testCovered": "100%"},
+                {"domain": "eDealer Replay", "tests": 82, "pass": 82, "fail": 0, "passPercent": "100%", "testCovered": "100%"},
+                {"domain": "eDealer Replay", "tests": 82, "pass": 82, "fail": 0, "passPercent": "100%", "testCovered": "100%"},
+                {"domain": "eDealer Replay", "tests": 82, "pass": 82, "fail": 0, "passPercent": "100%", "testCovered": "100%"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "Detailed Consolidated Report",
+            "type": "list",
+            "datas": [
+                {
+                    "title": "8.4_TPS_Consolidated_QA_STATUS_REPORT", "link":""
+                }
+            ],
+            "note":""
+        },
+        {
+            "title": "TPS Build# Derivatives",
+            "type": "table",
+            "cols": [
+                {"header": "Program", "field": "program", "width":150, "align": "left"},
+                {"header": "No.", "field": "no", "width":150, "align": "left"}
+            ],
+            "datas": [
+                {"program": "TPS Derivatives - db", "no":"release-8.4-e358cb0-26"},
+                {"program": "TPS Derivatives - db", "no":"release-8.4-e358cb0-26"},
+                {"program": "TPS Derivatives - db", "no":"release-8.4-e358cb0-26"},
+                {"program": "TPS Derivatives - db", "no":"release-8.4-e358cb0-26"}
+            ],
+            "note":""
+        },
+        {
+            "title": "TPS Platform",
+            "type": "table",
+            "cols": [
+                {"header": "Platform", "field": "platform", "width":150, "align": "left"},
+                {"header": "No.", "field": "no", "width":150, "align": "left"}
+            ],
+            "datas": [
+                {"platform": "TPS Platform - certificates", "no":"8.4_571"},
+                {"platform": "TPS Platform - certificates", "no":"8.4_571"},
+                {"platform": "TPS Platform - certificates", "no":"8.4_571"},
+                {"platform": "TPS Platform - certificates", "no":"8.4_571"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "TPS Build# Cash",
+            "type": "table",
+            "cols": [
+                {"header": "Program", "field": "program"},
+                {"header": "No.", "field": "no"}
+            ],
+            "datas": [
+                {"program": "TPS Cash - UnixRun(DDL)", "no":"release-8.4-e358cb0-26", "width":150, "align": "left"},
+                {"program": "TPS Cash - UnixRun(DDL)", "no":"release-8.4-e358cb0-26", "width":150, "align": "left"},
+                {"program": "TPS Cash - UnixRun(DDL)", "no":"release-8.4-e358cb0-26", "width":150, "align": "left"},
+                {"program": "TPS Cash - UnixRun(DDL)", "no":"release-8.4-e358cb0-26", "width":150, "align": "left"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "TPS Deploy# Orion",
+            "type": "table",
+            "cols": [
+                {"header": "Program", "field": "program", "width":150, "align": "left"},
+                {"header": "No.", "field": "no", "width":150, "align": "left"}
+            ],
+            "datas": [
+                {"program": "AAC-Orion - CMEGateway", "no":"release-8.4-e358cb0-26"},
+                {"program": "AAC-Orion - CMEGateway", "no":"release-8.4-e358cb0-26"},
+                {"program": "AAC-Orion - CMEGateway", "no":"release-8.4-e358cb0-26"},
+                {"program": "AAC-Orion - CMEGateway", "no":"release-8.4-e358cb0-26"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "Release Checklist",
+            "type": "list",
+            "datas": [
+                {"title": "8.4_ReleaseChecklist_Derivs"}
+            ],
+            "note":""
+        }
+    ]
+}
+
+------------------------------------------------------------------

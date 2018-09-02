@@ -1,0 +1,10 @@
+TextMessage
+
+Message {$number}
+HTTP/1.1 200 OK
+Channel: queue1
+
+Response $number
+
+------------------------------------------------------------------
+

@@ -1,0 +1,19 @@
+MESSAGE /control HTTP/1.1
+
+abcdefg
+HTTP/1.1 200 OK
+Channel: /hellowebsocket/1
+
+ABCDEFG
+
+------------------------------------------------------------------
+
+MESSAGE /control HTTP/1.1
+
+ssss
+HTTP/1.1 200 OK
+Channel: /hellowebsocket/1
+
+SSSS
+
+------------------------------------------------------------------
