@@ -14,6 +14,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.RollingFileAppender;
+import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 
 public class SimScript {
 	public static class TemplatePair {
@@ -34,7 +38,6 @@ public class SimScript {
 		}
 	}
 	
-	private static final Logger logger = Logger.getLogger(SimScript.class);
 	private static final Logger msgLogger = Logger.getLogger("messageLogger");
 	
 	private static final String SEP_LINE = "------------------------------------------------------------------"; 
@@ -44,15 +47,42 @@ public class SimScript {
 	public static final String PROP_NAME_SIMULATOR_CLASS = "simulator.class"; 
 	public static final String PROP_NAME_SIMULATOR_NAME = "simulator.name"; 
 	
+	private Logger scriptLogger = null;
+
 	List<TemplatePair> templatePairs = new ArrayList<>();
 	Map<String, SimScript> subScripts = new HashMap<>();
 	Properties props = new Properties();
 	
-	public SimScript(File parent, File file) throws IOException {
-		if (parent != null) {
-			loadFolder(parent, false);
-		}
+	public SimScript(SimScript parent, File file) throws IOException {
+		props.putAll(parent.getProps());
 		loadFolder(file, true); 
+		templatePairs.addAll(parent.getTemplatePairs());
+	}
+	
+	public SimScript(File file) throws IOException {
+		loadFolder(file, false); 
+	}
+
+	public void prepareLogger() {
+		String simulatorName = this.getSimulatorName();
+		if (simulatorName == null) {
+			System.out.println(props);
+		}
+		this.scriptLogger = Logger.getLogger(simulatorName);
+		RollingFileAppender appender = new org.apache.log4j.RollingFileAppender();
+		PatternLayout layout = new org.apache.log4j.PatternLayout();
+		layout.setConversionPattern("%d{yyyy-MM-dd HH:mm:ss,SSS} [%24F:%-4L:%-5p][%x] -%m%n");
+		appender.setLayout(layout);
+		try {
+			appender.setFile("logs/" + simulatorName + ".log", true, true, 500);
+		} catch (IOException e) {
+		}
+		appender.setName(simulatorName);
+		appender.activateOptions();	
+		scriptLogger.addAppender(appender);
+		for (SimScript subScript: subScripts.values()) {
+			subScript.scriptLogger = scriptLogger;
+		}
 	}
 	
 	protected SimScript() {
@@ -77,23 +107,23 @@ public class SimScript {
 		for (File file: files) {
 			if (file.isFile()) {
 				if (INIT_FILE.equals(file.getName())) {
-					logger.info("loadint init file [" + file.getName() + "] in [" + folder + "]");
+					SimLogger.getLogger().info("loadint init file [" + file.getName() + "] in [" + folder + "]");
 					try (InputStream is = new FileInputStream(file)) {
 						Properties p = new Properties();
 						p.load(is);
 						props.putAll(p);
 					}
 				} else {
-					logger.info("loading script file [" + file + "] in [" + folder + "]");
+					SimLogger.getLogger().info("loading script file [" + file + "] in [" + folder + "]");
 					try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 						total += load(reader);
 					}
 				}
 			} else {
-				subScripts.put(file.getName(), new SimScript(null, file));
+				subScripts.put(file.getName(), new SimScript(this, file));
 			}
 		}
-		logger.info("Total " + total + " req/resp pairs loaded in [" + folder + "]");
+		SimLogger.getLogger().info("Total " + total + " req/resp pairs loaded in [" + folder + "]");
 	}
 	
 	public Properties getProps() {
@@ -113,13 +143,21 @@ public class SimScript {
 		List<List<String>> block = null;
 		int count = 0;
 		while ((block = loadReqResp(reader)) != null) {
-			templatePairs.add(new TemplatePair(new SimRequestTemplate(concatContent(block.get(0))), new SimResponseTemplate(concatContent(block.get(1)))));
+			templatePairs.add(new TemplatePair(new SimRequestTemplate(SimUtils.concatContent(block.get(0))), 
+					new SimResponseTemplate(SimUtils.concatContent(block.get(1)))));
 			count++;
 		}
-		logger.info(count + " req/resp pairs loaded");
+		SimLogger.getLogger().info(count + " req/resp pairs loaded");
 		return count;
 	}
 	
+	public List<TemplatePair> getTemplatePairs() {
+		return this.templatePairs;
+	}
+	
+	public Logger getLogger() {
+		return this.scriptLogger;
+	}
 	
 	protected List<List<String>> loadReqResp(BufferedReader reader) throws IOException {
 		List<List<String>> ret = new ArrayList<>();
@@ -164,21 +202,6 @@ public class SimScript {
 		}
 	}
 	
-	protected String concatContent(List<String> lines) {
-		if (lines.size() > 0) {
-			StringBuffer sb = new StringBuffer();
-			for (int i = 1; i <= lines.size(); i++) {
-				sb.append(lines.get(i - 1));
-				if (i != lines.size()) {
-					sb.append("\n");
-				}
-			}
-			return sb.toString();
-		}
-		return null;
-
-	}
-
 	public Map<String, SimScript> getSubScripts() {
 		return subScripts;
 	}
@@ -187,14 +210,19 @@ public class SimScript {
 		for (TemplatePair pair: templatePairs) {
 			Map<String, Object> context = pair.getReq().match(request);
 			if (context != null) {
-				logger.info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");
-				request.fillResponse(new SimResponse(context, pair.getResp()));
+				SimLogger.getLogger().info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");
+				Map<String, Object> allContext = new HashMap<>();
+				for (Map.Entry<Object, Object> entry: props.entrySet()) {
+					allContext.put((String) entry.getKey(), entry.getValue());
+				}
+				allContext.putAll(context);
+				request.fillResponse(new SimResponse(allContext, pair.getResp()));
 				return;
 			}
 		}
 		msgLogger.info(request);
 		msgLogger.info(SEP_LINE);
-		throw new RuntimeException("Can not match request: [" + request.getTopLine() + "]");
+		throw new IOException("Can not match request: [" + request.getTopLine() + "]");
 	}
 }
 	

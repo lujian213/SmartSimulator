@@ -36,7 +36,6 @@ import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
 
 public class SimUtils {
-	private static final Logger logger = Logger.getLogger(SimUtils.class); 
     private static VelocityEngine ve = new VelocityEngine();
     static {
     	ve.init();
@@ -95,20 +94,20 @@ public class SimUtils {
 	}
 	
     public static SSLContext initSSL(String keystore, String ksPwd) throws IOException {
-        logger.info("Start initializing SSL");
+    	SimLogger.getLogger().info("Start initializing SSL");
 
         try (InputStream ksis = new FileInputStream(keystore)){
-            logger.info("Initializing SSL from built-in default certificate");
+        	SimLogger.getLogger().info("Initializing SSL from built-in default certificate");
            
             char[] passphrase = ksPwd.toCharArray();
             KeyStore ks = KeyStore.getInstance("JKS");
             ks.load(ksis, passphrase);
            
-            logger.info("SSL certificate loaded");
+            SimLogger.getLogger().info("SSL certificate loaded");
            
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
             kmf.init(ks, passphrase);
-            logger.info("Key manager factory is initialized");
+            SimLogger.getLogger().info("Key manager factory is initialized");
 
 //            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 //            tmf.init(ks);
@@ -126,29 +125,29 @@ public class SimUtils {
                         }
                     }
             };
-            logger.info("Trust manager factory is initialized");
+            SimLogger.getLogger().info("Trust manager factory is initialized");
 
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(kmf.getKeyManagers(), trustAllCerts, null);
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            logger.info("SSL context is initialized");
+            SimLogger.getLogger().info("SSL context is initialized");
             return sslContext;
         } catch (Exception ioe) {
-            logger.error("error when init SSLContext", ioe);
+        	SimLogger.getLogger().error("error when init SSLContext", ioe);
             throw new IOException(ioe);
         } 
     }
     
     public static SimResponse doProxy(String proxyURL, SimRequest request) throws IOException {
-    	logger.info("do proxy ...");
+    	SimLogger.getLogger().info("do proxy ...");
     	String topLine = request.getTopLine();
     	int firstIndex = topLine.indexOf(' ');
     	int lastIndex = topLine.lastIndexOf(' ');
     	String method = topLine.substring(0,  firstIndex).trim();
     	String urlStr = proxyURL + topLine.substring(firstIndex + 1, lastIndex).trim();
-    	logger.info("url=" + urlStr);
+    	SimLogger.getLogger().info("url=" + urlStr);
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-	    	logger.info("encoded url=" + encodeURL(urlStr));
+			SimLogger.getLogger().info("encoded url=" + encodeURL(urlStr));
 			URL url = new URL(encodeURL(urlStr));
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			for (String headerName: request.getAllHeaderNames()) {
@@ -165,7 +164,7 @@ public class SimUtils {
 						pw.print(request.getBody());
 				}
 			}
-			logger.info("response ...");
+			SimLogger.getLogger().info("response ...");
 			try (BufferedInputStream bis = new BufferedInputStream(conn.getInputStream())) {
 				byte[] buffer = new byte[8 * 1024];
 				int count = -1;
@@ -204,4 +203,20 @@ public class SimUtils {
     		return sb.toString();
     	}
     }
+    
+	public static String concatContent(List<String> lines) {
+		if (lines.size() > 0) {
+			StringBuffer sb = new StringBuffer();
+			for (int i = 1; i <= lines.size(); i++) {
+				sb.append(lines.get(i - 1));
+				if (i != lines.size()) {
+					sb.append("\n");
+				}
+			}
+			return sb.toString();
+		}
+		return null;
+	}
+
+
 }

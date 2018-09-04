@@ -4,10 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.jingle.simulator.util.SimLogger;
 
 public class WebbitWSHandlerBundle {
-	private static final Logger logger = Logger.getLogger(WebbitWSHandlerBundle.class);
-
 	private Map<String, WebbitWSHandler> bundles = new HashMap<>();
     
     public void addHandler(WebbitWSHandler handler) {
@@ -19,7 +18,7 @@ public class WebbitWSHandlerBundle {
     	if (handler != null) {
     		handler.sendMessage(message);
     	} else {
-    		logger.error("can not find proper channel [" + channel + "] to send message");
+    		SimLogger.getLogger().error("can not find proper channel [" + channel + "] to send message");
     	}
     }
 }

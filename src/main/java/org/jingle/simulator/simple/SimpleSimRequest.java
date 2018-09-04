@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
 import com.sun.net.httpserver.Headers;
@@ -20,7 +21,6 @@ import com.sun.net.httpserver.HttpExchange;
 
 @SuppressWarnings("restriction")
 public class SimpleSimRequest implements SimRequest {
-	private static final Logger logger = Logger.getLogger(SimpleSimRequest.class);
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String AUTHENTICATION_LINE_FORMAT = "Authentication: %s,%s";
@@ -128,7 +128,7 @@ public class SimpleSimRequest implements SimRequest {
 		long length = body.length;
 		List<String> values = respHeaders.get("Transfer-Encoding");
 		if (values != null && values.contains("chunked")) {
-			logger.info("set contentLength to 0 since TransferEncoding is chunked");
+			SimLogger.getLogger().info("set contentLength to 0 since TransferEncoding is chunked");
 			length = 0;
 		}
 		httpExchange.sendResponseHeaders(response.getCode(), length);

@@ -2,6 +2,7 @@ package org.jingle.simulator.webbit;
 
 import org.apache.log4j.Logger;
 import org.jingle.simulator.SimScript;
+import org.jingle.simulator.util.SimLogger;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
 
@@ -9,8 +10,6 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 	private final static String TYPE_OPEN = "OPEN";
 	private final static String TYPE_CLOSE = "CLOSE";
 	private final static String TYPE_MESSAGE = "MESSAGE";
-	
-	private static final Logger logger = Logger.getLogger(WebbitWSHandler.class);
 	
     private String name;
     private SimScript script;
@@ -29,30 +28,33 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 	}
 
 	public void onOpen(WebSocketConnection connection) {
+		SimLogger.setLogger(script.getLogger());
     	try {
     		this.connection = connection;
 	    	WebbitWSSimRequest request = new WebbitWSSimRequest(bundle, name, TYPE_OPEN, null);
 	    	script.genResponse(request);
     	} catch (Exception e) {
-    		logger.error("error when open WS [" + name + "]", e);
+    		SimLogger.getLogger().error("error when open WS [" + name + "]", e);
     	}
     }
 
     public void onClose(WebSocketConnection connection) {
+		SimLogger.setLogger(script.getLogger());
     	try {
 	    	WebbitWSSimRequest request = new WebbitWSSimRequest(bundle, name, TYPE_CLOSE, null);
 	    	script.genResponse(request);
     	} catch (Exception e) {
-    		logger.error("error when close WS [" + name + "]", e);
+    		SimLogger.getLogger().error("error when close WS [" + name + "]", e);
     	}
     }
 
     public void onMessage(WebSocketConnection connection, String message) {
+		SimLogger.setLogger(script.getLogger());
     	try {
 	    	WebbitWSSimRequest request = new WebbitWSSimRequest(bundle, name, TYPE_MESSAGE, message);
 	    	script.genResponse(request);
     	} catch (Exception e) {
-    		logger.error("error when handle message in WS [" + name + "]", e);
+    		SimLogger.getLogger().error("error when handle message in WS [" + name + "]", e);
     	}
     }
 

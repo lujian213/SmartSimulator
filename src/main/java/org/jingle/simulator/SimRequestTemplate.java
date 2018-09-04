@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.jingle.simulator.util.SimLogger;
 
 public class SimRequestTemplate {
-	private static final Logger logger = Logger.getLogger(SimRequestTemplate.class);
 	private SimTemplate topLineTemplate;
 	private Map<String, SimTemplate> headerTemplates = new HashMap<>();
 	private SimTemplate authenticationsTemplate = null;
@@ -73,7 +73,7 @@ public class SimRequestTemplate {
 		if (res == null)
 			return null;
 		ret.putAll(res);
-		logger.info("topline template [" + topLineTemplate + "] match with [" + request.getTopLine() + "]");
+		SimLogger.getLogger().info("topline template [" + topLineTemplate + "] match with [" + request.getTopLine() + "]");
 		for (Map.Entry<String, SimTemplate> entry: headerTemplates.entrySet()) {
 			res = entry.getValue().parse(request.getHeaderLine(entry.getKey()));
 			if (res == null) {
@@ -95,7 +95,7 @@ public class SimRequestTemplate {
 		if (bodyTemplate != null) {
 			res = bodyTemplate.parse(request.getBody());
 			if (res == null) {
-				printMismatchInfo("body template", bodyTemplate .toString(), request.getBody());
+				printMismatchInfo("body template", bodyTemplate.toString(), request.getBody());
 				return null; 
 			} else {
 				ret.putAll(res);
@@ -105,9 +105,10 @@ public class SimRequestTemplate {
 	}
 
 	protected void printMismatchInfo(String msg, String s1, String s2) {
+		Logger logger = SimLogger.getLogger();
 		logger.info(msg);
-		logger.info("[" + s1 + "]");
+		logger.info("[" + (s1 == null? null : s1.trim()) + "]");
 		logger.info("VS");
-		logger.info("[" + s2 + "]");
+		logger.info("[" + (s2 == null? null : s2.trim()) + "]");
 	}
 }

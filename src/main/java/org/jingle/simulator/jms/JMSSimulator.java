@@ -22,6 +22,7 @@ import javax.naming.NamingException;
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.util.SimLogger;
 
 public class JMSSimulator extends SimSimulator {
 	public static final String PROP_NAME_TOPIC_FACTORY_NAME = "simulator.jms.topicconnectionfactory";
@@ -55,10 +56,10 @@ public class JMSSimulator extends SimSimulator {
 		public void onMessage(Message message) {
 			try {
 				SimRequest request = new JMSSimRequest(message, destName, producerMap);
-				logger.info("incoming request from [" + destName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
+				SimLogger.getLogger().info("incoming request from [" + destName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
 				script.genResponse(request);
 			} catch (Exception e) {
-				logger.error("", e);
+				SimLogger.getLogger().error("", e);
 			}
 		}
 		
@@ -86,8 +87,7 @@ public class JMSSimulator extends SimSimulator {
 	protected JMSSimulator() {
 	}
 
-	@Override
-	protected void init() throws IOException {
+	protected void prepare() {
 		producerMap = new HashMap<>();
 		Properties props = script.getProps();
         try {
@@ -102,17 +102,22 @@ public class JMSSimulator extends SimSimulator {
             // create the session
             ts = tc.createSession(false, Session.AUTO_ACKNOWLEDGE);
             qs = qc.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		} catch (NamingException | JMSException e) {
-			throw new RuntimeException(e);
-		} 
-        
-		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
-			SimScript destinationScript = entry.getValue();
-			logger.info("handle folder [" + entry.getKey() + "]");
-			handleDestination(destinationScript);
-		}
 
-       
+    		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
+    			SimScript destinationScript = entry.getValue();
+    			SimLogger.getLogger().info("handle folder [" + entry.getKey() + "]");
+    			handleDestination(destinationScript);
+    		}
+        } catch (NamingException | JMSException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (context != null) {
+				try {
+					context.close();
+				} catch (NamingException e) {
+				}
+			}
+		}
 	}
 
 	protected void handleDestination(SimScript script) {
@@ -149,13 +154,13 @@ public class JMSSimulator extends SimSimulator {
     protected void createProducer(String destName, Destination dest, String destType) throws JMSException {
     	Session session = getSession(destType);
     	producerMap.put(destName, new SimMessageProducer(session, session.createProducer(dest)));
-    	logger.info("Producer created for [" + dest + "]");
+    	SimLogger.getLogger().info("Producer created for [" + dest + "]");
     }
     
     protected void createConsumer(SimScript script, String destName, Destination dest, String destType) throws JMSException {
 		MessageConsumer consumer = getSession(destType).createConsumer(dest);
 		consumer.setMessageListener(new SimMessageListener(script, destName));
-    	logger.info("Consumer created for [" + dest + "]");
+		SimLogger.getLogger().info("Consumer created for [" + dest + "]");
     }
     
     protected Session getSession(String destType) {
@@ -171,11 +176,36 @@ public class JMSSimulator extends SimSimulator {
 	@Override
 	public void start() throws IOException {
 		try {
+			prepare();
 			tc.start();
 			qc.start();
 		} catch (JMSException e) {
 			throw new IOException(e);
 		}
-		
+		this.running = true;
+	}
+
+	@Override
+	public void stop() {
+		SimLogger.getLogger().info("about to stop ...");
+
+		if (tc != null) {
+			try {
+				tc.close();
+			} catch (JMSException e) {
+			}
+		}
+		if (qc != null) {
+			try {
+				qc.close();
+			} catch (JMSException e) {
+			}
+		}
+		SimLogger.getLogger().info("stopped");
+		this.running = false;
+	}
+
+	@Override
+	protected void init() throws IOException {
 	}
 }

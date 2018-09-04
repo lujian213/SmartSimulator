@@ -10,6 +10,7 @@ import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
 public abstract class HTTPSimulator extends SimSimulator { 
@@ -58,7 +59,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 	
 	protected void handleRequest(SimRequest request) {
 		try {
-			logger.info("incoming request: [" + request.getTopLine() + "]");
+			SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
 			script.genResponse(request);
 		} catch (Exception e) {
 			if (proxy) {
@@ -66,11 +67,11 @@ public abstract class HTTPSimulator extends SimSimulator {
 					SimResponse resp = SimUtils.doProxy(proxyURL, request);
 					request.fillResponse(resp);
 				} catch (IOException e1) {
-					logger.error("proxy error", e1);
+					SimLogger.getLogger().error("proxy error", e1);
 					gen500Response(request, e1.getMessage() == null ? e1.toString() : e1.getMessage());
 				}
 			} else {
-				logger.error("match and fill error", e);
+				SimLogger.getLogger().error("match and fill error", e);
 				gen500Response(request, e.getMessage() == null ? e.toString() : e.getMessage());
 			}
 		}
@@ -81,7 +82,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 			SimResponse response = new SimResponse(500, new HashMap<String, Object>(), message.getBytes());
 			request.fillResponse(response);
 		} catch (Exception e) {
-			logger.error("error when generate 500 response", e);
+			SimLogger.getLogger().error("error when generate 500 response", e);
 		}
 	}
 
