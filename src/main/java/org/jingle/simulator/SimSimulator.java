@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 public abstract class SimSimulator {
 	protected SimScript script;
 	protected boolean running = false;
+	protected String runningURL = null;
 
 	public SimSimulator(SimScript script) throws IOException {
 		this.script = script;
@@ -30,6 +31,14 @@ public abstract class SimSimulator {
 		return running;
 	}
 
+	public String getRunningURL() {
+		if (running) {
+			return runningURL;
+		} else {
+			return null;
+		}
+	}
+
 	public static SimSimulator createSimulator(SimScript script) {
 		try {
 			Class<? extends SimSimulator> clazz = script.getSimulatorClass();
@@ -40,5 +49,9 @@ public abstract class SimSimulator {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public SimScript getScript() {
+		return this.script;
 	}
 }

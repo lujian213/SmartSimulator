@@ -218,5 +218,12 @@ public class SimUtils {
 		return null;
 	}
 
-
+	public static Map.Entry<String, String> parseHeaderLine(String headerLine)  {
+		Map<String, String> map = new HashMap<>();
+		int index = headerLine.indexOf(':');
+		String name = headerLine.substring(0, index).trim();
+		String value = headerLine.substring(index + 1).trim();
+		map.put(name,  value);
+		return map.entrySet().iterator().next();
+	}
 }

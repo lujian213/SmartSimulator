@@ -76,15 +76,15 @@ public class SimpleSimulator extends HTTPSimulator implements HttpHandler {
 			});
 		}
 		server.start();
-		String address = (useSSL ? "https://" : "http://") + InetAddress.getLocalHost().getHostName() + ":" + port;
-		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + address);
+		runningURL = (useSSL ? "https://" : "http://") + InetAddress.getLocalHost().getHostName() + ":" + port;
+		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
 		this.running = true;
 	}
 
 	@Override
 	public void stop() {
 		SimLogger.getLogger().info("about to stop ...");
-		server.stop(5);
+		server.stop(0);
 		SimLogger.getLogger().info("stopped");
 		this.running = false;
 	}

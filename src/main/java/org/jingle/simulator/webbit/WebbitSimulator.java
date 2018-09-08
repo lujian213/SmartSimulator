@@ -3,6 +3,7 @@ package org.jingle.simulator.webbit;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -53,10 +54,9 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 	@Override
 	public void start() throws IOException {
 		webServer = WebServers.createWebServer(port);
-		WebbitWSHandlerBundle bundle = new WebbitWSHandlerBundle();
 		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
 			String channelName = "/" + reformatChannelName(entry.getKey());
-			webServer.add(channelName, new WebbitWSHandler(channelName, entry.getValue(), bundle));
+			webServer.add(channelName, new WebbitWSHandler(channelName, entry.getValue()));
 		}
 		webServer.add(this);
 		
@@ -66,7 +66,9 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 			} 
 		}
         webServer.start();
-        SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + webServer.getUri());
+        URI uri = webServer.getUri();
+        this.runningURL = (useSSL ? "https" : "http") + "://" + uri.getHost() + ":" + uri.getPort();
+        SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
         this.running = true;
 	}
 	

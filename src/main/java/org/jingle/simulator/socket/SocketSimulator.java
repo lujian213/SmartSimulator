@@ -81,8 +81,8 @@ public class SocketSimulator extends SimSimulator {
              .option(ChannelOption.SO_BACKLOG, 128)          
              .childOption(ChannelOption.SO_KEEPALIVE, true);
             cf = b.bind(port);
-			String address = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
-			SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + address);
+			runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
+			SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
 			this.running = true;
         } catch (IOException | RuntimeException e) {
         	workerGroup.shutdownGracefully();

@@ -221,9 +221,4 @@ public class SimTemplate {
 	public List<List<Token>> getAllTokens() {
 		return this.allTokens;
 	}
-	
-	public static void main(String[] args) throws IOException {
-		SimTemplate template = new SimTemplate("Name of this good is {$good}. It's price is {$value}.\ndummy line\nName of that good is {$good2}. It's price is {$value2}");
-		System.out.println(template.parse(""));
-	}
 }

@@ -3,53 +3,34 @@ package org.jingle.simulator;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.jingle.simulator.manager.SimulatorManager;
+import org.jingle.simulator.util.BeanRepository;
 import org.jingle.simulator.util.SimLogger;
 
 public class SimulatorService {
 	private static final Logger logger = Logger.getLogger(SimulatorService.class);
+
 	static {
 		SimLogger.setLogger(logger);
 	}
 	private SimScript script;
-	private Map<String, SimSimulator> simulatorMap = new HashMap<>();
+	private SimSimulator simulator = null;
+	private SimulatorManager sm = new SimulatorManager();
+	
 	
 	public SimulatorService(File folder) throws IOException {
-		this.script = new SimScript(folder);
+		script = new SimScript(folder);
+		script.prepareLogger();
 		load(folder);
+		simulator = SimSimulator.createSimulator(script);
+		BeanRepository.getInstance().addBean(sm);
+		logger.info("Simulator [" + simulator.getName() +"] loaded");
 	}
 	
-	public List<SimSimulator> getAllSimulators() {
-		return new ArrayList<>(simulatorMap.values());
-	}
-	
-	public void start() {
-		
-	}
-	
-	public void startSimulator(String name) throws IOException {
-		SimSimulator sim = simulatorMap.get(name);
-		if (sim == null) {
-			throw new RuntimeException("no such simulator [" + name + "]");
-		} 
-		if (!sim.isRunning()) {
-			sim.start();
-		}
-	}
-	
-	public void stopSimulator(String name) {
-		SimSimulator sim = simulatorMap.get(name);
-		if (sim == null) {
-			throw new RuntimeException("no such simulator [" + name + "]");
-		} 
-		if (sim.isRunning()) {
-			sim.stop();
-		}
+	public void start() throws IOException {
+		simulator.start();
 	}
 	
 	protected void load(File folder) throws IOException {
@@ -67,18 +48,18 @@ public class SimulatorService {
 			SimScript simScript = new SimScript(script, file);
 			simScript.prepareLogger();
 			SimSimulator simulator = SimSimulator.createSimulator(simScript);
-			simulatorMap.put(simulator.getName(), simulator);
+			sm.addSimulator(simulator);
 			logger.info("Simulator [" + simulator.getName() +"] loaded");
 		}
 	}
-	
-	
-//	public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException {
-//		SimulatorService inst = new SimulatorService(new File(args[0]));
+
+	public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException {
+		SimulatorService inst = new SimulatorService(new File(args[0]));
+                                                                                                                                                                                                                                                               
 //		inst.startSimulator("WebSocket");
 //		inst.startSimulator("SimpleEcho");
 //		inst.startSimulator("socket");
-//		inst.start();
+		inst.start();
 //		try {
 //			Thread.sleep(10000);
 //		} catch (InterruptedException e) {
@@ -88,5 +69,5 @@ public class SimulatorService {
 //		inst.stopSimulator("socket");
 //		inst.stopSimulator("SimpleEcho");
 //		inst.stopSimulator("WebSocket");
-//	}
+	}
 }
