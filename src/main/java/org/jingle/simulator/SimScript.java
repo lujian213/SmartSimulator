@@ -8,6 +8,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,8 +106,19 @@ public class SimScript {
 				return false;
 			}
 		});
+		
+		List<File> fileList = Arrays.asList(files);
+		Collections.sort(fileList, new Comparator<File>() {
+			@Override
+			public int compare(File file1, File file2) {
+				int n1 = file1.isFile() ? 0 : 1;
+				int n2 = file2.isFile() ? 0 : 1;
+				return n1 - n2;
+			}
+		});
+		
 		int total = 0;
-		for (File file: files) {
+		for (File file: fileList) {
 			if (file.isFile()) {
 				if (INIT_FILE.equals(file.getName())) {
 					SimLogger.getLogger().info("loadint init file [" + file.getName() + "] in [" + folder + "]");
