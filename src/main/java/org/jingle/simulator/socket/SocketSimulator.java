@@ -52,8 +52,8 @@ public class SocketSimulator extends SimSimulator {
 	
 	private int port;
 	private ChannelFuture cf;
-	private EventLoopGroup bossGroup = new NioEventLoopGroup();
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+	private EventLoopGroup bossGroup = null;
+    private EventLoopGroup workerGroup = null;
 
 	public SocketSimulator(SimScript script) throws IOException {
 		super(script);
@@ -68,27 +68,31 @@ public class SocketSimulator extends SimSimulator {
   
 	@Override
 	public void start() throws IOException {
-        try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .childHandler(new ChannelInitializer<SocketChannel>() {
-                 @Override
-                 public void initChannel(SocketChannel ch) throws Exception {
-                     ch.pipeline().addLast(new SocketHandler());
-                 }
-             })
-             .option(ChannelOption.SO_BACKLOG, 128)          
-             .childOption(ChannelOption.SO_KEEPALIVE, true);
-            cf = b.bind(port);
-			runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
-			SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
-			this.running = true;
-        } catch (IOException | RuntimeException e) {
-        	workerGroup.shutdownGracefully();
-        	bossGroup.shutdownGracefully();
-        	throw e;
-        }
+		if (!running) {
+			bossGroup = new NioEventLoopGroup();
+		    workerGroup = new NioEventLoopGroup();
+	        try {
+	            ServerBootstrap b = new ServerBootstrap();
+	            b.group(bossGroup, workerGroup)
+	             .channel(NioServerSocketChannel.class)
+	             .childHandler(new ChannelInitializer<SocketChannel>() {
+	                 @Override
+	                 public void initChannel(SocketChannel ch) throws Exception {
+	                     ch.pipeline().addLast(new SocketHandler());
+	                 }
+	             })
+	             .option(ChannelOption.SO_BACKLOG, 128)          
+	             .childOption(ChannelOption.SO_KEEPALIVE, true);
+	            cf = b.bind(port);
+				runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
+				SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
+				this.running = true;
+	        } catch (IOException | RuntimeException e) {
+	        	workerGroup.shutdownGracefully();
+	        	bossGroup.shutdownGracefully();
+	        	throw e;
+	        }
+		}
 	}
 
 	@Override

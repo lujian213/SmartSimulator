@@ -1,27 +1,82 @@
 package org.jingle.simulator.webbit;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
+import org.jingle.simulator.http.HTTPSimulator;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
 
 public class WebbitWSHandler extends BaseWebSocketHandler {
+	static class ConnectionWithDelegator {
+		private String id;
+		private WebSocketConnection connection;
+		private WebbitWSClient delegator;
+		
+		public ConnectionWithDelegator(WebSocketConnection connection) {
+			this.connection = connection;
+		}
+
+		public ConnectionWithDelegator(WebSocketConnection connection, WebbitWSClient delegator) {
+			this.connection = connection;
+			this.delegator = delegator;
+		}
+		
+		public WebSocketConnection getConnection() {
+			return connection;
+		}
+
+		public WebbitWSClient getDelegator() {
+			return delegator;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public void setDelegator(WebbitWSClient delegator) {
+			this.delegator = delegator;
+		}
+	}
+	
 	private final static String TYPE_OPEN = "OPEN";
 	private final static String TYPE_CLOSE = "CLOSE";
 	private final static String TYPE_MESSAGE = "MESSAGE";
-	private static Map<String, WebSocketConnection> bundles = new HashMap<>();
+	private static List<ConnectionWithDelegator> bundles = new ArrayList<>();
     
     private String channel;
     private SimScript script;
+	protected boolean proxy;
+	protected String proxyURL;
     
     public WebbitWSHandler(String channel, SimScript script) {
     	this.channel = channel;
     	this.script = script;
+    	Properties props = script.getProps();
+		this.proxy = Boolean.parseBoolean(props.getProperty(HTTPSimulator.PROP_NAME_PROXY, "false"));
+		if (proxy) {
+			proxyURL = props.getProperty(HTTPSimulator.PROP_NAME_PROXY_URL);
+			if (proxyURL == null) {
+				throw new RuntimeException("no proxy.url defined");
+			}
+		}
     }
 
     public String getChannel() {
@@ -30,11 +85,26 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     
 	public void onOpen(WebSocketConnection connection) {
 		SimLogger.setLogger(script.getLogger());
+		SimLogger.getLogger().info("on open ...");
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_OPEN, null);
     	try {
 	    	script.genResponse(request);
+	    	addConnection(new ConnectionWithDelegator(connection));
     	} catch (Exception e) {
-    		SimLogger.getLogger().error("error when open WS [" + channel + "]", e);
+			if (proxy) {
+				try {
+			    	URL pURL = new URL(proxyURL);
+			    	URI uri = new URI("http".equalsIgnoreCase(pURL.getProtocol()) ? "ws" : "wss", null, pURL.getHost(), pURL.getPort(), connection.httpRequest().uri(), null, null);
+			    	SimLogger.getLogger().info("proxy url: " + uri);
+					WebbitWSClient wsClient = new WebbitWSClient(uri, connection, script);
+					wsClient.start();
+			    	addConnection(new ConnectionWithDelegator(connection, wsClient));
+				} catch (IOException | URISyntaxException e1) {
+					SimLogger.getLogger().error("proxy error", e1);
+				}
+			} else {
+				SimLogger.getLogger().error("error when open WS [" + channel + "]", e);
+			}
     	} finally {
     		handleIDChange(request);
     	}
@@ -46,9 +116,15 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 	    	WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_CLOSE, null);
 	    	script.genResponse(request);
     	} catch (Exception e) {
-    		SimLogger.getLogger().error("error when close WS [" + channel + "]", e);
+			if (proxy) {
+				WebbitWSClient wsClient = findDelegator(connection);
+				wsClient.stop();
+			} else {
+				SimLogger.getLogger().error("error when close WS [" + channel + "]", e);
+			}
     	} finally {
     		removeConnection(connection);
+    		connection.close();
     	}
     }
 
@@ -58,26 +134,76 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     	try {
 	    	script.genResponse(request);
     	} catch (Exception e) {
-    		SimLogger.getLogger().error("error when handle message in WS [" + channel + "]", e);
+			if (proxy) {
+				WebbitWSClient wsClient = findDelegator(connection);
+				wsClient.send(message);
+			} else {
+	    		SimLogger.getLogger().error("error when handle message in WS [" + channel + "]", e);
+			}
     	} finally {
     		handleIDChange(request);
     	}
     }
 
 
-    protected static void addConnection(String name, WebSocketConnection connection) {
-    	SimLogger.getLogger().info("add connection [" + name + "]");
+    protected static void addConnection(ConnectionWithDelegator cwd) {
     	synchronized (bundles) {
-    		bundles.put(name, connection);
+    		bundles.add(cwd);
     	}
     }
     
+    public static void closeAllConnections() {
+    	synchronized (bundles) {
+    		for (ConnectionWithDelegator cwb: bundles) {
+    			cwb.getConnection().close();
+    			if (cwb.getDelegator() != null) {
+    				cwb.getDelegator().stop();;
+    			}
+    		}
+    	}
+    }
+
+    protected static void updateConnection(String id, WebSocketConnection connection) {
+    	SimLogger.getLogger().info("update connection [" + id + "]");
+    	synchronized (bundles) {
+    		for (ConnectionWithDelegator cwb: bundles) {
+    			if (connection == cwb.getConnection()) {
+    				cwb.setId(id);
+    			}
+    		}
+    	}
+    }
+
+    protected static WebbitWSClient findDelegator(WebSocketConnection connection) {
+    	synchronized (bundles) {
+    		for (ConnectionWithDelegator cwb: bundles) {
+    			if (connection == cwb.getConnection()) {
+    				return cwb.getDelegator();
+    			}
+    		}
+    	}
+    	SimLogger.getLogger().warn("can not find related delegator for connection [" + connection + "]");
+    	return null;
+    }
+
+    protected static WebSocketConnection findConnection(String id) {
+    	synchronized (bundles) {
+    		for (ConnectionWithDelegator cwb: bundles) {
+    			if (id.equals(cwb.getId())) {
+    				return cwb.getConnection();
+    			}
+    		}
+    	}
+    	SimLogger.getLogger().warn("can not find connection with id [" + id + "]");
+    	return null;
+    }
+
     protected static void removeConnection(WebSocketConnection connection) {
     	synchronized (bundles) {
-    		Iterator<Map.Entry<String, WebSocketConnection>> it = bundles.entrySet().iterator();
+    		Iterator<ConnectionWithDelegator> it = bundles.iterator();
     		while (it.hasNext()) {
-    			Map.Entry<String, WebSocketConnection> entry = it.next();
-    			if (entry.getValue() == connection) {
+    			ConnectionWithDelegator cwd = it.next();
+    			if (cwd.getConnection() == connection) {
     				it.remove();
     			}
     		}
@@ -89,20 +215,14 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     	if (headerLine != null) {
     		Map.Entry<String, String> entry = SimUtils.parseHeaderLine(headerLine);
     		SimLogger.getLogger().info("ID change to " + entry.getValue());
-        	addConnection(entry.getValue(), request.getConnection());
+        	updateConnection(entry.getValue(), request.getConnection());
     	}
     }
 
-    public static void sendMessage(String name, String message) {
-    	WebSocketConnection conn = null;
-    	synchronized (bundles) {
-    		conn = bundles.get(name);
-    	}
-    	
+    public static void sendMessage(String id, String message) {
+    	WebSocketConnection conn = findConnection(id);
     	if (conn != null) {
     		conn.send(message);
-    	} else {
-    		SimLogger.getLogger().error("can not find proper connection [" + name + "] to send message");
     	}
     }
 

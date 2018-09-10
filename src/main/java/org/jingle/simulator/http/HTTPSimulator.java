@@ -64,7 +64,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 		} catch (Exception e) {
 			if (proxy) {
 				try {
-					SimResponse resp = SimUtils.doProxy(proxyURL, request);
+					SimResponse resp = SimUtils.doHttpProxy(proxyURL, request);
 					request.fillResponse(resp);
 				} catch (IOException e1) {
 					SimLogger.getLogger().error("proxy error", e1);

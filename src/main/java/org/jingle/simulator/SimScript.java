@@ -144,6 +144,10 @@ public class SimScript {
 		return props;
 	}
 	
+	public String getProperty(String propName) {
+		return props.getProperty(propName);
+	}
+	
 	@SuppressWarnings("unchecked")
     public Class<? extends SimSimulator> getSimulatorClass() throws ClassNotFoundException {
 		return (Class<? extends SimSimulator>) Class.forName(props.getProperty(PROP_NAME_SIMULATOR_CLASS));

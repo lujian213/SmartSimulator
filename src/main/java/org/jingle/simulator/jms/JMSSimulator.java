@@ -46,16 +46,19 @@ public class JMSSimulator extends SimSimulator {
 	public class SimMessageListener implements MessageListener {
 		private SimScript script;
 		private String destName;
+		private Session session;
 		
-		public SimMessageListener(SimScript script, String destName) {
+		public SimMessageListener(SimScript script, Session session, String destName) {
 			this.script = script;
 			this.destName = destName;
+			this.session = session;
 		}
 		
 		@Override
 		public void onMessage(Message message) {
+			SimLogger.setLogger(script.getLogger());
 			try {
-				SimRequest request = new JMSSimRequest(message, destName, producerMap);
+				SimRequest request = new JMSSimRequest(message, session, destName, producerMap);
 				SimLogger.getLogger().info("incoming request from [" + destName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
 				script.genResponse(request);
 			} catch (Exception e) {
@@ -158,8 +161,9 @@ public class JMSSimulator extends SimSimulator {
     }
     
     protected void createConsumer(SimScript script, String destName, Destination dest, String destType) throws JMSException {
-		MessageConsumer consumer = getSession(destType).createConsumer(dest);
-		consumer.setMessageListener(new SimMessageListener(script, destName));
+    	Session session = getSession(destType);
+		MessageConsumer consumer = session.createConsumer(dest);
+		consumer.setMessageListener(new SimMessageListener(script, session, destName));
 		SimLogger.getLogger().info("Consumer created for [" + dest + "]");
     }
     

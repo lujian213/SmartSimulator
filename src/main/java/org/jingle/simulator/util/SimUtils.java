@@ -138,7 +138,7 @@ public class SimUtils {
         } 
     }
     
-    public static SimResponse doProxy(String proxyURL, SimRequest request) throws IOException {
+    public static SimResponse doHttpProxy(String proxyURL, SimRequest request) throws IOException {
     	SimLogger.getLogger().info("do proxy ...");
     	String topLine = request.getTopLine();
     	int firstIndex = topLine.indexOf(' ');
