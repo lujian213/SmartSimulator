@@ -40,3 +40,12 @@ Method.Name: stopSimulator
 Content-Type: application/json
 
 ------------------------------------------------------------------
+
+GET {$url}/refresh HTTP/1.1
+
+HTTP/1.1 200 OK
+Class.Name: $className
+Method.Name: refresh
+Content-Type: application/json
+
+------------------------------------------------------------------

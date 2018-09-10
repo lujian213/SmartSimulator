@@ -25,22 +25,26 @@ public class BeanRepository {
 
 	public Object addBean(Class<?> clazz) {
 		Object obj;
-		try {
-			obj = clazz.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException("error to create instance of class [" + clazz + "]", e);
+		synchronized (beanMap) {
+			obj = beanMap.get(clazz.getName());
+			if (obj == null) {
+				try {
+					obj = clazz.newInstance();
+					beanMap.put(clazz.getName(), obj);
+				} catch (InstantiationException | IllegalAccessException e) {
+					throw new RuntimeException("error to create instance of class [" + clazz + "]", e);
+				}
+			}
 		}
-		return doAddBean(clazz.getName(), obj);
+		return obj;
 	}
 
 	public Object addBean(String className) {
-		Object obj;
 		try {
-			obj = Class.forName(className).newInstance();
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			return addBean(Class.forName(className));
+		} catch (ClassNotFoundException e) {
 			throw new RuntimeException("error to create instance of class [" + className + "]", e);
 		}
-		return doAddBean(className, obj);
 	}
 
 	public Object addBean(String className, Object obj) {

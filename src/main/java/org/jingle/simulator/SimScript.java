@@ -68,21 +68,22 @@ public class SimScript {
 
 	public void prepareLogger() {
 		String simulatorName = this.getSimulatorName();
-		if (simulatorName == null) {
-			System.out.println(props);
-		}
+
 		this.scriptLogger = Logger.getLogger(simulatorName);
-		RollingFileAppender appender = new org.apache.log4j.RollingFileAppender();
-		PatternLayout layout = new org.apache.log4j.PatternLayout();
-		layout.setConversionPattern("%d{yyyy-MM-dd HH:mm:ss,SSS} [%24F:%-4L:%-5p][%x] -%m%n");
-		appender.setLayout(layout);
-		try {
-			appender.setFile("logs/" + simulatorName + ".log", true, true, 500);
-		} catch (IOException e) {
+		String appenderName = simulatorName + "_file";
+		if (scriptLogger.getAppender(appenderName) == null) {
+			RollingFileAppender appender = new org.apache.log4j.RollingFileAppender();
+			appender.setName(simulatorName + "_file");
+			PatternLayout layout = new org.apache.log4j.PatternLayout();
+			layout.setConversionPattern("%d{yyyy-MM-dd HH:mm:ss,SSS} [%24F:%-4L:%-5p][%x] -%m%n");
+			appender.setLayout(layout);
+			try {
+				appender.setFile("logs/" + simulatorName + ".log", true, true, 500);
+			} catch (IOException e) {
+			}
+			appender.activateOptions();	
+			scriptLogger.addAppender(appender);
 		}
-		appender.setName(simulatorName);
-		appender.activateOptions();	
-		scriptLogger.addAppender(appender);
 		for (SimScript subScript: subScripts.values()) {
 			subScript.scriptLogger = scriptLogger;
 		}
