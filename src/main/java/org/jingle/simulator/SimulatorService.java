@@ -2,6 +2,7 @@ package org.jingle.simulator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jingle.simulator.manager.SimulatorManager;
@@ -23,7 +24,12 @@ public class SimulatorService {
 	}
 	
 	public void start() throws IOException {
-		sm.startSimulator(sm.getRootSimulatorName());
+		List<SimSimulator> simList = sm.getAllSimulators();
+		for (SimSimulator sim: simList) {
+			if (Boolean.parseBoolean(sim.getScript().getProperty(SimScript.PROP_NAME_SIMULATOR_AUTOSTART))) {
+				sm.startSimulator(sim.getScript().getSimulatorName());
+			}
+		}
 	}
 	
 

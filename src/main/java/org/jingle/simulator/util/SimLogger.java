@@ -10,6 +10,10 @@ public class SimLogger {
 	}
 
 	public static Logger getLogger() {
-		return loggerContainer.get();
+		Logger ret = loggerContainer.get();
+		if (ret == null) {
+			ret = Logger.getRootLogger();
+		}
+		return ret;
 	}
 }

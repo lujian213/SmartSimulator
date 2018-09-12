@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.zip.ZipFile;
 
 import org.jingle.simulator.SimScript;
 import org.junit.Test;
@@ -161,9 +162,22 @@ public class SimScriptTest {
 	public void test7() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/websocket"));
-			assertEquals(2, script.templatePairs.size());
+			assertEquals(2, script.getTemplatePairs().size());
 			assertEquals(2, script.getSubScripts().size());
-			assertEquals(4, script.getSubScripts().get("hellowebsocket.1").templatePairs.size());
+			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getTemplatePairs().size());
+		} catch (IOException e) {
+			fail("unexpected exception" + e);
+		}
+		
+	}
+
+	@Test
+	public void test8() {
+		try {
+			SimScript script = new SimScript(new SimScript(new File("scripts")), new ZipFile("scripts/websocket2.zip"));
+			assertEquals(2, script.getTemplatePairs().size());
+			assertEquals(3, script.getSubScripts().size());
+			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getTemplatePairs().size());
 		} catch (IOException e) {
 			fail("unexpected exception" + e);
 		}

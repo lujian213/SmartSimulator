@@ -9,7 +9,7 @@ GET {$url}/simulators HTTP/1.1
 
 HTTP/1.1 200 OK
 Class.Name: $className
-Method.Name: getAllSimulators
+Method.Name: getAllSimulatorStatus
 Content-Type: application/json
 
 ------------------------------------------------------------------

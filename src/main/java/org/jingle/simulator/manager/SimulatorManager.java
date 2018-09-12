@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipFile;
 
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
@@ -17,7 +18,6 @@ import org.jingle.simulator.util.SimParam;
 public class SimulatorManager {
 	private Map<String, SimSimulator> simulatorMap = new HashMap<>();
 	private File folder;
-	private SimScript rootScript;
 
 	public SimulatorManager(File folder) throws IOException {
 		this.folder = folder;
@@ -28,32 +28,44 @@ public class SimulatorManager {
 	protected List<SimScript> loadScripts(File folder) throws IOException {
 		List<SimScript> ret = new ArrayList<>();
 		SimScript script = new SimScript(folder);
-		script.prepareLogger();
-		ret.add(script);
 
 		File[] files = folder.listFiles(new FileFilter() {
 
 			@Override
 			public boolean accept(File file) {
-				if (file.isDirectory()) {
+				if (file.isDirectory() || file.getName().endsWith(SimScript.SCRIPT_ZIP)) {
 					return true;
 				}
 				return false;
 			}
 		});
 		for (File file : files) {
-			SimScript simScript = new SimScript(script, file);
-			simScript.prepareLogger();
-			ret.add(simScript);
+			SimScript simScript = null;
+			if (file.isDirectory()) {
+				simScript = new SimScript(script, file);
+			} else {
+				simScript = new SimScript(script, new ZipFile(file));
+			}
+			if (!simScript.isValid()) {
+				SimLogger.getLogger().info(file.getName() + " is not a valid script folder/file, skip ...");
+			} else {
+				simScript.prepareLogger();
+				ret.add(simScript);
+			}
+		}
+		return ret;
+	}
+	
+	public List<SimSimulator> getAllSimulators() {
+		List<SimSimulator> ret = new ArrayList<>();
+
+		synchronized (simulatorMap) {
+			ret.addAll(simulatorMap.values());
 		}
 		return ret;
 	}
 
-	public String getRootSimulatorName() {
-		return rootScript.getSimulatorName();
-	}
-
-	public List<SimulatorStatus> getAllSimulators() {
+	public List<SimulatorStatus> getAllSimulatorStatus() {
 		List<SimulatorStatus> ret = new ArrayList<>();
 
 		synchronized (simulatorMap) {
@@ -102,7 +114,6 @@ public class SimulatorManager {
 	public void refresh() throws IOException {
 		List<SimScript> scripts = loadScripts(folder);
 		synchronized (simulatorMap) {
-			rootScript = scripts.get(0);
 			Iterator<Map.Entry<String, SimSimulator>> it = simulatorMap.entrySet().iterator();
 			while (it.hasNext()) {
 				Map.Entry<String, SimSimulator> entry = it.next();
