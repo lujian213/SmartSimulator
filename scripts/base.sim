@@ -1,0 +1,7 @@
+GET {$url}/favicon.ico HTTP/1.1
+
+HTTP/1.1 200 OK
+Bridge: file:///$Script_Home/favicon.ico
+Content-Type: image/png
+
+------------------------------------------------------------------
