@@ -5,15 +5,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import org.jingle.simulator.SimRequest;
-import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
+import org.jingle.simulator.SimSimulator;
 import org.jingle.simulator.http.HTTPSimulator;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
@@ -69,13 +66,9 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     public WebbitWSHandler(String channel, SimScript script) {
     	this.channel = channel;
     	this.script = script;
-    	Properties props = script.getProps();
-		this.proxy = Boolean.parseBoolean(props.getProperty(HTTPSimulator.PROP_NAME_PROXY, "false"));
+		this.proxy = Boolean.parseBoolean(script.getProperty(SimSimulator.PROP_NAME_PROXY));
 		if (proxy) {
-			proxyURL = props.getProperty(HTTPSimulator.PROP_NAME_PROXY_URL);
-			if (proxyURL == null) {
-				throw new RuntimeException("no proxy.url defined");
-			}
+			proxyURL = script.getMandatoryProperty(HTTPSimulator.PROP_NAME_PROXY_URL, "no proxy url defined");
 		}
     }
 

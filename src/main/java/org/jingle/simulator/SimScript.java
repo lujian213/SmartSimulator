@@ -213,6 +213,14 @@ public class SimScript {
 		return props.getProperty(propName);
 	}
 	
+	public String getMandatoryProperty(String propName, String errMsg) {
+		String ret = props.getProperty(propName);
+		if (ret == null) {
+			throw new RuntimeException(errMsg);
+		}
+		return ret;
+	}
+
 	@SuppressWarnings("unchecked")
     public Class<? extends SimSimulator> getSimulatorClass() throws ClassNotFoundException {
 		return (Class<? extends SimSimulator>) Class.forName(props.getProperty(PROP_NAME_SIMULATOR_CLASS));

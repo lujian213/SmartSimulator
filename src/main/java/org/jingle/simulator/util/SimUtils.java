@@ -183,6 +183,51 @@ public class SimUtils {
 		}
     }
     
+    public static SimResponse doJMSProxy(String proxyURL, SimRequest request) throws IOException {
+    	SimLogger.getLogger().info("do proxy ...");
+    	String topLine = request.getTopLine();
+    	int firstIndex = topLine.indexOf(' ');
+    	int lastIndex = topLine.lastIndexOf(' ');
+    	String method = topLine.substring(0,  firstIndex).trim();
+    	String urlStr = proxyURL + topLine.substring(firstIndex + 1, lastIndex).trim();
+    	SimLogger.getLogger().info("url=" + urlStr);
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			SimLogger.getLogger().info("encoded url=" + encodeURL(urlStr));
+			URL url = new URL(encodeURL(urlStr));
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			for (String headerName: request.getAllHeaderNames()) {
+				String headerLine = request.getHeaderLine(headerName);
+				String[] headerParts = headerLine.split(":");
+				conn.setRequestProperty(headerParts[0].trim(), headerParts[1].trim());
+			}
+			conn.setRequestMethod(method);
+			conn.connect();
+			String body = request.getBody();
+			if (body != null && !body.isEmpty()) {
+				conn.setDoOutput(true);
+				try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(conn.getOutputStream()))) {
+						pw.print(request.getBody());
+				}
+			}
+			SimLogger.getLogger().info("response ...");
+			try (BufferedInputStream bis = new BufferedInputStream(conn.getInputStream())) {
+				byte[] buffer = new byte[8 * 1024];
+				int count = -1;
+				while ((count = bis.read(buffer)) != -1) {
+					baos.write(buffer, 0, count);
+				}
+			}
+			Map<String, Object> headers = new HashMap<>();
+			for (Map.Entry<String, List<String>> entry: conn.getHeaderFields().entrySet()) {
+				if (entry.getKey() != null) {
+					headers.put(entry.getKey(), String.join(",", entry.getValue()));
+				}
+			}
+			baos.flush();
+			return new SimResponse(conn.getResponseCode(), headers, baos.toByteArray());
+		}
+    }
+
     public static String encodeURL(String url) throws UnsupportedEncodingException {
     	int index = url.indexOf('?');
     	if (index < 0) {

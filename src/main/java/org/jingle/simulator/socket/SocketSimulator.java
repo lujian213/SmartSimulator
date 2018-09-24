@@ -3,7 +3,6 @@ package org.jingle.simulator.socket;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
-import java.util.Properties;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimScript;
@@ -61,8 +60,8 @@ public class SocketSimulator extends SimSimulator {
 	
 	@Override
 	protected void init() throws IOException {
-		Properties props = script.getProps();
-		port = Integer.parseInt(props.getProperty(PROP_NAME_PORT, "8080"));
+		super.init();
+		port = Integer.parseInt(script.getMandatoryProperty(PROP_NAME_PORT, "no socket port defined"));
 	}
 
   

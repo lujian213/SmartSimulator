@@ -9,32 +9,32 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
-import org.jingle.simulator.jms.JMSSimulator.SimMessageProducer;
+import org.jingle.simulator.jms.JMSBroker.SimMessageProducer;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
 public class JMSSimRequest implements SimRequest {
 	private static final String HEADER_NAME_CHANNEL = "Channel";
 	private static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
+	private static final String CHANNEL_NAME_TEMP_QUEUE = "???";
 	
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private Message message;
-	private String destName;
+	private String unifiedDestName;
 	private Map<String, SimMessageProducer> producerMap;
 	private String topLine;
 	private Map<String, Object> headers = new HashMap<>();
 	private String body;
 	private Session session;
 	
-	public JMSSimRequest(Message message, Session session, String destName, Map<String, SimMessageProducer> producerMap) throws IOException {
+	public JMSSimRequest(Message message, Session session, String unifiedDestName, Map<String, SimMessageProducer> producerMap) throws IOException {
 		this.message = message;
-		this.destName = destName;
+		this.unifiedDestName = unifiedDestName;
 		this.producerMap = producerMap;
 		this.session = session;
 		if (message instanceof TextMessage) {
@@ -109,7 +109,8 @@ public class JMSSimRequest implements SimRequest {
 		try {
 			Map<String, Object> headers = response.getHeaders();
 			String channel = (String) headers.remove(HEADER_NAME_CHANNEL);
-			channel = (channel == null ? destName: channel);
+			channel = (channel == null ? unifiedDestName: channel);
+			
 			SimMessageProducer producer = null;
 			if (CHANNEL_NAME_JMSREPLYTO.equals(channel)) {
 				SimLogger.getLogger().info("use destination in JMSReplyTo header [" + message.getJMSReplyTo() + "]");
