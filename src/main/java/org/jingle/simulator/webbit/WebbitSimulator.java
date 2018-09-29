@@ -12,6 +12,7 @@ import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.http.HTTPSimulator;
 import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.HttpRequest;
@@ -24,6 +25,7 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 	
 	public WebbitSimulator(SimScript script) throws IOException {
 		super(script);
+		this.convertor = SimUtils.createMessageConvertor(script, new DefaultWebbitReqRespConvertor());
 	}
 	
 	protected WebbitSimulator() {
@@ -34,7 +36,7 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 		SimLogger.setLogger(script.getLogger());
 		SimRequest request = null;
 		try {
-			request = new WebbitSimRequest(req, resp);
+			request = new WebbitSimRequest(req, resp, convertor);
 			handleRequest(request);
 		} catch (Exception e) {
 			SimLogger.getLogger().error("match and fill exception", e);

@@ -12,12 +12,12 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.naming.NamingException;
 
-import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
 import org.jingle.simulator.jms.JMSBroker.SimMessageConsumer;
 import org.jingle.simulator.jms.JMSBroker.SimMessageProducer;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
@@ -31,7 +31,7 @@ public class JMSSimulator extends SimSimulator {
 	public static final String CLIENT_TYPE_SUB = "Sub";
 
 	private Map<String, SimMessageProducer> producerMap;
-	private Map<String, JMSBroker> brokerMap;
+	private Map<String, JMSBroker> brokerMap = new HashMap<>();
 	private boolean proxy;
 	private String proxyURL;
 
@@ -40,19 +40,21 @@ public class JMSSimulator extends SimSimulator {
 		private SimScript script;
 		private String unifiedDestName;
 		private Session session;
+		private ReqRespConvertor convertor;
 		
 		public SimMessageListener(SimScript script, Session session, String unifiedDestName) {
 			this.script = script;
 			this.unifiedDestName = unifiedDestName;
 			this.session = session;
+			this.convertor = SimUtils.createMessageConvertor(script, new DefaultJMSReqRespConvertor());
 		}
 		
 		@Override
 		public void onMessage(Message message) {
 			SimLogger.setLogger(script.getLogger());
-			SimRequest request = null;
+			JMSSimRequest request = null;
 			try {
-				request = new JMSSimRequest(message, session, unifiedDestName, producerMap);
+				request = new JMSSimRequest(message, session, unifiedDestName, producerMap, brokerMap, convertor);
 				SimLogger.getLogger().info("incoming request from [" + unifiedDestName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
 			} catch (Exception e) {
 				SimLogger.getLogger().error("error when create SimRequest", e);
@@ -64,7 +66,7 @@ public class JMSSimulator extends SimSimulator {
 			} catch (Exception e) {
 				if (proxy) {
 					try {
-						SimResponse resp = SimUtils.doHttpProxy(proxyURL, request);
+						SimResponse resp = SimUtils.doJMSProxy(proxyURL, request);
 						request.fillResponse(resp);
 					} catch (IOException e1) {
 						SimLogger.getLogger().error("proxy error", e1);
@@ -142,7 +144,12 @@ public class JMSSimulator extends SimSimulator {
 		return destName + "@" + brokerName;
 	}
 	
- 	@Override
+	public static String getBrokerName(String unifiedDestName) {
+		String[] parts = unifiedDestName.split("@");
+		return parts[1];
+	}
+
+	@Override
 	public void start() throws IOException {
 		boolean success = false;
 		try {

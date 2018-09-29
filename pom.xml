@@ -37,11 +37,11 @@
 		    <artifactId>openjms-client</artifactId>
 		    <version>0.7.6</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.jms/jms-api -->
+		<!-- https://mvnrepository.com/artifact/javax.jms/javax.jms-api -->
 		<dependency>
 		    <groupId>javax.jms</groupId>
-		    <artifactId>jms-api</artifactId>
-		    <version>1.1-rev-1</version>
+		    <artifactId>javax.jms-api</artifactId>
+		    <version>2.0.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
 		<dependency>
@@ -73,5 +73,44 @@
 		    <artifactId>netty-all</artifactId>
 		    <version>4.1.29.Final</version>
 		</dependency>
+<!-- 		<dependency>
+    <groupId>com.tibco</groupId>
+    <artifactId>tibjms</artifactId>
+    <version>8.2.2l</version>
+</dependency>
+<dependency>
+    <groupId>tibcrypt</groupId>
+    <artifactId>tibcrypt</artifactId>
+    <version>8.2.2l</version>
+</dependency>  -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>1.7.25</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-log4j12</artifactId>
+    <version>1.7.25</version>
+    <scope>test</scope>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.jayway.jsonpath/json-path -->
+<dependency>
+    <groupId>com.jayway.jsonpath</groupId>
+    <artifactId>json-path</artifactId>
+    <version>2.4.0</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-all -->
+<dependency>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>groovy-all</artifactId>
+    <version>2.5.2</version>
+    <type>pom</type>
+</dependency>
+
+
+		
     </dependencies>
 </project>

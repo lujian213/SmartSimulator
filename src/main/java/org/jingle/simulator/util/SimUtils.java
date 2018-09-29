@@ -19,10 +19,13 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.JMSException;
+import javax.jms.TextMessage;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -34,6 +37,9 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.SimScript;
+import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.jms.JMSSimRequest;
 
 public class SimUtils {
     private static VelocityEngine ve = new VelocityEngine();
@@ -91,6 +97,16 @@ public class SimUtils {
 			pw.printf(format, args);
 		}
 		return sbw.toString();
+	}
+	
+	public static String[] parseProperty(String line) {
+		int index = line.indexOf(':');
+		if (index != -1) {
+			String propName = line.substring(0, index);
+			String propValue = line.substring(index + 1);
+			return new String[] {propName.trim(), propValue.trim()};
+		}
+		return null;
 	}
 	
     public static SSLContext initSSL(String keystore, String ksPwd) throws IOException {
@@ -183,48 +199,21 @@ public class SimUtils {
 		}
     }
     
-    public static SimResponse doJMSProxy(String proxyURL, SimRequest request) throws IOException {
+    public static SimResponse doJMSProxy(String proxyURL, JMSSimRequest request) throws IOException {
     	SimLogger.getLogger().info("do proxy ...");
-    	String topLine = request.getTopLine();
-    	int firstIndex = topLine.indexOf(' ');
-    	int lastIndex = topLine.lastIndexOf(' ');
-    	String method = topLine.substring(0,  firstIndex).trim();
-    	String urlStr = proxyURL + topLine.substring(firstIndex + 1, lastIndex).trim();
-    	SimLogger.getLogger().info("url=" + urlStr);
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			SimLogger.getLogger().info("encoded url=" + encodeURL(urlStr));
-			URL url = new URL(encodeURL(urlStr));
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			for (String headerName: request.getAllHeaderNames()) {
-				String headerLine = request.getHeaderLine(headerName);
-				String[] headerParts = headerLine.split(":");
-				conn.setRequestProperty(headerParts[0].trim(), headerParts[1].trim());
+		Map<String, Object> headers = new HashMap<>();
+		try {
+			TextMessage message = (TextMessage) request.getMessage();
+			Enumeration<String> it = message.getPropertyNames();
+			while (it.hasMoreElements()) {
+				String propName = it.nextElement();
+				headers.put(propName, message.getObjectProperty(propName));
 			}
-			conn.setRequestMethod(method);
-			conn.connect();
-			String body = request.getBody();
-			if (body != null && !body.isEmpty()) {
-				conn.setDoOutput(true);
-				try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(conn.getOutputStream()))) {
-						pw.print(request.getBody());
-				}
-			}
-			SimLogger.getLogger().info("response ...");
-			try (BufferedInputStream bis = new BufferedInputStream(conn.getInputStream())) {
-				byte[] buffer = new byte[8 * 1024];
-				int count = -1;
-				while ((count = bis.read(buffer)) != -1) {
-					baos.write(buffer, 0, count);
-				}
-			}
-			Map<String, Object> headers = new HashMap<>();
-			for (Map.Entry<String, List<String>> entry: conn.getHeaderFields().entrySet()) {
-				if (entry.getKey() != null) {
-					headers.put(entry.getKey(), String.join(",", entry.getValue()));
-				}
-			}
-			baos.flush();
-			return new SimResponse(conn.getResponseCode(), headers, baos.toByteArray());
+			headers.put(JMSSimRequest.HEADER_NAME_CHANNEL, proxyURL);
+			return new SimResponse(200, headers, message.getText().getBytes());
+		} catch (JMSException e) {
+			SimLogger.getLogger().error(e);
+			throw new IOException(e);
 		}
     }
 
@@ -270,5 +259,26 @@ public class SimUtils {
 		String value = headerLine.substring(index + 1).trim();
 		map.put(name,  value);
 		return map.entrySet().iterator().next();
+	}
+	
+	public static void printMismatchInfo(String msg, String s1, String s2) {
+		Logger logger = SimLogger.getLogger();
+		logger.info(msg);
+		logger.info("[" + (s1 == null? null : s1.trim()) + "]");
+		logger.info("VS");
+		logger.info("[" + (s2 == null? null : s2.trim()) + "]");
+	}
+	
+	public static ReqRespConvertor createMessageConvertor(SimScript script, ReqRespConvertor defaultConvertor) {
+		String convertorClassName = script.getProperty(SimSimulator.PROP_NAME_MESSAGE_CONVERTOR);
+		if (convertorClassName != null) {
+			try {
+				return (ReqRespConvertor) Class.forName(convertorClassName).newInstance();
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+				throw new RuntimeException("error to create convertor instance [" + convertorClassName + "]", e);
+			}
+		} else {
+			return defaultConvertor;
+		}
 	}
 }

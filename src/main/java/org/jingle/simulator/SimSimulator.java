@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 public abstract class SimSimulator {
 	public static final String PROP_NAME_PROXY = "simulator.proxy";
 	public static final String PROP_NAME_PROXY_URL = "simulator.proxy.url";
+	public static final String PROP_NAME_MESSAGE_CONVERTOR = "simulator.messageconvertor";
 
 	protected SimScript script;
 	protected boolean running = false;

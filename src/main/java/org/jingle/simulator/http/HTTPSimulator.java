@@ -9,10 +9,11 @@ import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
-public abstract class HTTPSimulator extends SimSimulator { 
+public abstract class HTTPSimulator extends SimSimulator {
 	public static final String PROP_NAME_PORT = "simulator.http.port";
 	public static final String PROP_NAME_USE_SSL = "simulator.http.useSSL";
 	public static final String PROP_NAME_KEYSTORE = "simulator.http.keystore";
@@ -21,12 +22,13 @@ public abstract class HTTPSimulator extends SimSimulator {
 	protected boolean useSSL;
 	protected String keystore;
 	protected String ksPwd;
-	protected SSLContext sslContext;	
-	
+	protected SSLContext sslContext;
+	protected ReqRespConvertor convertor;
+
 	public HTTPSimulator(SimScript script) throws IOException {
 		super(script);
 	}
-	
+
 	protected HTTPSimulator() {
 	}
 
@@ -41,7 +43,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 			sslContext = SimUtils.initSSL(keystore, ksPwd);
 		}
 	}
-	
+
 	protected void handleRequest(SimRequest request) {
 		try {
 			SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
@@ -61,7 +63,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 			}
 		}
 	}
-	
+
 	protected void gen500Response(SimRequest request, String message) {
 		try {
 			SimResponse response = new SimResponse(500, new HashMap<String, Object>(), message.getBytes());

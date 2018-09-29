@@ -34,7 +34,6 @@ public class SimRequestTemplateTest {
     		assertEquals("hostName", headerTemplates.get("Host").getAllTokens().get(0).get(1).getName());
     		assertEquals("user", srt.getAuthenticationsTemplate().getAllTokens().get(0).get(1).getName());
     		assertEquals("passwd", srt.getAuthenticationsTemplate().getAllTokens().get(0).get(3).getName());
-    		assertEquals("status", srt.getBodyTemplate().getAllTokens().get(0).get(1).getName());
     	} catch (Exception e) {
     		fail ("unexpected exception:" + e);
     	}
@@ -53,7 +52,7 @@ public class SimRequestTemplateTest {
     		Map<String, SimTemplate> headerTemplates = srt.getHeaderTemplate();
     		assertEquals(0, headerTemplates.size());
     		assertNull(srt.getAuthenticationsTemplate());
-    		assertNull(srt.getBodyTemplate());
+    		assertNull(srt.getBody());
     	} catch (Exception e) {
     		fail ("unexpected exception:" + e);
     	}

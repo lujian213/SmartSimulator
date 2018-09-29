@@ -12,6 +12,7 @@ import java.util.Map;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
 import org.jingle.simulator.http.HTTPSimulator;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.BaseWebSocketHandler;
@@ -62,10 +63,12 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     private SimScript script;
 	protected boolean proxy;
 	protected String proxyURL;
+	private ReqRespConvertor convertor;
     
     public WebbitWSHandler(String channel, SimScript script) {
     	this.channel = channel;
     	this.script = script;
+    	this.convertor = SimUtils.createMessageConvertor(script, new DefaultWebbitWSReqRespConvertor());
 		this.proxy = Boolean.parseBoolean(script.getProperty(SimSimulator.PROP_NAME_PROXY));
 		if (proxy) {
 			proxyURL = script.getMandatoryProperty(HTTPSimulator.PROP_NAME_PROXY_URL, "no proxy url defined");
@@ -79,7 +82,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 	public void onOpen(WebSocketConnection connection) {
 		SimLogger.setLogger(script.getLogger());
 		SimLogger.getLogger().info("on open ...");
-		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_OPEN, null);
+		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_OPEN, null, convertor);
     	try {
 	    	script.genResponse(request);
 	    	addConnection(new ConnectionWithDelegator(connection));
@@ -105,10 +108,10 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 
     public void onClose(WebSocketConnection connection) {
 		SimLogger.setLogger(script.getLogger());
+		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_CLOSE, null, convertor);
     	try {
-	    	WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_CLOSE, null);
 	    	script.genResponse(request);
-    	} catch (Exception e) {
+    	} catch (IOException e) {
 			if (proxy) {
 				WebbitWSClient wsClient = findDelegator(connection);
 				wsClient.stop();
@@ -121,9 +124,9 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     	}
     }
 
-    public void onMessage(WebSocketConnection connection, String message) {
+    public void onMessage(WebSocketConnection connection, byte[] message) {
 		SimLogger.setLogger(script.getLogger());
-		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_MESSAGE, message);
+		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_MESSAGE, message, convertor);
     	try {
 	    	script.genResponse(request);
     	} catch (Exception e) {
@@ -179,7 +182,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     	return null;
     }
 
-    protected static WebSocketConnection findConnection(String id) {
+    public static WebSocketConnection findConnection(String id) {
     	synchronized (bundles) {
     		for (ConnectionWithDelegator cwb: bundles) {
     			if (id.equals(cwb.getId())) {
@@ -211,12 +214,4 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
         	updateConnection(entry.getValue(), request.getConnection());
     	}
     }
-
-    public static void sendMessage(String id, String message) {
-    	WebSocketConnection conn = findConnection(id);
-    	if (conn != null) {
-    		conn.send(message);
-    	}
-    }
-
 }

@@ -21,6 +21,8 @@ import org.jingle.simulator.util.SimLogger;
 public class JMSBroker {
 	public static final String PROP_NAME_TOPIC_FACTORY_NAME = "simulator.jms.topicconnectionfactory";
 	public static final String PROP_NAME_QUEUE_FACTORY_NAME = "simulator.jms.queueconnectionfactory";
+	public static final String PROP_NAME_FACTORY_USERNAME = "simulator.jms.factory.username";
+	public static final String PROP_NAME_FACTORY_PASSWORD = "simulator.jms.factory.password";
 	public static final String PROP_NAME_BROKER_NAME = "simulator.jms.broker.name";
 	public static final String DESTINATION_TYPE_TOPIC = "Topic";
 	public static final String DESTINATION_TYPE_QUEUE = "Queue";
@@ -93,14 +95,22 @@ public class JMSBroker {
 			String tcfName = script.getProperty(PROP_NAME_TOPIC_FACTORY_NAME);
 			if (tcfName != null) {
 				TopicConnectionFactory tcf = (TopicConnectionFactory) context.lookup(props.getProperty(PROP_NAME_TOPIC_FACTORY_NAME));
-				tc = tcf.createConnection();
-				ts = tc.createSession(false, Session.AUTO_ACKNOWLEDGE);
+				if (props.getProperty(PROP_NAME_FACTORY_USERNAME) != null) {
+					tc = tcf.createConnection(props.getProperty(PROP_NAME_FACTORY_USERNAME), props.getProperty(PROP_NAME_FACTORY_PASSWORD));
+				} else {
+					tc = tcf.createConnection();
+				}
+				ts = tc.createSession();
 			}
 			String qcfName = script.getProperty(PROP_NAME_QUEUE_FACTORY_NAME);
 			if (qcfName != null) {
 				QueueConnectionFactory qcf = (QueueConnectionFactory) context.lookup(props.getProperty(PROP_NAME_QUEUE_FACTORY_NAME));
-				qc = qcf.createConnection();
-				qs = qc.createSession(false, Session.AUTO_ACKNOWLEDGE);
+				if (props.getProperty(PROP_NAME_FACTORY_USERNAME) != null) {
+					qc = qcf.createConnection(props.getProperty(PROP_NAME_FACTORY_USERNAME), props.getProperty(PROP_NAME_FACTORY_PASSWORD));
+				} else {
+					qc = qcf.createConnection();
+				}
+				qs = qc.createSession();
 			}
         } catch (NamingException | JMSException e) {
 			throw new RuntimeException(e);
@@ -133,7 +143,15 @@ public class JMSBroker {
 		return (Destination) context.lookup(destName);
 	}
 	
-    public SimMessageProducer createProducer(String destName, String destType) throws JMSException, NamingException {
+	public Destination createTempQueue() throws JMSException {
+		return qs.createTemporaryQueue();
+	}
+	
+	public Destination createTempTopic() throws JMSException {
+		return ts.createTemporaryTopic();
+	}
+
+	public SimMessageProducer createProducer(String destName, String destType) throws JMSException, NamingException {
     	Session session = getSession(destType);
 		Destination dest = (Destination) context.lookup(destName);
 		if (dest == null) {

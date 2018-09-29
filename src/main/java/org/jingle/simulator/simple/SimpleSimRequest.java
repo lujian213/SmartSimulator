@@ -1,9 +1,6 @@
 package org.jingle.simulator.simple;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -12,6 +9,7 @@ import java.util.Map;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
@@ -28,9 +26,11 @@ public class SimpleSimRequest implements SimRequest {
 	private Map<String, List<String>> headers;
 	private String[] authentications = new String[] {"", ""};
 	private String body;
+	private ReqRespConvertor convertor;
 	
-	public SimpleSimRequest(HttpExchange exchange) throws IOException {
+	public SimpleSimRequest(HttpExchange exchange, ReqRespConvertor convertor) throws IOException {
 		this.httpExchange = exchange;
+		this.convertor = convertor;
 		String method = exchange.getRequestMethod();
 		URI uri = exchange.getRequestURI();
 		String protocol = exchange.getProtocol();
@@ -81,16 +81,7 @@ public class SimpleSimRequest implements SimRequest {
 	}
 	
 	protected void genBody(HttpExchange exchange) throws IOException {
-		
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody()))) {
-			StringBuffer sb = new StringBuffer();
-			
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				sb.append(line).append("\n");
-			}
-			this.body = sb.toString();
-		}
+		this.body = convertor.rawRequestToBody(exchange);
 	}
 	
 	public String getTopLine() {
@@ -131,9 +122,7 @@ public class SimpleSimRequest implements SimRequest {
 			length = 0;
 		}
 		httpExchange.sendResponseHeaders(response.getCode(), length);
-		try (OutputStream os = httpExchange.getResponseBody()) {
-			os.write(body);
-		}
+		convertor.fillRawResponse(httpExchange, response);
 	}
 
 	@Override

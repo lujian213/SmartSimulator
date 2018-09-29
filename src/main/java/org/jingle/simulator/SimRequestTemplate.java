@@ -6,15 +6,18 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.jingle.simulator.util.RequestHandler;
 import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 
 public class SimRequestTemplate {
+	private static final String HEADER_AUTHENTICATION = "Authentication";
 	private SimTemplate topLineTemplate;
 	private Map<String, SimTemplate> headerTemplates = new HashMap<>();
 	private SimTemplate authenticationsTemplate = null;
-	private SimTemplate bodyTemplate;
-	
+	private String bodyContent;
+	private Map<String, String> extraHeader = new HashMap<>();
+
 	public SimRequestTemplate(String content) throws IOException {
 		init(content);
 	}
@@ -28,14 +31,15 @@ public class SimRequestTemplate {
 				if (lineNum == 1) {
 					topLineTemplate = new SimTemplate(line);
 				} else if (body == null) {
-					int index = line.indexOf(':');
-					if (index != -1) {
-						String headerName = line.substring(0, index);
-						if ("Authentication".equals(headerName)) {
+					String[] prop = SimUtils.parseProperty(line);
+					if (prop != null) {
+						if (HEADER_AUTHENTICATION.equals(prop[0])) {
 							this.authenticationsTemplate = new SimTemplate(line);
+						} else if (prop[0].startsWith("_")) {
+							extraHeader.put(prop[0], prop[1]);
 						} else {
-							this.headerTemplates.put(headerName, new SimTemplate(line));
-						}
+							this.headerTemplates.put(prop[0], new SimTemplate(line));
+						} 
 					}
 					if (line.isEmpty()) {
 						body = new StringBuffer();
@@ -46,7 +50,7 @@ public class SimRequestTemplate {
 				lineNum++;
 			}
 			if (body != null && !body.toString().isEmpty()) {
-				this.bodyTemplate = new SimTemplate(body.toString().trim());
+				this.bodyContent = body.toString().trim(); 
 			}
 		}
 	}
@@ -63,8 +67,8 @@ public class SimRequestTemplate {
 		return this.authenticationsTemplate;
 	}
 	
-	public SimTemplate getBodyTemplate() {
-		return this.bodyTemplate;
+	public String getBody() {
+		return this.bodyContent;
 	}
 	
 	public Map<String, Object> match(SimRequest request) throws IOException {
@@ -77,7 +81,7 @@ public class SimRequestTemplate {
 		for (Map.Entry<String, SimTemplate> entry: headerTemplates.entrySet()) {
 			res = entry.getValue().parse(request.getHeaderLine(entry.getKey()));
 			if (res == null) {
-				printMismatchInfo("header does not match", entry.getValue().toString(), request.getHeaderLine(entry.getKey()));
+				SimUtils.printMismatchInfo("header does not match", entry.getValue().toString(), request.getHeaderLine(entry.getKey()));
 				return null; 
 			} else {
 				ret.putAll(res);
@@ -86,29 +90,21 @@ public class SimRequestTemplate {
 		if (authenticationsTemplate != null) {
 			res = authenticationsTemplate.parse(request.getAutnenticationLine());
 			if (res == null) {
-				printMismatchInfo("authentication template", authenticationsTemplate.toString(), request.getAutnenticationLine());
+				SimUtils.printMismatchInfo("authentication template", authenticationsTemplate.toString(), request.getAutnenticationLine());
 				return null; 
 			} else {
 				ret.putAll(res);
 			}
 		}
-		if (bodyTemplate != null) {
-			res = bodyTemplate.parse(request.getBody());
+		if (bodyContent != null) {
+			res = RequestHandler.getHandlerChain().handle(extraHeader, bodyContent, request);
 			if (res == null) {
-				printMismatchInfo("body template", bodyTemplate.toString(), request.getBody());
+				SimUtils.printMismatchInfo("body template", bodyContent, request.getBody());
 				return null; 
 			} else {
 				ret.putAll(res);
 			}
 		}
 		return ret;
-	}
-
-	protected void printMismatchInfo(String msg, String s1, String s2) {
-		Logger logger = SimLogger.getLogger();
-		logger.info(msg);
-		logger.info("[" + (s1 == null? null : s1.trim()) + "]");
-		logger.info("VS");
-		logger.info("[" + (s2 == null? null : s2.trim()) + "]");
 	}
 }
