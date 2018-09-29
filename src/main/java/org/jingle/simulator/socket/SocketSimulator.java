@@ -2,13 +2,13 @@ package org.jingle.simulator.socket;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.util.Properties;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -30,8 +30,7 @@ public class SocketSimulator extends SimSimulator {
 			SimLogger.setLogger(script.getLogger());
 			SimRequest request = null;
 			try {
-				String s = ((ByteBuf) msg).toString(Charset.forName("utf-8"));
-				request = new SocketSimRequest(ctx, s);
+				request = new SocketSimRequest(ctx, (ByteBuf)msg, convertor);
 				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
 				script.genResponse(request);
 	    	} catch (IOException e) {
@@ -54,6 +53,7 @@ public class SocketSimulator extends SimSimulator {
 	private ChannelFuture cf;
 	private EventLoopGroup bossGroup = null;
     private EventLoopGroup workerGroup = null;
+	private ReqRespConvertor convertor;
 
 	public SocketSimulator(SimScript script) throws IOException {
 		super(script);
@@ -61,8 +61,9 @@ public class SocketSimulator extends SimSimulator {
 	
 	@Override
 	protected void init() throws IOException {
-		Properties props = script.getProps();
-		port = Integer.parseInt(props.getProperty(PROP_NAME_PORT, "8080"));
+		super.init();
+		port = Integer.parseInt(script.getMandatoryProperty(PROP_NAME_PORT, "no socket port defined"));
+		convertor = SimUtils.createMessageConvertor(script, new DefualtSocketReqRespConvertor());
 	}
 
   

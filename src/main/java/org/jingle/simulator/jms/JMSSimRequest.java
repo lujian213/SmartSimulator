@@ -7,40 +7,50 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
-import org.jingle.simulator.jms.JMSSimulator.SimMessageProducer;
+import org.jingle.simulator.jms.JMSBroker.SimMessageProducer;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
 public class JMSSimRequest implements SimRequest {
-	private static final String HEADER_NAME_CHANNEL = "Channel";
-	private static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
+	public static final String HEADER_NAME_CHANNEL = "Channel";
+	public static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
+	public static final String CHANNEL_NAME_TEMP_QUEUE = "???";
+	public static final String CHANNEL_NAME_TEMP_TOPIC = "###";
+	public static final String HEADER_NAME_MESSAGE_TYPE = "Message.Type";
+	public static final String MESSAGE_TYPE_TEXT = "Text";
+	public static final String MESSAGE_TYPE_BYTES = "Bytes";
 	
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private Message message;
-	private String destName;
+	private String unifiedDestName;
 	private Map<String, SimMessageProducer> producerMap;
 	private String topLine;
 	private Map<String, Object> headers = new HashMap<>();
 	private String body;
 	private Session session;
+	private ReqRespConvertor convertor;
 	
-	public JMSSimRequest(Message message, Session session, String destName, Map<String, SimMessageProducer> producerMap) throws IOException {
+	public JMSSimRequest(Message message, Session session, String unifiedDestName, Map<String, SimMessageProducer> producerMap, Map<String, JMSBroker> brokerMap, ReqRespConvertor convertor) throws IOException {
 		this.message = message;
-		this.destName = destName;
+		this.unifiedDestName = unifiedDestName;
 		this.producerMap = producerMap;
 		this.session = session;
+		this.convertor = convertor;
 		if (message instanceof TextMessage) {
 			this.topLine = "TextMessage";
+		} else if (message instanceof BytesMessage) {
+			this.topLine = "BytesMessage";
 		} else {
-			throw new IOException("unsupported message type [" + message.getClass() + "]");
+			this.topLine = "OtherMessage";
 		}
 		genHeaders();
 		genBody();
@@ -48,6 +58,10 @@ public class JMSSimRequest implements SimRequest {
 	
 	protected JMSSimRequest() {
 		
+	}
+	
+	public Message getMessage() {
+		return this.message;
 	}
 	
 	@Override
@@ -80,11 +94,7 @@ public class JMSSimRequest implements SimRequest {
 	}
 	
 	protected void genBody() throws IOException {
-		try {
-			this.body = ((TextMessage)message).getText();
-		} catch (JMSException e) {
-			throw new IOException(e);
-		}
+		this.body = convertor.rawRequestToBody(message);
 	}
 	
 	public String getTopLine() {
@@ -109,7 +119,8 @@ public class JMSSimRequest implements SimRequest {
 		try {
 			Map<String, Object> headers = response.getHeaders();
 			String channel = (String) headers.remove(HEADER_NAME_CHANNEL);
-			channel = (channel == null ? destName: channel);
+			channel = (channel == null ? unifiedDestName: channel);
+			
 			SimMessageProducer producer = null;
 			if (CHANNEL_NAME_JMSREPLYTO.equals(channel)) {
 				SimLogger.getLogger().info("use destination in JMSReplyTo header [" + message.getJMSReplyTo() + "]");
@@ -120,14 +131,25 @@ public class JMSSimRequest implements SimRequest {
 			if (producer == null) {
 				throw new IOException("can not find producer for channel [" + channel + "]");
 			}
-			TextMessage respMsg = producer.getSession().createTextMessage();
+			String messageType = (String) headers.remove(HEADER_NAME_MESSAGE_TYPE);
+			Message respMsg = createMessage(producer.getSession(), messageType);
 			for (Map.Entry<String, Object> entry : headers.entrySet()) {
-				respMsg.setStringProperty(entry.getKey(), entry.getValue().toString());
+				respMsg.setObjectProperty(entry.getKey(), entry.getValue());
 			}
-			respMsg.setText(response.getBodyAsString());
+			convertor.fillRawResponse(respMsg, response);
 			producer.getProducer().send(respMsg);
 		} catch (JMSException e) {
 			throw new IOException(e);
+		}
+	}
+	
+	protected Message createMessage(Session session, String type) throws JMSException {
+		if (MESSAGE_TYPE_TEXT.equals(type) || type == null) {
+			return session.createTextMessage();
+		} else if (MESSAGE_TYPE_BYTES.equals(type)) {
+			return session.createBytesMessage();
+		} else {
+			throw new JMSException("can't support message type [" + type + "]");
 		}
 	}
 

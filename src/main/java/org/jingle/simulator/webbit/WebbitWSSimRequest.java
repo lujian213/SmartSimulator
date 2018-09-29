@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.WebSocketConnection;
 
@@ -21,12 +22,17 @@ public class WebbitWSSimRequest implements SimRequest {
 	private String body;
 	private WebSocketConnection connection;
 	private Map<String, String> headers = new HashMap<>();
+	private ReqRespConvertor convertor;
 	
-	public WebbitWSSimRequest(WebSocketConnection connection, String channel, String type, String message) {
+	public WebbitWSSimRequest(WebSocketConnection connection, String channel, String type, byte[] message, ReqRespConvertor convertor) {
 		this.connection = connection;
+		this.convertor = convertor;
 		String protocol = "HTTP/1.1";
 		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, type, channel, protocol);
-		this.body = message;
+		try {
+			this.body = convertor.rawRequestToBody(message);
+		} catch (IOException e) {
+		}
 	}
 	
 	protected WebbitWSSimRequest() {
@@ -76,11 +82,11 @@ public class WebbitWSSimRequest implements SimRequest {
 		if (channelID != null) {
 			headers.put(HEADER_NAME_CHANNEL_ID, channelID);
 		}
-		if (actualChannel == null) {
-			connection.send(resp.getBodyAsString());
-		} else {
-			WebbitWSHandler.sendMessage(actualChannel, resp.getBodyAsString());
-		}
+		WebSocketConnection conn = connection;
+		if (actualChannel != null) {
+			conn = WebbitWSHandler.findConnection(actualChannel);
+		} 
+		convertor.fillRawResponse(conn, resp);
 	}
 
 	@Override

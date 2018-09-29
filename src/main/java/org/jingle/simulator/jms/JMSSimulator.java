@@ -1,87 +1,84 @@
 package org.jingle.simulator.jms;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
-import javax.jms.Connection;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
-import javax.jms.TopicConnectionFactory;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.jms.JMSBroker.SimMessageConsumer;
+import org.jingle.simulator.jms.JMSBroker.SimMessageProducer;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 
 public class JMSSimulator extends SimSimulator {
-	public static final String PROP_NAME_TOPIC_FACTORY_NAME = "simulator.jms.topicconnectionfactory";
-	public static final String PROP_NAME_QUEUE_FACTORY_NAME = "simulator.jms.queueconnectionfactory";
 	public static final String PROP_NAME_DESTINATION_TYPE = "simulator.jms.destination.type";
+	public static final String PROP_NAME_DESTINATION_BROKER = "simulator.jms.destination.broker";
 	public static final String PROP_NAME_DESTINATION_NAME = "simulator.jms.destination.name";
 	public static final String PROP_NAME_CLIENT_TYPE = "simulator.jms.client.type";
 	
-	public static final String DESTINATION_TYPE_TOPIC = "Topic";
-	public static final String DESTINATION_TYPE_QUEUE = "Queue";
 	public static final String CLIENT_TYPE_PUB = "Pub";
 	public static final String CLIENT_TYPE_SUB = "Sub";
 
-	protected Context context;
-	protected Connection tc;
-	protected Connection qc;
-	protected Session ts;
-	protected Session qs;
-	protected Map<String, SimMessageProducer> producerMap;
+	private Map<String, SimMessageProducer> producerMap;
+	private Map<String, JMSBroker> brokerMap = new HashMap<>();
+	private boolean proxy;
+	private String proxyURL;
+
 	
 	public class SimMessageListener implements MessageListener {
 		private SimScript script;
-		private String destName;
+		private String unifiedDestName;
 		private Session session;
+		private ReqRespConvertor convertor;
 		
-		public SimMessageListener(SimScript script, Session session, String destName) {
+		public SimMessageListener(SimScript script, Session session, String unifiedDestName) {
 			this.script = script;
-			this.destName = destName;
+			this.unifiedDestName = unifiedDestName;
 			this.session = session;
+			this.convertor = SimUtils.createMessageConvertor(script, new DefaultJMSReqRespConvertor());
 		}
 		
 		@Override
 		public void onMessage(Message message) {
 			SimLogger.setLogger(script.getLogger());
+			JMSSimRequest request = null;
 			try {
-				SimRequest request = new JMSSimRequest(message, session, destName, producerMap);
-				SimLogger.getLogger().info("incoming request from [" + destName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
-				script.genResponse(request);
+				request = new JMSSimRequest(message, session, unifiedDestName, producerMap, brokerMap, convertor);
+				SimLogger.getLogger().info("incoming request from [" + unifiedDestName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
 			} catch (Exception e) {
-				SimLogger.getLogger().error("", e);
+				SimLogger.getLogger().error("error when create SimRequest", e);
+			}
+			try {
+				if (request != null) {
+					script.genResponse(request);
+				}
+			} catch (Exception e) {
+				if (proxy) {
+					try {
+						SimResponse resp = SimUtils.doJMSProxy(proxyURL, request);
+						request.fillResponse(resp);
+					} catch (IOException e1) {
+						SimLogger.getLogger().error("proxy error", e1);
+					}
+				} else {
+					SimLogger.getLogger().error("match and fill error", e);
+				}
 			}
 		}
 		
 	}
 	
-	public static class SimMessageProducer  {
-		private MessageProducer producer;
-		private Session session;
-		public SimMessageProducer(Session session, MessageProducer producer) {
-			this.session = session;
-			this.producer = producer;
-		}
-		public MessageProducer getProducer() {
-			return producer;
-		}
-		public Session getSession() {
-			return session;
-		}
-	}
 	
 	public JMSSimulator(SimScript script) throws IOException {
 		super(script);
@@ -90,59 +87,48 @@ public class JMSSimulator extends SimSimulator {
 	protected JMSSimulator() {
 	}
 
-	protected void prepare() {
+	protected void prepare() throws IOException {
 		producerMap = new HashMap<>();
-		Properties props = script.getProps();
-        try {
-        	// create the JNDI initial context.
-			context = new InitialContext(props);
-            // look up the ConnectionFactory
-			TopicConnectionFactory tcf = (TopicConnectionFactory) context.lookup(props.getProperty(PROP_NAME_TOPIC_FACTORY_NAME));
-			QueueConnectionFactory qcf = (QueueConnectionFactory) context.lookup(props.getProperty(PROP_NAME_QUEUE_FACTORY_NAME));
-			 // create the connection
-			tc = tcf.createConnection();
-			qc = qcf.createConnection();
-            // create the session
-            ts = tc.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            qs = qc.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-    		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
-    			SimScript destinationScript = entry.getValue();
-    			SimLogger.getLogger().info("handle folder [" + entry.getKey() + "]");
-    			handleDestination(destinationScript);
-    		}
-        } catch (NamingException | JMSException e) {
-			throw new RuntimeException(e);
-		} finally {
-			if (context != null) {
-				try {
-					context.close();
-				} catch (NamingException e) {
-				}
+		List<SimScript> destinationScripts = new ArrayList<>();
+		
+		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
+			SimScript subScript = entry.getValue();
+			SimLogger.getLogger().info("handle folder [" + entry.getKey() + "]");
+			if (subScript.getProperty(JMSBroker.PROP_NAME_BROKER_NAME) != null) {
+				JMSBroker broker = new JMSBroker(subScript);
+				brokerMap.put(broker.getName(), broker);
+				broker.start();
+			} else if (subScript.getProperty(PROP_NAME_DESTINATION_NAME) != null) {
+				destinationScripts.add(subScript);
+			} else {
+				SimLogger.getLogger().info("skip .. folder [" + entry.getKey() + "]");
 			}
+		}
+		
+		for (SimScript destinationScript: destinationScripts) {
+			handleDestination(destinationScript);
 		}
 	}
 
 	protected void handleDestination(SimScript script) {
 		try {
-			Properties subProps = script.getProps();
-			String destName = subProps.getProperty(PROP_NAME_DESTINATION_NAME);
-			if (destName == null) {
-				throw new RuntimeException("no destination name defined");
-			}
-			String destType = subProps.getProperty(PROP_NAME_DESTINATION_TYPE);
-			String clientType = subProps.getProperty(PROP_NAME_CLIENT_TYPE);
-			Destination dest = (Destination) context.lookup(destName);
-			if (dest == null) {
-				throw new RuntimeException("can not find topic [" + destName + "]");
+			String destName = script.getMandatoryProperty(PROP_NAME_DESTINATION_NAME, "no destination name defined");
+			String destType = script.getMandatoryProperty(PROP_NAME_DESTINATION_TYPE, "no destination type defined");
+			String clientType = script.getMandatoryProperty(PROP_NAME_CLIENT_TYPE, "no destination client type defined");
+			String brokerName = script.getMandatoryProperty(PROP_NAME_DESTINATION_BROKER, "no destination broker defined");
+			JMSBroker broker = brokerMap.get(brokerName);
+			if (broker == null) {
+				throw new RuntimeException("can not find broker [" + brokerName + "]");
 			}
 			boolean handled = false;
-			if (clientType != null && clientType.contains(CLIENT_TYPE_PUB)) {
-				createProducer(destName, dest, destType);
+			if (clientType.contains(CLIENT_TYPE_PUB)) {
+				SimMessageProducer simProducer = broker.createProducer(destName, destType);
+				producerMap.put(getUnifiedDestName(brokerName, destName), simProducer);
 				handled = true;
 			} 
-			if (clientType != null && clientType.contains(CLIENT_TYPE_SUB)) {
-				createConsumer(script, destName, dest, destType);
+			if (clientType.contains(CLIENT_TYPE_SUB)) {
+				SimMessageConsumer simConsumer = broker.createConsumer(script, destName, destType);
+				simConsumer.getConsumer().setMessageListener(new SimMessageListener(script, simConsumer.getSession(), getUnifiedDestName(brokerName, destName)));
 				handled = true;
 			}
 			if (!handled) {
@@ -154,56 +140,34 @@ public class JMSSimulator extends SimSimulator {
 
 	}
 
-    protected void createProducer(String destName, Destination dest, String destType) throws JMSException {
-    	Session session = getSession(destType);
-    	producerMap.put(destName, new SimMessageProducer(session, session.createProducer(dest)));
-    	SimLogger.getLogger().info("Producer created for [" + dest + "]");
-    }
-    
-    protected void createConsumer(SimScript script, String destName, Destination dest, String destType) throws JMSException {
-    	Session session = getSession(destType);
-		MessageConsumer consumer = session.createConsumer(dest);
-		consumer.setMessageListener(new SimMessageListener(script, session, destName));
-		SimLogger.getLogger().info("Consumer created for [" + dest + "]");
-    }
-    
-    protected Session getSession(String destType) {
-    	if (DESTINATION_TYPE_TOPIC.equals(destType)) {
-    		return ts;
-		} else if (DESTINATION_TYPE_QUEUE.equals(destType)) {
-			return qs;
-		} else {
-			throw new RuntimeException("unsupported destination type [" + destType + "]");
-		}
-    }
+	public static String getUnifiedDestName(String brokerName, String destName) {
+		return destName + "@" + brokerName;
+	}
+	
+	public static String getBrokerName(String unifiedDestName) {
+		String[] parts = unifiedDestName.split("@");
+		return parts[1];
+	}
 
 	@Override
 	public void start() throws IOException {
+		boolean success = false;
 		try {
 			prepare();
-			tc.start();
-			qc.start();
-		} catch (JMSException e) {
-			throw new IOException(e);
+			this.running = true;
+			success = true;
+		} finally {
+			if (!success) {
+				stop();
+			}
 		}
-		this.running = true;
 	}
 
 	@Override
 	public void stop() {
 		SimLogger.getLogger().info("about to stop ...");
-
-		if (tc != null) {
-			try {
-				tc.close();
-			} catch (JMSException e) {
-			}
-		}
-		if (qc != null) {
-			try {
-				qc.close();
-			} catch (JMSException e) {
-			}
+		for (JMSBroker broker: brokerMap.values()) {
+			broker.stop();
 		}
 		SimLogger.getLogger().info("stopped");
 		this.running = false;
@@ -211,5 +175,6 @@ public class JMSSimulator extends SimSimulator {
 
 	@Override
 	protected void init() throws IOException {
+		super.init();
 	}
 }

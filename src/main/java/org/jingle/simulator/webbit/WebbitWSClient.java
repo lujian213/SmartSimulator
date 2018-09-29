@@ -1,11 +1,9 @@
 package org.jingle.simulator.webbit;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -13,10 +11,8 @@ import java.util.concurrent.ExecutorService;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.http.HTTPSimulator;
 import org.jingle.simulator.util.SimLogger;
-import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
-import org.webbitserver.WebSocketHandler;
 import org.webbitserver.netty.WebSocketClient;
 
 public class WebbitWSClient extends BaseWebSocketHandler {
@@ -61,7 +57,7 @@ public class WebbitWSClient extends BaseWebSocketHandler {
 		}
 	}
 
-	public void send(String msg) {
+	public void send(byte[] msg) {
 		getConnection().send(msg);
 	}
 	

@@ -11,7 +11,7 @@ public class RequestTemplateInfo extends TemplateInfo {
 		for (SimTemplate line: temp.getHeaderTemplate().values()) {
 			this.headers.add(line.toString());
 		}
-		this.body = temp.getBodyTemplate() == null ? null : temp.getBodyTemplate().toString();
+		this.body = temp.getBody() == null ? null : temp.getBody().toString();
 		this.topLine = temp.getTopLineTemplate().toString();
 	}
 
