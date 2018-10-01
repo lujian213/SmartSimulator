@@ -2,7 +2,7 @@ GET {$url}/index.html HTTP/1.1
 
 HTTP/1.1 200 OK
 Bridge: file:///$Script_Home/websocket/index.html
-Bridge.Content-Type: Text
+Content-Type: text/html
 
 ------------------------------------------------------------------
 

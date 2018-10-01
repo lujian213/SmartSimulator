@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
@@ -21,10 +22,12 @@ public class WebbitSimRequest implements SimRequest {
 	private String topLine;
 	private String[] authentications = new String[] {"", ""};
 	private String body;
+	private ReqRespConvertor convertor;
 	
-	public WebbitSimRequest(HttpRequest request, HttpResponse response) throws IOException {
+	public WebbitSimRequest(HttpRequest request, HttpResponse response, ReqRespConvertor convertor) throws IOException {
 		this.request = request;
 		this.response = response;
+		this.convertor = convertor;
 		String method = request.method();
 		String uri = request.uri();
 		String protocol = "HTTP/1.1";
@@ -70,7 +73,7 @@ public class WebbitSimRequest implements SimRequest {
 	}
 	
 	protected void genBody() throws IOException {
-		this.body = request.body();
+		this.body = convertor.rawRequestToBody(request);
 	}
 	
 	public String getTopLine() {
@@ -102,8 +105,7 @@ public class WebbitSimRequest implements SimRequest {
 		for (Map.Entry<String, Object> entry : resp.getHeaders().entrySet()) {
 			response.header(entry.getKey(), entry.getValue().toString());
 		}
-		byte[] body = resp.getBody();
-		response.content(body);
+		convertor.fillRawResponse(response, resp);
 		response.status(resp.getCode());
 		response.end();
 	}

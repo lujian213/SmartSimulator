@@ -2,6 +2,6 @@ GET {$url}/favicon.ico HTTP/1.1
 
 HTTP/1.1 200 OK
 Bridge: file:///$Script_Home/favicon.ico
-Bridge.Content-Type: Binary
+Content-Type: image/png
 
 ------------------------------------------------------------------

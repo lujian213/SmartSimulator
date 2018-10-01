@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimUtils;
 
 import io.netty.buffer.ByteBuf;
@@ -19,10 +20,12 @@ public class SocketSimRequest implements SimRequest {
 	private String topLine;
 	private Map<String, List<String>> headers = new HashMap<>();
 	private String body;
+	private ReqRespConvertor convertor;
 	
-	public SocketSimRequest(ChannelHandlerContext context, String msg) throws IOException {
+	public SocketSimRequest(ChannelHandlerContext context, ByteBuf buf, ReqRespConvertor convertor) throws IOException {
 		this.context = context;
-		this.body = msg;
+		this.convertor = convertor;
+		this.body = convertor.rawRequestToBody(buf);
 		this.topLine = "TextMessage";
 	}
 	
@@ -64,7 +67,7 @@ public class SocketSimRequest implements SimRequest {
 		byte[] body = response.getBody();
 		long length = body.length;
 		ByteBuf buf = context.alloc().buffer((int)length);
-		buf.writeBytes(body);
+		convertor.fillRawResponse(buf, response);
 		context.writeAndFlush(buf);
 	}
 

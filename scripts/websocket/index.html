@@ -3,7 +3,7 @@
 
     <!-- Send text to websocket -->
     <input id="userInput" type="text">
-    <button onclick="ws2.send(document.getElementById('userInput').value)">Send</button>
+    <button onclick="ws.send(document.getElementById('userInput').value)">Send</button>
 
     <!-- Results -->
     <div id="message"></div>
@@ -18,10 +18,6 @@
       ws.onopen = function() { showMessage('Connected!'); };
       ws.onclose = function() { showMessage('Lost connection'); };
       ws.onmessage = function(msg) { showMessage(msg.data); };
-      var ws2 = new WebSocket('wss://' + document.location.host + '/control');
-      ws2.onopen = function() {};
-      ws2.onclose = function() {};
-      ws2.onmessage = function(msg) { };
     </script>
   </body>
 </html>

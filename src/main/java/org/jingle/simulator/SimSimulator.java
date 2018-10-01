@@ -5,8 +5,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 public abstract class SimSimulator {
+	public static final String PROP_NAME_PROXY = "simulator.proxy";
+	public static final String PROP_NAME_PROXY_URL = "simulator.proxy.url";
+	public static final String PROP_NAME_MESSAGE_CONVERTOR = "simulator.messageconvertor";
+
 	protected SimScript script;
 	protected boolean running = false;
+	protected String runningURL = null;
+	protected boolean proxy;
+	protected String proxyURL;
 
 	public SimSimulator(SimScript script) throws IOException {
 		this.script = script;
@@ -16,7 +23,12 @@ public abstract class SimSimulator {
 	protected SimSimulator() {
 	}
 
-	protected abstract void init() throws IOException;
+	protected void init() throws IOException {
+		proxy = Boolean.parseBoolean(script.getProperty(PROP_NAME_PROXY));
+		if (proxy) {
+			proxyURL = script.getMandatoryProperty(PROP_NAME_PROXY_URL, "no proxy url defined");
+		}
+	}
 
 	public String getName() {
 		return script.getSimulatorName();
@@ -30,6 +42,14 @@ public abstract class SimSimulator {
 		return running;
 	}
 
+	public String getRunningURL() {
+		if (running) {
+			return runningURL;
+		} else {
+			return null;
+		}
+	}
+
 	public static SimSimulator createSimulator(SimScript script) {
 		try {
 			Class<? extends SimSimulator> clazz = script.getSimulatorClass();
@@ -40,5 +60,9 @@ public abstract class SimSimulator {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public SimScript getScript() {
+		return this.script;
 	}
 }

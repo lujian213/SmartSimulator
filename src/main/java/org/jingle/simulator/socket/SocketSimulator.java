@@ -2,13 +2,13 @@ package org.jingle.simulator.socket;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.util.Properties;
 
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -30,8 +30,7 @@ public class SocketSimulator extends SimSimulator {
 			SimLogger.setLogger(script.getLogger());
 			SimRequest request = null;
 			try {
-				String s = ((ByteBuf) msg).toString(Charset.forName("utf-8"));
-				request = new SocketSimRequest(ctx, s);
+				request = new SocketSimRequest(ctx, (ByteBuf)msg, convertor);
 				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
 				script.genResponse(request);
 	    	} catch (IOException e) {
@@ -52,8 +51,9 @@ public class SocketSimulator extends SimSimulator {
 	
 	private int port;
 	private ChannelFuture cf;
-	private EventLoopGroup bossGroup = new NioEventLoopGroup();
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+	private EventLoopGroup bossGroup = null;
+    private EventLoopGroup workerGroup = null;
+	private ReqRespConvertor convertor;
 
 	public SocketSimulator(SimScript script) throws IOException {
 		super(script);
@@ -61,34 +61,39 @@ public class SocketSimulator extends SimSimulator {
 	
 	@Override
 	protected void init() throws IOException {
-		Properties props = script.getProps();
-		port = Integer.parseInt(props.getProperty(PROP_NAME_PORT, "8080"));
+		super.init();
+		port = Integer.parseInt(script.getMandatoryProperty(PROP_NAME_PORT, "no socket port defined"));
+		convertor = SimUtils.createMessageConvertor(script, new DefualtSocketReqRespConvertor());
 	}
 
   
 	@Override
 	public void start() throws IOException {
-        try {
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
-             .channel(NioServerSocketChannel.class)
-             .childHandler(new ChannelInitializer<SocketChannel>() {
-                 @Override
-                 public void initChannel(SocketChannel ch) throws Exception {
-                     ch.pipeline().addLast(new SocketHandler());
-                 }
-             })
-             .option(ChannelOption.SO_BACKLOG, 128)          
-             .childOption(ChannelOption.SO_KEEPALIVE, true);
-            cf = b.bind(port);
-			String address = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
-			SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + address);
-			this.running = true;
-        } catch (IOException | RuntimeException e) {
-        	workerGroup.shutdownGracefully();
-        	bossGroup.shutdownGracefully();
-        	throw e;
-        }
+		if (!running) {
+			bossGroup = new NioEventLoopGroup();
+		    workerGroup = new NioEventLoopGroup();
+	        try {
+	            ServerBootstrap b = new ServerBootstrap();
+	            b.group(bossGroup, workerGroup)
+	             .channel(NioServerSocketChannel.class)
+	             .childHandler(new ChannelInitializer<SocketChannel>() {
+	                 @Override
+	                 public void initChannel(SocketChannel ch) throws Exception {
+	                     ch.pipeline().addLast(new SocketHandler());
+	                 }
+	             })
+	             .option(ChannelOption.SO_BACKLOG, 128)          
+	             .childOption(ChannelOption.SO_KEEPALIVE, true);
+	            cf = b.bind(port);
+				runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
+				SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
+				this.running = true;
+	        } catch (IOException | RuntimeException e) {
+	        	workerGroup.shutdownGracefully();
+	        	bossGroup.shutdownGracefully();
+	        	throw e;
+	        }
+		}
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.http.HTTPSimulator;
 import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -27,7 +28,9 @@ public class SimpleSimulator extends HTTPSimulator implements HttpHandler {
 	private HttpServer server;
 	
 	public SimpleSimulator(SimScript script) throws IOException {
-		super(script);
+		super(script);		
+		this.convertor = SimUtils.createMessageConvertor(script, new DefaultSimpleReqRespConvertor());
+
 	}
   
 	@Override
@@ -35,7 +38,7 @@ public class SimpleSimulator extends HTTPSimulator implements HttpHandler {
 		SimLogger.setLogger(script.getLogger());
 		SimRequest request = null;
 		try {
-			request = new SimpleSimRequest(exchange);
+			request = new SimpleSimRequest(exchange, convertor);
 			handleRequest(request);
 		} catch (Exception e) {
 			SimLogger.getLogger().error("match and fill exception", e);
@@ -76,15 +79,15 @@ public class SimpleSimulator extends HTTPSimulator implements HttpHandler {
 			});
 		}
 		server.start();
-		String address = (useSSL ? "https://" : "http://") + InetAddress.getLocalHost().getHostName() + ":" + port;
-		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + address);
+		runningURL = (useSSL ? "https://" : "http://") + InetAddress.getLocalHost().getHostName() + ":" + port;
+		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
 		this.running = true;
 	}
 
 	@Override
 	public void stop() {
 		SimLogger.getLogger().info("about to stop ...");
-		server.stop(5);
+		server.stop(0);
 		SimLogger.getLogger().info("stopped");
 		this.running = false;
 	}

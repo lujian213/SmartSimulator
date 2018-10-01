@@ -1,22 +1,14 @@
 package org.jingle.simulator;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.velocity.VelocityContext;
+import org.jingle.simulator.util.ResponseHandler;
 import org.jingle.simulator.util.SimUtils;
 
 public class SimResponse {
-	public static final String HEADER_NAME_BRIDGE = "Bridge";
-	public static final String HEADER_NAME_BRIDGE_CONTENT_TYPE = "Bridge.Content-Type";
-	public static final String BRIDGE_CONTENT_TYPE_BINARY = "Binary";
-	public static final String BRIDGE_CONTENT_TYPE_TEXT = "Text";
-	public static final String BRIDGE_CONTENT_TYPE_VM = "VM";
 	private int code;
 	private Map<String, Object> headers = new HashMap<>();
 	private byte[] body;
@@ -58,41 +50,8 @@ public class SimResponse {
 		for (Map.Entry<String, String> entry : resp.getHeaders().entrySet()) {
 			headers.put(entry.getKey(), SimUtils.mergeResult(vc, entry.getKey(), entry.getValue()));
 		}
-		
-		String tunnel = (String) headers.remove(HEADER_NAME_BRIDGE);
-		if (tunnel != null) {
-			String contentType = resp.getHeaders().get(HEADER_NAME_BRIDGE_CONTENT_TYPE);
-			byte[] bodyBytes = handleTunnelRequest(tunnel);
-			if (BRIDGE_CONTENT_TYPE_BINARY.equals(contentType)) {
-				body = bodyBytes;
-			} else if (BRIDGE_CONTENT_TYPE_TEXT.equals(contentType)) {
-				body = bodyBytes;
-			} else if (BRIDGE_CONTENT_TYPE_TEXT.equals(contentType)) {
-				body = SimUtils.mergeResult(vc, "body", handleTunnelRequest(tunnel)).getBytes();
-			} else {
-				throw new IOException ("unsupported tunnel content type: [" + contentType + "]");
-			}
-		} else {
-			body = SimUtils.mergeResult(vc, "body", resp.getBody()).getBytes();
-		}
+		body = ResponseHandler.getHandlerChain().handle(headers, vc, resp);
 		code = resp.getCode();
 	}
-	
-	protected byte[] handleTunnelRequest(String urlStr) throws IOException {
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			URL url = new URL(urlStr);
-			URLConnection conn = url.openConnection();
-			conn.connect();
-			try (BufferedInputStream bis = new BufferedInputStream(conn.getInputStream())) {
-				byte[] buffer = new byte[8 * 1024];
-				int count = -1;
-				while ((count = bis.read(buffer)) != -1) {
-					baos.write(buffer, 0, count);
-				}
-			}
-			return baos.toByteArray();
-		}
-	}
-	
 }
 
