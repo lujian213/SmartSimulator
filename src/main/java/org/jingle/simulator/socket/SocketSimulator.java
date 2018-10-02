@@ -21,6 +21,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.util.ReferenceCountUtil;
 
 public class SocketSimulator extends SimSimulator {
@@ -48,12 +49,16 @@ public class SocketSimulator extends SimSimulator {
 
 	}
 	public static final String PROP_NAME_PORT = "simulator.socket.port";
-	
+	public static final String PROP_NAME_FRAME_DELIMITERS = "simulator.socket.frame.delimiters";
+	public static final String PROP_NAME_FRAME_MAXLENGTH = "simulator.socket.frame.maxlength";
+
 	private int port;
 	private ChannelFuture cf;
 	private EventLoopGroup bossGroup = null;
     private EventLoopGroup workerGroup = null;
 	private ReqRespConvertor convertor;
+	private int frameMaxLength;
+	private ByteBuf[] delimiters;
 
 	public SocketSimulator(SimScript script) throws IOException {
 		super(script);
@@ -62,9 +67,12 @@ public class SocketSimulator extends SimSimulator {
 	@Override
 	protected void init() throws IOException {
 		super.init();
-		port = Integer.parseInt(script.getMandatoryProperty(PROP_NAME_PORT, "no socket port defined"));
+		port = script.getMandatoryIntProperty(PROP_NAME_PORT, "no socket port defined");
 		convertor = SimUtils.createMessageConvertor(script, new DefualtSocketReqRespConvertor());
+		frameMaxLength = script.getProperty(PROP_NAME_FRAME_MAXLENGTH, 8192);
+		delimiters = SimUtils.parseDelimiters(script.getProperty(PROP_NAME_FRAME_DELIMITERS, "0x0D0x0A,0x0A"));
 	}
+
 
   
 	@Override
@@ -79,6 +87,7 @@ public class SocketSimulator extends SimSimulator {
 	             .childHandler(new ChannelInitializer<SocketChannel>() {
 	                 @Override
 	                 public void initChannel(SocketChannel ch) throws Exception {
+	                	 ch.pipeline().addLast(new DelimiterBasedFrameDecoder(frameMaxLength, delimiters));
 	                     ch.pipeline().addLast(new SocketHandler());
 	                 }
 	             })

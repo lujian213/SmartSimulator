@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -40,6 +41,9 @@ import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
 import org.jingle.simulator.jms.JMSSimRequest;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 public class SimUtils {
     private static VelocityEngine ve = new VelocityEngine();
@@ -280,5 +284,22 @@ public class SimUtils {
 		} else {
 			return defaultConvertor;
 		}
+	}
+	
+	public static ByteBuf[] parseDelimiters(String delimitersStr) {
+		String parts[] = delimitersStr.split(",");
+		byte[][] ret = new byte[parts.length][];
+		for (int i = 1; i <= ret.length; i++) {
+			String[] dels = parts[i - 1].trim().split("0x");
+			ret[i - 1] = new byte[dels.length - 1];
+			for (int t = 1; t <= dels.length - 1; t++) {
+				ret[i - 1][t - 1] = new BigInteger(dels[t], 16).byteValue();
+			}
+		}
+		ByteBuf[] bb = new ByteBuf[ret.length];
+		for (int i = 1; i <= ret.length; i++) {
+			bb[i - 1] = Unpooled.wrappedBuffer(ret[i - 1]);
+		}
+		return bb;
 	}
 }

@@ -69,7 +69,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     	this.channel = channel;
     	this.script = script;
     	this.convertor = SimUtils.createMessageConvertor(script, new DefaultWebbitWSReqRespConvertor());
-		this.proxy = Boolean.parseBoolean(script.getProperty(SimSimulator.PROP_NAME_PROXY));
+		this.proxy = script.getProperty(SimSimulator.PROP_NAME_PROXY, false);
 		if (proxy) {
 			proxyURL = script.getMandatoryProperty(HTTPSimulator.PROP_NAME_PROXY_URL, "no proxy url defined");
 		}
