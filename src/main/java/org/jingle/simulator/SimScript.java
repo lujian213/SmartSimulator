@@ -221,6 +221,34 @@ public class SimScript {
 		return ret;
 	}
 
+	public int getMandatoryIntProperty(String propName, String errMsg) {
+		String ret = props.getProperty(propName);
+		if (ret == null) {
+			throw new RuntimeException(errMsg);
+		}
+		return Integer.parseInt(ret);
+	}
+
+	public boolean getProperty(String propName, boolean defaultValue) {
+		String ret = props.getProperty(propName);
+		if (ret == null) {
+			return defaultValue;
+		}
+		return Boolean.parseBoolean(ret);
+	}
+
+	public String getProperty(String propName, String defaultValue) {
+		return props.getProperty(propName, defaultValue);
+	}
+
+	public int getProperty(String propName, int defaultValue) {
+		String ret = props.getProperty(propName);
+		if (ret == null) {
+			return defaultValue;
+		}
+		return Integer.parseInt(ret);
+	}
+
 	@SuppressWarnings("unchecked")
     public Class<? extends SimSimulator> getSimulatorClass() throws ClassNotFoundException {
 		return (Class<? extends SimSimulator>) Class.forName(props.getProperty(PROP_NAME_SIMULATOR_CLASS));
