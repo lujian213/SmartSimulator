@@ -1,0 +1,1 @@
+C:\applications\jdk1.8.0_45\bin\keytool -genkeypair -alias mykeystore -keyalg RSA ¨Ckeysize 4096 -sigalg SHA256withRSA -dname "cn=jingle,ou=xxx,o=xxx,l=Shanghai,st=Shanghai,c=CN" -validity 3650 -keystore c:\temp\keystore.jks -storetype JKS -storepass password
