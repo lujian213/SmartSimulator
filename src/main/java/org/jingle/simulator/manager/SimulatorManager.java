@@ -87,7 +87,7 @@ public class SimulatorManager {
 		return new SimulatorDetail(simulator);
 	}
 
-	public void startSimulator(@SimParam("simulatorName") String name) throws IOException {
+	public String startSimulator(@SimParam("simulatorName") String name) throws IOException {
 		synchronized (simulatorMap) {
 			SimSimulator sim = simulatorMap.get(name);
 			if (sim == null) {
@@ -96,10 +96,11 @@ public class SimulatorManager {
 			if (!sim.isRunning()) {
 				sim.start();
 			}
+			return "Simulator [" + name + "] is running at " + sim.getRunningURL();
 		}
 	}
 
-	public void stopSimulator(@SimParam("simulatorName") String name) {
+	public String stopSimulator(@SimParam("simulatorName") String name) {
 		synchronized (simulatorMap) {
 			SimSimulator sim = simulatorMap.get(name);
 			if (sim == null) {
@@ -108,6 +109,7 @@ public class SimulatorManager {
 			if (sim.isRunning()) {
 				sim.stop();
 			}
+			return "Simulator [" + name + "] is stopped ";
 		}
 	}
 
