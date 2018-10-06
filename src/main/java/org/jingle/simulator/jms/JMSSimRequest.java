@@ -21,11 +21,11 @@ import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
 public class JMSSimRequest implements SimRequest {
-	public static final String HEADER_NAME_CHANNEL = "Channel";
+	public static final String HEADER_NAME_CHANNEL = "_Channel";
 	public static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
 	public static final String CHANNEL_NAME_TEMP_QUEUE = "???";
 	public static final String CHANNEL_NAME_TEMP_TOPIC = "###";
-	public static final String HEADER_NAME_MESSAGE_TYPE = "Message.Type";
+	public static final String HEADER_NAME_MESSAGE_TYPE = "_Message.Type";
 	public static final String MESSAGE_TYPE_TEXT = "Text";
 	public static final String MESSAGE_TYPE_BYTES = "Bytes";
 	

@@ -87,16 +87,16 @@ public class JMSBroker {
 	}
 	
 	protected void prepare() {
-		Properties props = script.getProps();
+		Properties props = script.getConfigAsProperties();
         try {
         	// create the JNDI initial context.
 			context = new InitialContext(props);
             // look up the ConnectionFactory
 			String tcfName = script.getProperty(PROP_NAME_TOPIC_FACTORY_NAME);
 			if (tcfName != null) {
-				TopicConnectionFactory tcf = (TopicConnectionFactory) context.lookup(props.getProperty(PROP_NAME_TOPIC_FACTORY_NAME));
-				if (props.getProperty(PROP_NAME_FACTORY_USERNAME) != null) {
-					tc = tcf.createConnection(props.getProperty(PROP_NAME_FACTORY_USERNAME), props.getProperty(PROP_NAME_FACTORY_PASSWORD));
+				TopicConnectionFactory tcf = (TopicConnectionFactory) context.lookup(script.getProperty(PROP_NAME_TOPIC_FACTORY_NAME));
+				if (script.getProperty(PROP_NAME_FACTORY_USERNAME) != null) {
+					tc = tcf.createConnection(script.getProperty(PROP_NAME_FACTORY_USERNAME), script.getProperty(PROP_NAME_FACTORY_PASSWORD));
 				} else {
 					tc = tcf.createConnection();
 				}
@@ -104,9 +104,9 @@ public class JMSBroker {
 			}
 			String qcfName = script.getProperty(PROP_NAME_QUEUE_FACTORY_NAME);
 			if (qcfName != null) {
-				QueueConnectionFactory qcf = (QueueConnectionFactory) context.lookup(props.getProperty(PROP_NAME_QUEUE_FACTORY_NAME));
-				if (props.getProperty(PROP_NAME_FACTORY_USERNAME) != null) {
-					qc = qcf.createConnection(props.getProperty(PROP_NAME_FACTORY_USERNAME), props.getProperty(PROP_NAME_FACTORY_PASSWORD));
+				QueueConnectionFactory qcf = (QueueConnectionFactory) context.lookup(script.getProperty(PROP_NAME_QUEUE_FACTORY_NAME));
+				if (script.getProperty(PROP_NAME_FACTORY_USERNAME) != null) {
+					qc = qcf.createConnection(script.getProperty(PROP_NAME_FACTORY_USERNAME), script.getProperty(PROP_NAME_FACTORY_PASSWORD));
 				} else {
 					qc = qcf.createConnection();
 				}

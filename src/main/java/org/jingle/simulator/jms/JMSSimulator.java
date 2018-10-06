@@ -87,9 +87,10 @@ public class JMSSimulator extends SimSimulator {
 	protected JMSSimulator() {
 	}
 
-	protected void prepare() throws IOException {
+	protected List<String> prepare() throws IOException {
 		producerMap = new HashMap<>();
 		List<SimScript> destinationScripts = new ArrayList<>();
+		List<String> ret = new ArrayList<>();
 		
 		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
 			SimScript subScript = entry.getValue();
@@ -106,11 +107,16 @@ public class JMSSimulator extends SimSimulator {
 		}
 		
 		for (SimScript destinationScript: destinationScripts) {
-			handleDestination(destinationScript);
+			String subDestName = handleDestination(destinationScript);
+			if (subDestName != null) {
+				ret.add(subDestName);
+			}
 		}
+		return ret;
 	}
 
-	protected void handleDestination(SimScript script) {
+	protected String handleDestination(SimScript script) {
+		String ret = null;
 		try {
 			String destName = script.getMandatoryProperty(PROP_NAME_DESTINATION_NAME, "no destination name defined");
 			String destType = script.getMandatoryProperty(PROP_NAME_DESTINATION_TYPE, "no destination type defined");
@@ -130,10 +136,12 @@ public class JMSSimulator extends SimSimulator {
 				SimMessageConsumer simConsumer = broker.createConsumer(script, destName, destType);
 				simConsumer.getConsumer().setMessageListener(new SimMessageListener(script, simConsumer.getSession(), getUnifiedDestName(brokerName, destName)));
 				handled = true;
+				ret = getUnifiedDestName(brokerName, destName);
 			}
 			if (!handled) {
 				throw new RuntimeException("unsupported client type [" + clientType + "]");
 			}
+			return ret;
 		} catch (JMSException | NamingException e) {
 			throw new RuntimeException("handle destination error", e);
 		}
@@ -153,8 +161,9 @@ public class JMSSimulator extends SimSimulator {
 	public void start() throws IOException {
 		boolean success = false;
 		try {
-			prepare();
+			List<String> subDestNameList = prepare();
 			this.running = true;
+			this.runningURL = SimUtils.concatContent(subDestNameList);
 			success = true;
 		} finally {
 			if (!success) {
@@ -171,6 +180,7 @@ public class JMSSimulator extends SimSimulator {
 		}
 		SimLogger.getLogger().info("stopped");
 		this.running = false;
+		this.runningURL = null;
 	}
 
 	@Override

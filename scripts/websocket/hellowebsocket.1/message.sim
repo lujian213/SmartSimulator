@@ -2,7 +2,7 @@ MESSAGE /hellowebsocket/1 HTTP/1.1
 
 id:{$id}
 HTTP/1.1 200 OK
-Channel_ID: $id
+_Channel_ID: $id
 
 hello $id
 
@@ -12,7 +12,7 @@ MESSAGE /hellowebsocket/1 HTTP/1.1
 
 {$id}:{$msg}
 HTTP/1.1 200 OK
-Channel: $id
+_Channel: $id
 
 message: $msg
 

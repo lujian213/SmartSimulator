@@ -1,7 +1,7 @@
 GET {$url}/jira/rest/api/2/project/21406/versions HTTP/1.1
 
 HTTP/1.1 200 OK
-Bridge: file:///$Script_Home/Jira/version.json
+_Bridge: file:///$Script_Home/Jira/version.json
 Content-Type: application/json
 
 ------------------------------------------------------------------

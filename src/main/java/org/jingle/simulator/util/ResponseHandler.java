@@ -67,8 +67,8 @@ public interface ResponseHandler {
 	}
 
 	static class BridgeResponseHandler implements ResponseHandler {
-		public static final String HEADER_NAME_BRIDGE = "Bridge";
-		public static final String HEADER_NAME_BRIDGE_TYPE = "Bridge.Type";
+		public static final String HEADER_NAME_BRIDGE = "_Bridge";
+		public static final String HEADER_NAME_BRIDGE_TYPE = "_Bridge.Type";
 		public static final String BRIDGE_TYPE_VM = "VM";
 
 		@Override
@@ -108,8 +108,8 @@ public interface ResponseHandler {
 	}
 
 	static class FunctionResponseHandler implements ResponseHandler {
-		public static final String HEADER_NAME_CLASS = "Class.Name";
-		public static final String HEADER_NAME_METHOD = "Method.Name";
+		public static final String HEADER_NAME_CLASS = "_Class.Name";
+		public static final String HEADER_NAME_METHOD = "_Method.Name";
 		private ObjectMapper objectMapper = new ObjectMapper();
 		
 		@Override

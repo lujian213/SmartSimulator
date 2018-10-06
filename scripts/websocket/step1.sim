@@ -1,8 +1,8 @@
 GET {$url}/index.html HTTP/1.1
 
 HTTP/1.1 200 OK
-Bridge: file:///$Script_Home/websocket/index.html
-Content-Type: text/html
+_Bridge: file:///$Script_Home/websocket/index.html
+_Content-Type: text/html
 
 ------------------------------------------------------------------
 

@@ -2,7 +2,7 @@ TextMessage
 
 Message {$number}
 HTTP/1.1 200 OK
-Channel: queue1
+_Channel: queue1@broker
 
 Response $number
 
