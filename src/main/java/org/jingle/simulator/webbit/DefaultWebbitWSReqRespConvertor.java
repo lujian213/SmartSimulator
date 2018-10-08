@@ -10,6 +10,8 @@ public class DefaultWebbitWSReqRespConvertor implements ReqRespConvertor {
 
 	@Override
 	public String rawRequestToBody(Object rawRequest) throws IOException {
+		if (rawRequest == null)
+			return null;
 		return new String((byte[])rawRequest);
 	}
 

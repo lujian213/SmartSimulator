@@ -79,6 +79,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		return channel;
 	}
     
+    @Override
 	public void onOpen(WebSocketConnection connection) {
 		SimLogger.setLogger(script.getLogger());
 		SimLogger.getLogger().info("on open ...");
@@ -106,6 +107,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     	}
     }
 
+	@Override
     public void onClose(WebSocketConnection connection) {
 		SimLogger.setLogger(script.getLogger());
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_CLOSE, null, convertor);
@@ -124,8 +126,15 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     	}
     }
 
+    @Override
+    public void onMessage(WebSocketConnection connection, String message) {
+    	onMessage(connection, message.getBytes());
+    }
+
+	@Override
     public void onMessage(WebSocketConnection connection, byte[] message) {
 		SimLogger.setLogger(script.getLogger());
+
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_MESSAGE, message, convertor);
     	try {
 	    	script.genResponse(request);

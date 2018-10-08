@@ -34,19 +34,19 @@ import org.jingle.simulator.util.ZipFileVisitor.ZipFileVisitorHandler;
 public class SimScript {
 	public static class TemplatePair {
 		private SimRequestTemplate req;
-		private SimResponseTemplate resp;
+		private SimResponseTemplate[] resps;
 		
-		public TemplatePair(SimRequestTemplate req, SimResponseTemplate resp) {
+		public TemplatePair(SimRequestTemplate req, SimResponseTemplate ... resps) {
 			this.req = req;
-			this.resp = resp;
+			this.resps = resps;
 		}
 
 		public SimRequestTemplate getReq() {
 			return req;
 		}
 
-		public SimResponseTemplate getResp() {
-			return resp;
+		public SimResponseTemplate[] getResps() {
+			return resps;
 		}
 	}
 	
@@ -257,8 +257,11 @@ public class SimScript {
 		List<List<String>> block = null;
 		int count = 0;
 		while ((block = loadReqResp(reader)) != null) {
-			pairList.add(new TemplatePair(new SimRequestTemplate(SimUtils.concatContent(block.get(0))), 
-					new SimResponseTemplate(SimUtils.concatContent(block.get(1)))));
+			SimResponseTemplate[] respTemplates = new SimResponseTemplate[block.size() - 1];
+			for (int i = 1; i <= block.size() - 1; i++) {
+				respTemplates[i - 1] = new SimResponseTemplate(SimUtils.concatContent(block.get(i)));
+			}
+			pairList.add(new TemplatePair(new SimRequestTemplate(SimUtils.concatContent(block.get(0))), respTemplates));
 			count++;
 		}
 		SimLogger.getLogger().info(count + " req/resp pairs loaded");
@@ -279,14 +282,7 @@ public class SimScript {
 		String line = null;
 		while ((line = reader.readLine()) != null) {
 			if (line.startsWith(RESP_START)) {
-				if (lines.size() != 0) {
-					if (lines.get(0).isEmpty()) {
-						lines.remove(0);
-					}
-				}
-				if (!lines.isEmpty()) {
-					ret.add(lines);//req
-				}
+				addLines(ret, lines);
 				lines = new ArrayList<>();
 				lines.add(line);
 			} else if (SEP_LINE.equals(line)) {
@@ -295,24 +291,30 @@ public class SimScript {
 				lines.add(line);
 			}
 		}
+		addLines(ret, lines);
 		
+		if (ret.size() == 1) {
+			throw new IOException("Last request has no response");
+		} else if (ret.size() == 0) {
+			return null;
+		} else {
+			return ret;
+		} 
+	}
+	
+	private void addLines(List<List<String>> block, List<String> lines) {
+		if (lines.size() != 0) {
+			if (lines.get(0).isEmpty()) {
+				lines.remove(0);
+			}
+		}
 		if (lines.size() != 0) {
 			if (lines.get(lines.size() - 1).isEmpty()) {
 				lines.remove(lines.size() - 1);
 			}
 		}
 		if (!lines.isEmpty()) {
-			ret.add(lines);//resp
-		}
-		
-		if (ret.size() == 1) {
-			throw new IOException("Last request has no response");
-		} else if (ret.size() == 0) {
-			return null;
-		} else if (ret.size() == 2) {
-			return ret;
-		} else {
-			throw new IOException("wrong format.");
+			block.add(lines);//resp
 		}
 	}
 	
@@ -332,7 +334,9 @@ public class SimScript {
 					allContext.put(key, config.getProperty(key));
 				}
 				allContext.putAll(context);
-				request.fillResponse(new SimResponse(allContext, pair.getResp()));
+				for (SimResponseTemplate respTemplate: pair.getResps()) {
+					request.fillResponse(new SimResponse(allContext, respTemplate));
+				}
 				return;
 			}
 		}
