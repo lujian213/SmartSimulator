@@ -20,6 +20,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -301,5 +303,10 @@ public class SimUtils {
 			bb[i - 1] = Unpooled.wrappedBuffer(ret[i - 1]);
 		}
 		return bb;
+	}
+	
+	public static String getCurrentTime(String format) {
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		return sdf.format(new Date());
 	}
 }
