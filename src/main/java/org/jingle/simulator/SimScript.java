@@ -331,7 +331,7 @@ public class SimScript {
 				Iterator<String> keyIt = config.getKeys();
 				while (keyIt.hasNext()) {
 					String key = keyIt.next();
-					allContext.put(key, config.getProperty(key));
+					allContext.put(key, config.getString(key));
 				}
 				allContext.putAll(context);
 				for (SimResponseTemplate respTemplate: pair.getResps()) {
