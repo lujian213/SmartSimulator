@@ -35,8 +35,8 @@ public abstract class HTTPSimulator extends SimSimulator {
 	@Override
 	protected void init() throws IOException {
 		super.init();
-		port = Integer.parseInt(script.getMandatoryProperty(PROP_NAME_PORT, "no http port defined"));
-		useSSL = Boolean.parseBoolean(script.getProperty(PROP_NAME_USE_SSL));
+		port = script.getMandatoryIntProperty(PROP_NAME_PORT, "no http port defined");
+		useSSL = script.getConfig().getBoolean(PROP_NAME_USE_SSL, false); 
 		if (useSSL) {
 			keystore = script.getMandatoryProperty(PROP_NAME_KEYSTORE, "no keystore defined");
 			ksPwd = script.getMandatoryProperty(PROP_NAME_KS_PASSWD, "no keystore passwd defined");

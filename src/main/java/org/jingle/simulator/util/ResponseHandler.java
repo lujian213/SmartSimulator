@@ -67,9 +67,10 @@ public interface ResponseHandler {
 	}
 
 	static class BridgeResponseHandler implements ResponseHandler {
-		public static final String HEADER_NAME_BRIDGE = "Bridge";
-		public static final String HEADER_NAME_BRIDGE_TYPE = "Bridge.Type";
+		public static final String HEADER_NAME_BRIDGE = "_Bridge";
+		public static final String HEADER_NAME_BRIDGE_TYPE = "_Bridge.Type";
 		public static final String BRIDGE_TYPE_VM = "VM";
+		public static final String CONTEXT_NAME_SIMUTILS = "SimUtils";
 
 		@Override
 		public byte[] handle(Map<String, Object> headers, VelocityContext vc, SimResponseTemplate resp) throws IOException {
@@ -80,6 +81,7 @@ public interface ResponseHandler {
 				byte[] bodyBytes = handleBridgeRequest(bridge);
 				if (MediaTypeHelper.isText(contentType)) {
 					if (BRIDGE_TYPE_VM.equals(bridgeType)) {
+						vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
 						return SimUtils.mergeResult(vc, "body", bodyBytes).getBytes();
 					}
 					return bodyBytes;
@@ -108,8 +110,8 @@ public interface ResponseHandler {
 	}
 
 	static class FunctionResponseHandler implements ResponseHandler {
-		public static final String HEADER_NAME_CLASS = "Class.Name";
-		public static final String HEADER_NAME_METHOD = "Method.Name";
+		public static final String HEADER_NAME_CLASS = "_Class.Name";
+		public static final String HEADER_NAME_METHOD = "_Method.Name";
 		private ObjectMapper objectMapper = new ObjectMapper();
 		
 		@Override

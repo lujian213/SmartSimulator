@@ -16,17 +16,21 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class SocketSimRequest implements SimRequest {
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
+	private static final String TOP_LINE_FORMAT = "%s %s";
+
 	private ChannelHandlerContext context;
 	private String topLine;
 	private Map<String, List<String>> headers = new HashMap<>();
 	private String body;
 	private ReqRespConvertor convertor;
 	
-	public SocketSimRequest(ChannelHandlerContext context, ByteBuf buf, ReqRespConvertor convertor) throws IOException {
+	public SocketSimRequest(ChannelHandlerContext context, String type, ByteBuf buf, ReqRespConvertor convertor) throws IOException {
 		this.context = context;
 		this.convertor = convertor;
 		this.body = convertor.rawRequestToBody(buf);
-		this.topLine = "TextMessage";
+		String protocol = "HTTP/1.1";
+		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, type, protocol);
+
 	}
 	
 	protected SocketSimRequest() {

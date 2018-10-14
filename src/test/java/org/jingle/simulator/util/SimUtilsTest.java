@@ -4,8 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 
 import org.junit.Test;
+
+import io.netty.buffer.ByteBuf;
 
 public class SimUtilsTest {
 
@@ -30,6 +33,18 @@ public class SimUtilsTest {
 		} catch (UnsupportedEncodingException e) {
 			fail("unexpected exception:" + e);
 		}
+	}
+	
+	@Test
+	public void testParseDelimiters() {
+		String s= "0x0D0x0A, 0x0A";
+		ByteBuf[] ret = SimUtils.parseDelimiters(s);
+		assertEquals(2, ret.length);
+		assertEquals(2, ret[0].array().length);
+		assertEquals(13, ret[0].array()[0]);
+		assertEquals(10, ret[0].array()[1]);
+		assertEquals(1, ret[1].array().length);
+		assertEquals(10, ret[1].array()[0]);
 	}
 
 }

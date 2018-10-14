@@ -24,12 +24,15 @@ public class SimulatorService {
 	}
 	
 	public void start() throws IOException {
-		List<SimSimulator> simList = sm.getAllSimulators();
-		for (SimSimulator sim: simList) {
-			if (Boolean.parseBoolean(sim.getScript().getProperty(SimScript.PROP_NAME_SIMULATOR_AUTOSTART))) {
+		sm.getAllSimulators().stream().
+		filter((sim) -> sim.getScript().getConfig().getBoolean(SimScript.PROP_NAME_SIMULATOR_AUTOSTART, false))
+		.forEach((sim) -> {
+			try {
 				sm.startSimulator(sim.getScript().getSimulatorName());
+			} catch (Exception e) {
+				logger.error("start simultor [" + sim.getName() + "] error", e);
 			}
-		}
+		});
 	}
 	
 

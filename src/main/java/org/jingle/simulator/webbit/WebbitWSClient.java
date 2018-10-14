@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
@@ -31,14 +30,10 @@ public class WebbitWSClient extends BaseWebSocketHandler {
 		this.uri = uri;
 		this.delegation = delegation;
 		this.script = script;
-		Properties props = script.getProps();
-		useSSL = Boolean.parseBoolean(props.getProperty(HTTPSimulator.PROP_NAME_USE_SSL, "false"));
+		useSSL = script.getConfig().getBoolean(HTTPSimulator.PROP_NAME_USE_SSL, false);
 		if (useSSL) {
-			keystore = props.getProperty(HTTPSimulator.PROP_NAME_KEYSTORE);
-			passwd = props.getProperty(HTTPSimulator.PROP_NAME_KS_PASSWD);
-			if (keystore == null || passwd == null) {
-				throw new RuntimeException("no keystore or keystore passwd defined");
-			}
+			keystore = script.getMandatoryProperty(HTTPSimulator.PROP_NAME_KEYSTORE, "no keystore defined");
+			passwd = script.getMandatoryProperty(HTTPSimulator.PROP_NAME_KS_PASSWD, "no keystore passwd defined");
 		}
 	}
 	

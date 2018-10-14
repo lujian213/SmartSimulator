@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.zip.ZipFile;
 
 import org.jingle.simulator.SimScript;
@@ -87,7 +88,7 @@ public class SimulatorManager {
 		return new SimulatorDetail(simulator);
 	}
 
-	public void startSimulator(@SimParam("simulatorName") String name) throws IOException {
+	public String startSimulator(@SimParam("simulatorName") String name) throws IOException {
 		synchronized (simulatorMap) {
 			SimSimulator sim = simulatorMap.get(name);
 			if (sim == null) {
@@ -96,10 +97,11 @@ public class SimulatorManager {
 			if (!sim.isRunning()) {
 				sim.start();
 			}
+			return "Simulator [" + name + "] is running at " + sim.getRunningURL();
 		}
 	}
 
-	public void stopSimulator(@SimParam("simulatorName") String name) {
+	public String stopSimulator(@SimParam("simulatorName") String name) {
 		synchronized (simulatorMap) {
 			SimSimulator sim = simulatorMap.get(name);
 			if (sim == null) {
@@ -108,6 +110,7 @@ public class SimulatorManager {
 			if (sim.isRunning()) {
 				sim.stop();
 			}
+			return "Simulator [" + name + "] is stopped ";
 		}
 	}
 
@@ -130,6 +133,27 @@ public class SimulatorManager {
 					SimLogger.getLogger().info("Simulator [" + simulator.getName() + "] loaded");
 				}
 			}
+		}
+	}
+
+	public String restartSimulator(@SimParam("simulatorName") String name) throws IOException {
+		List<SimScript> scripts = loadScripts(folder);
+		synchronized (simulatorMap) {
+			SimSimulator sim = simulatorMap.get(name);
+			if (sim != null) {
+				if (sim.isRunning()) {
+					sim.stop();
+				}
+			}
+			Optional<SimScript> opSc = scripts.stream().filter((script) -> name.equals(script.getSimulatorName())).findFirst();
+			if (!opSc.isPresent()) {
+				throw new RuntimeException("no such simulator [" + name + "]");
+			}
+			sim = SimSimulator.createSimulator(opSc.get());
+			simulatorMap.put(sim.getName(), sim);
+			sim.start();
+
+			return "Simulator [" + name + "] is running at " + sim.getRunningURL();
 		}
 	}
 }

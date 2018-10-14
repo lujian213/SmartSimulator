@@ -1,6 +1,7 @@
 package org.jingle.simulator.jms;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -21,14 +22,15 @@ import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
 public class JMSSimRequest implements SimRequest {
-	public static final String HEADER_NAME_CHANNEL = "Channel";
+	public static final String HEADER_NAME_CHANNEL = "_Channel";
 	public static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
 	public static final String CHANNEL_NAME_TEMP_QUEUE = "???";
 	public static final String CHANNEL_NAME_TEMP_TOPIC = "###";
-	public static final String HEADER_NAME_MESSAGE_TYPE = "Message.Type";
+	public static final String HEADER_NAME_MESSAGE_TYPE = "_Message.Type";
 	public static final String MESSAGE_TYPE_TEXT = "Text";
 	public static final String MESSAGE_TYPE_BYTES = "Bytes";
 	
+	private static final String[] JMS_HEADER_NAMES = {"JMSCorrelationID", "JMSDeliveryMode", "JMSDeliveryTime", "JMSDestination", "JMSExpiration", "JMSMessageID", "JMSPriority", "JMSRedelivered", "JMSReplyTo", "JMSTimestamp", "JMSType"};
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private Message message;
 	private String unifiedDestName;
@@ -88,9 +90,26 @@ public class JMSSimRequest implements SimRequest {
 				Object value = message.getObjectProperty(name);
 				headers.put(name, value);
 			}
+			headers.putAll(getMessageHeaderAsMap(message));
 		} catch (JMSException e) {
 			throw new IOException(e);
 		}
+	}
+	
+	protected Map<String, Object> getMessageHeaderAsMap(Message message) {
+		Map<String, Object> ret = new HashMap<>();
+		for (String jmsHeader: JMS_HEADER_NAMES) {
+			try {
+			Method m = Message.class.getMethod("get" + jmsHeader, new Class[0]);
+			Object value = m.invoke(message, new Object[0]);
+			if (value != null) {
+				ret.put(jmsHeader, m.invoke(message, new Object[0]));
+			}
+			} catch (Exception e) {
+				SimLogger.getLogger().error("error when get JMS headers", e);
+			}
+		}
+		return ret;
 	}
 	
 	protected void genBody() throws IOException {

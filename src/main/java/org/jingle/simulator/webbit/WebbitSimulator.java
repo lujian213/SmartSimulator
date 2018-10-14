@@ -85,5 +85,6 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 		WebbitWSHandler.closeAllConnections();
 		SimLogger.getLogger().info("stopped");
 		this.running = false;
+		this.runningURL = null;
 	}
 }

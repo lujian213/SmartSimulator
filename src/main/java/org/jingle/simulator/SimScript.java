@@ -3,22 +3,25 @@ package org.jingle.simulator;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
@@ -31,19 +34,19 @@ import org.jingle.simulator.util.ZipFileVisitor.ZipFileVisitorHandler;
 public class SimScript {
 	public static class TemplatePair {
 		private SimRequestTemplate req;
-		private SimResponseTemplate resp;
+		private SimResponseTemplate[] resps;
 		
-		public TemplatePair(SimRequestTemplate req, SimResponseTemplate resp) {
+		public TemplatePair(SimRequestTemplate req, SimResponseTemplate ... resps) {
 			this.req = req;
-			this.resp = resp;
+			this.resps = resps;
 		}
 
 		public SimRequestTemplate getReq() {
 			return req;
 		}
 
-		public SimResponseTemplate getResp() {
-			return resp;
+		public SimResponseTemplate[] getResps() {
+			return resps;
 		}
 	}
 	
@@ -62,16 +65,16 @@ public class SimScript {
 
 	private List<TemplatePair> templatePairs = new ArrayList<>();
 	private Map<String, SimScript> subScripts = new HashMap<>();
-	private Properties props = new Properties();
+	private PropertiesConfiguration config = new PropertiesConfiguration();
 	
 	public SimScript(SimScript parent, File file) throws IOException {
-		props.putAll(parent.getProps());
+		config.copy(parent.getConfig());
 		templatePairs.addAll(parent.getTemplatePairs());
 		loadFolder(file, true); 
 	}
 	
 	public SimScript(SimScript parent, final ZipFile zf) throws IOException {
-		props.putAll(parent.getProps());
+		config.copy(parent.getConfig());
 		templatePairs.addAll(parent.getTemplatePairs());
 		ZipFileVisitorHandler<SimScript> handler = new ZipFileVisitorHandler<SimScript>() {
 
@@ -94,12 +97,13 @@ public class SimScript {
 				String name = new File(entry.getName()).getName();
 				if (name.equals(INIT_FILE)) {
 					SimLogger.getLogger().info("loadint init file [" + name + "] in [" + parent.getEntry() + "]");
-					try (InputStream is = zf.getInputStream(entry)) {
-						Properties p = new Properties();
-						p.load(is);
-						parent.getTarget().getProps().putAll(p);
-					}
-
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {
+						PropertiesConfiguration propConfig = new PropertiesConfiguration();
+						propConfig.read(reader);
+						parent.getTarget().config.copy(propConfig);
+					} catch (ConfigurationException e) {
+						throw new IOException(e);
+					} 
 				} else if (name.endsWith(SCRIPT_EXT)) {
 					SimLogger.getLogger().info("loading script file [" + name + "] in [" + parent.getEntry() + "]");
 					try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry), "utf-8"))) {
@@ -118,7 +122,7 @@ public class SimScript {
 	}
 	
 	SimScript(SimScript parent) {
-		props.putAll(parent.getProps());
+		config.copy(parent.getConfig());
 		templatePairs.addAll(parent.getTemplatePairs());
 	}
 	
@@ -185,10 +189,10 @@ public class SimScript {
 			if (file.isFile()) {
 				if (INIT_FILE.equals(file.getName())) {
 					SimLogger.getLogger().info("loadint init file [" + file.getName() + "] in [" + folder + "]");
-					try (InputStream is = new FileInputStream(file)) {
-						Properties p = new Properties();
-						p.load(is);
-						props.putAll(p);
+					try {
+						config.copy(new Configurations().properties(file));
+					} catch (ConfigurationException e) {
+						throw new IOException(e);
 					}
 				} else {
 					SimLogger.getLogger().info("loading script file [" + file + "] in [" + folder + "]");
@@ -205,29 +209,47 @@ public class SimScript {
 		SimLogger.getLogger().info("Total " + total + " req/resp pairs loaded in [" + folder + "]");
 	}
 	
-	public Properties getProps() {
+	public Properties getConfigAsProperties() {
+		Properties props = new Properties();
+		Iterator<String> keyIt = config.getKeys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			props.setProperty(key, config.getString(key));
+		}
 		return props;
 	}
 	
-	public String getProperty(String propName) {
-		return props.getProperty(propName);
+	public Configuration getConfig() {
+		return this.config;
 	}
 	
+	public String getProperty(String propName) {
+		return this.config.getString(propName);
+	}
+
 	public String getMandatoryProperty(String propName, String errMsg) {
-		String ret = props.getProperty(propName);
+		String ret = config.getString(propName);
 		if (ret == null) {
 			throw new RuntimeException(errMsg);
 		}
 		return ret;
 	}
 
+	public int getMandatoryIntProperty(String propName, String errMsg) {
+		try {
+			return config.getInt(propName);
+		} catch (Exception e) {
+			throw new RuntimeException(errMsg, e);
+		}
+	}
+
 	@SuppressWarnings("unchecked")
     public Class<? extends SimSimulator> getSimulatorClass() throws ClassNotFoundException {
-		return (Class<? extends SimSimulator>) Class.forName(props.getProperty(PROP_NAME_SIMULATOR_CLASS));
+		return (Class<? extends SimSimulator>) Class.forName(config.getString(PROP_NAME_SIMULATOR_CLASS));
 	}
 
 	public String getSimulatorName() {
-		return props.getProperty(PROP_NAME_SIMULATOR_NAME);
+		return config.getString(PROP_NAME_SIMULATOR_NAME);
 	}
 
 	protected List<TemplatePair> load(BufferedReader reader) throws IOException {
@@ -235,8 +257,11 @@ public class SimScript {
 		List<List<String>> block = null;
 		int count = 0;
 		while ((block = loadReqResp(reader)) != null) {
-			pairList.add(new TemplatePair(new SimRequestTemplate(SimUtils.concatContent(block.get(0))), 
-					new SimResponseTemplate(SimUtils.concatContent(block.get(1)))));
+			SimResponseTemplate[] respTemplates = new SimResponseTemplate[block.size() - 1];
+			for (int i = 1; i <= block.size() - 1; i++) {
+				respTemplates[i - 1] = new SimResponseTemplate(SimUtils.concatContent(block.get(i)));
+			}
+			pairList.add(new TemplatePair(new SimRequestTemplate(SimUtils.concatContent(block.get(0))), respTemplates));
 			count++;
 		}
 		SimLogger.getLogger().info(count + " req/resp pairs loaded");
@@ -257,14 +282,7 @@ public class SimScript {
 		String line = null;
 		while ((line = reader.readLine()) != null) {
 			if (line.startsWith(RESP_START)) {
-				if (lines.size() != 0) {
-					if (lines.get(0).isEmpty()) {
-						lines.remove(0);
-					}
-				}
-				if (!lines.isEmpty()) {
-					ret.add(lines);//req
-				}
+				addLines(ret, lines);
 				lines = new ArrayList<>();
 				lines.add(line);
 			} else if (SEP_LINE.equals(line)) {
@@ -273,24 +291,30 @@ public class SimScript {
 				lines.add(line);
 			}
 		}
+		addLines(ret, lines);
 		
+		if (ret.size() == 1) {
+			throw new IOException("Last request has no response");
+		} else if (ret.size() == 0) {
+			return null;
+		} else {
+			return ret;
+		} 
+	}
+	
+	private void addLines(List<List<String>> block, List<String> lines) {
+		if (lines.size() != 0) {
+			if (lines.get(0).isEmpty()) {
+				lines.remove(0);
+			}
+		}
 		if (lines.size() != 0) {
 			if (lines.get(lines.size() - 1).isEmpty()) {
 				lines.remove(lines.size() - 1);
 			}
 		}
 		if (!lines.isEmpty()) {
-			ret.add(lines);//resp
-		}
-		
-		if (ret.size() == 1) {
-			throw new IOException("Last request has no response");
-		} else if (ret.size() == 0) {
-			return null;
-		} else if (ret.size() == 2) {
-			return ret;
-		} else {
-			throw new IOException("wrong format.");
+			block.add(lines);//resp
 		}
 	}
 	
@@ -304,11 +328,15 @@ public class SimScript {
 			if (context != null) {
 				SimLogger.getLogger().info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");
 				Map<String, Object> allContext = new HashMap<>();
-				for (Map.Entry<Object, Object> entry: props.entrySet()) {
-					allContext.put((String) entry.getKey(), entry.getValue());
+				Iterator<String> keyIt = config.getKeys();
+				while (keyIt.hasNext()) {
+					String key = keyIt.next();
+					allContext.put(key, config.getString(key));
 				}
 				allContext.putAll(context);
-				request.fillResponse(new SimResponse(allContext, pair.getResp()));
+				for (SimResponseTemplate respTemplate: pair.getResps()) {
+					request.fillResponse(new SimResponse(allContext, respTemplate));
+				}
 				return;
 			}
 		}

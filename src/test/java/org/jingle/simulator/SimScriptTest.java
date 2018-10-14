@@ -97,14 +97,21 @@ public class SimScriptTest {
 				"\r\n" + 
 				"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><InternalDiscoveryActivityMessageResponse xmlns=\"http://tempuri.org/\"><InternalDiscoveryActivityMessageResult>f405be39-9ebb-4d59-a0ed-091ecdf4b667</InternalDiscoveryActivityMessageResult></InternalDiscoveryActivityMessageResponse></s:Body></s:Envelope>\r\n" + 
 				"\r\n" + 
+				"HTTP/1.1 200 OK\r\n" + 
+				"Content-Length: 324\r\n" + 
+				"Date: Mon, 13 Aug 2018 06:56:32 GMT\r\n" + 
+				"\r\n" + 
+				"<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><InternalDiscoveryActivityMessageResponse xmlns=\"http://tempuri.org/\"><InternalDiscoveryActivityMessageResult>f405be39-9ebb-4d59-a0ed-091ecdf4b667</InternalDiscoveryActivityMessageResult></InternalDiscoveryActivityMessageResponse></s:Body></s:Envelope>\r\n" + 
+				"\r\n" + 
 				"------------------------------------------------------------------\r\n"; 
 		SimScript script = new SimScript();
 		
 		try (BufferedReader reader = new BufferedReader(new StringReader(temp))) {
 			List<List<String>> blocks = script.loadReqResp(reader);
-			assertEquals(2, blocks.size());
+			assertEquals(3, blocks.size());
 			assertEquals(5, blocks.get(0).size());
 			assertEquals(5, blocks.get(1).size());
+			assertEquals(5, blocks.get(2).size());
 		} catch (IOException e) {
 			fail("unexpected exception: " + e);
 		}

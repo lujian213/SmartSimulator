@@ -13,7 +13,7 @@ public class ScriptInfo {
 	Properties props = new Properties();
 
 	public ScriptInfo(SimScript script) {
-		this.props = script.getProps();
+		this.props = script.getConfigAsProperties();
 		for (SimScript s: script.getSubScripts().values()) {
 			subScripts.add(new ScriptInfo(s));
 		}

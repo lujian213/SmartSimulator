@@ -13,8 +13,8 @@ import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.WebSocketConnection;
 
 public class WebbitWSSimRequest implements SimRequest {
-	public static final String HEADER_NAME_CHANNEL = "Channel";
-	public static final String HEADER_NAME_CHANNEL_ID = "Channel_ID";
+	public static final String HEADER_NAME_CHANNEL = "_Channel";
+	public static final String HEADER_NAME_CHANNEL_ID = "_Channel_ID";
 
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String TOP_LINE_FORMAT = "%s %s %s";

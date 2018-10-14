@@ -1,8 +1,8 @@
 GET {$url}/simulators HTTP/1.1
 
 HTTP/1.1 200 OK
-Class.Name: $className
-Method.Name: getAllSimulatorStatus
+_Class.Name: $className
+_Method.Name: getAllSimulatorStatus
 Content-Type: application/json
 
 ------------------------------------------------------------------
@@ -10,8 +10,8 @@ Content-Type: application/json
 GET {$url}/{$simulatorName}/info HTTP/1.1
 
 HTTP/1.1 200 OK
-Class.Name: $className
-Method.Name: getSimulatorInfo
+_Class.Name: $className
+_Method.Name: getSimulatorInfo
 Content-Type: application/json
 
 ------------------------------------------------------------------
@@ -19,8 +19,8 @@ Content-Type: application/json
 GET {$url}/{$simulatorName}/start HTTP/1.1
 
 HTTP/1.1 200 OK
-Class.Name: $className
-Method.Name: startSimulator
+_Class.Name: $className
+_Method.Name: startSimulator
 Content-Type: application/json
 
 ------------------------------------------------------------------
@@ -28,8 +28,8 @@ Content-Type: application/json
 GET {$url}/{$simulatorName}/stop HTTP/1.1
 
 HTTP/1.1 200 OK
-Class.Name: $className
-Method.Name: stopSimulator
+_Class.Name: $className
+_Method.Name: stopSimulator
 Content-Type: application/json
 
 ------------------------------------------------------------------
@@ -37,8 +37,17 @@ Content-Type: application/json
 GET {$url}/refresh HTTP/1.1
 
 HTTP/1.1 200 OK
-Class.Name: $className
-Method.Name: refresh
+_Class.Name: $className
+_Method.Name: refresh
+Content-Type: application/json
+
+------------------------------------------------------------------
+
+GET {$url}/{$simulatorName}/restart HTTP/1.1
+
+HTTP/1.1 200 OK
+_Class.Name: $className
+_Method.Name: restartSimulator
 Content-Type: application/json
 
 ------------------------------------------------------------------
