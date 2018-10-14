@@ -143,6 +143,11 @@ public class SimulatorManager {
 			if (sim != null) {
 				if (sim.isRunning()) {
 					sim.stop();
+					SimLogger.getLogger().info("wait for few seconds ...");
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 			Optional<SimScript> opSc = scripts.stream().filter((script) -> name.equals(script.getSimulatorName())).findFirst();

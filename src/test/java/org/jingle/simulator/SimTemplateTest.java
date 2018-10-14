@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.jingle.simulator.SimTemplate;
 import org.jingle.simulator.SimTemplate.Token;
@@ -47,6 +48,44 @@ public class SimTemplateTest {
 		assertEquals(new Token("abc", 0, 2) , tokenList.get(0));
 	}
 	
+	@Test
+	public void testParseTemplateLinet2() {
+		List<Token> tokenList = SimTemplate.parseTemplateLine("This is a complex token {$_abc_1.1-2}");
+		assertEquals(2, tokenList.size());
+		assertEquals(new Token("This is a complex token ", 0, 23), tokenList.get(0));
+		assertEquals(new Token("{$_abc_1.1-2}", "_abc_1.1-2", 24, 36) , tokenList.get(1));
+
+		tokenList = SimTemplate.parseTemplateLine("This is a complex token {$_abc_1.1-2:}");
+		assertEquals(2, tokenList.size());
+		assertEquals(new Token("This is a complex token ", 0, 23), tokenList.get(0));
+		assertEquals(new Token("{$_abc_1.1-2:}", "_abc_1.1-2", 24, 37) , tokenList.get(1));
+
+		tokenList = SimTemplate.parseTemplateLine("This is a complex token {$_abc_1.1-2:,}");
+		assertEquals(2, tokenList.size());
+		assertEquals(new Token("This is a complex token ", 0, 23), tokenList.get(0));
+		assertEquals(new Token("{$_abc_1.1-2:,}", "_abc_1.1-2", 24, 38) , tokenList.get(1));
+
+		tokenList = SimTemplate.parseTemplateLine("This is a complex token {$_abc_1.1-2:1,}");
+		assertEquals(2, tokenList.size());
+		assertEquals(new Token("This is a complex token ", 0, 23), tokenList.get(0));
+		assertEquals(new Token("{$_abc_1.1-2:1,}", "_abc_1.1-2", 24, 39, 1, -1) , tokenList.get(1));
+		
+		tokenList = SimTemplate.parseTemplateLine("This is a complex token {$_abc_1.1-2:1,3}");
+		assertEquals(2, tokenList.size());
+		assertEquals(new Token("This is a complex token ", 0, 23), tokenList.get(0));
+		assertEquals(new Token("{$_abc_1.1-2:1,3}", "_abc_1.1-2", 24, 40, 1, 3) , tokenList.get(1));
+
+		tokenList = SimTemplate.parseTemplateLine("This is a complex token {$_abc_1.1-2:,3}");
+		assertEquals(2, tokenList.size());
+		assertEquals(new Token("This is a complex token ", 0, 23), tokenList.get(0));
+		assertEquals(new Token("{$_abc_1.1-2:,3}", "_abc_1.1-2", 24, 39, -1, 3) , tokenList.get(1));
+
+		tokenList = SimTemplate.parseTemplateLine("This is a complex token {$_abc_1.1-2:3}");
+		assertEquals(2, tokenList.size());
+		assertEquals(new Token("This is a complex token ", 0, 23), tokenList.get(0));
+		assertEquals(new Token("{$_abc_1.1-2:3}", "_abc_1.1-2", 24, 38, 3, 3) , tokenList.get(1));
+	}
+
 	@Test
 	public void testTryParse() {
 		try {
@@ -116,6 +155,28 @@ public class SimTemplateTest {
 			
 			Map<String, Object> map = template.parse("GET http://APACCNSHLZN0099:443/granite/cash/SCSP/08051R9T0/figure?t=price&v=0&td=20180823&sd=20180827&valuationdate=20180823&n=100000 HTTP/1.1");
 			assertNotNull(map);
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
+
+	@Test
+	public void testParse4() {
+		try {
+			SimTemplate template = new SimTemplate("{$len:4}{$mon:3,4}+800");
+			
+			Map<String, Object> map = template.parse("0123Jul+800");
+			assertEquals(2, map.size());
+			assertEquals("0123", map.get("len"));
+			assertEquals("Jul", map.get("mon"));
+
+		
+			template = new SimTemplate("{$msg:10,}100{$msg2}");
+			
+			map = template.parse("abc100defaas100jjj");
+			assertEquals(2, map.size());
+			assertEquals("abc100defaas", map.get("msg"));
+			assertEquals("jjj", map.get("msg2"));
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}

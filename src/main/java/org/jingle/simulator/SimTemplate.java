@@ -17,13 +17,25 @@ public class SimTemplate {
 		private String name;
 		private int start;
 		private int end;
+		private int minLen = -1;
+		private int maxLen = -1;
 		
 		public Token(String text, String name, int start, int end) {
+			this(text, name, start, end, -1, -1);
+		}
+
+		public Token(String text, String name, int start, int end, int len) {
+			this(text, name, start, end, len, len);
+		}
+
+		public Token(String text, String name, int start, int end, int minLen, int maxLen) {
 			this.text = text;
 			this.name = name;
 			this.start = start;
 			this.end = end;
 			this.isVariable = true;
+			this.minLen = minLen;
+			this.maxLen = maxLen;
 		}
 
 		public Token(String text, int start, int end) {
@@ -53,11 +65,19 @@ public class SimTemplate {
 			return isVariable;
 		}
 
+		public int getMinLen() {
+			return minLen;
+		}
+
+		public int getMaxLen() {
+			return maxLen;
+		}
+
+	
 		@Override
 		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append(text + "," + name + "," + start + "," + end);
-			return sb.toString();
+			return "Token [text=" + text + ", name=" + name + ", isVariable=" + isVariable + ", start=" + start
+					+ ", end=" + end + ", minLen=" + minLen + ", maxLen=" + maxLen + "]";
 		}
 
 		@Override
@@ -66,6 +86,8 @@ public class SimTemplate {
 			int result = 1;
 			result = prime * result + end;
 			result = prime * result + (isVariable ? 1231 : 1237);
+			result = prime * result + maxLen;
+			result = prime * result + minLen;
 			result = prime * result + ((name == null) ? 0 : name.hashCode());
 			result = prime * result + start;
 			result = prime * result + ((text == null) ? 0 : text.hashCode());
@@ -85,6 +107,10 @@ public class SimTemplate {
 				return false;
 			if (isVariable != other.isVariable)
 				return false;
+			if (maxLen != other.maxLen)
+				return false;
+			if (minLen != other.minLen)
+				return false;
 			if (name == null) {
 				if (other.name != null)
 					return false;
@@ -100,9 +126,9 @@ public class SimTemplate {
 			return true;
 		}
 	}
-	
-	private static final String PATTERN_STR = "\\{\\$(\\w+)\\}";
-	private static final Pattern PATTERN = Pattern.compile(PATTERN_STR);
+
+	static final String PATTERN_STR = "\\{\\$([a-zA-Z0-9_.\\-]+)(:([0-9]*)(,([0-9]*))?)?\\}";
+	static final Pattern PATTERN = Pattern.compile(PATTERN_STR);
 	private String templateContent;
 	private List<List<Token>> allTokens = new ArrayList<>();
 	
@@ -172,12 +198,25 @@ public class SimTemplate {
 		}
 	}
 	
+	private static int getIntValue(String str) {
+		return str.isEmpty() ? -1 : Integer.parseInt(str);
+	}
+
 	protected static List<Token> parseTemplateLine(String line) {
 		List<Token> tokenList = new ArrayList<Token>();
 		Matcher matcher = PATTERN.matcher(line);
 		Token preToken = null;
 		while (matcher.find()) {
-			Token token = new Token(matcher.group(0), matcher.group(1), matcher.start(), matcher.end() - 1);
+			String minLenStr = matcher.group(3);
+			String maxLenStr = matcher.group(5);
+			Token token = null;
+			if (minLenStr == null && maxLenStr == null) {
+				token = new Token(matcher.group(0), matcher.group(1), matcher.start(), matcher.end() - 1);
+			} else if (maxLenStr == null) {
+				token = new Token(matcher.group(0), matcher.group(1), matcher.start(), matcher.end() - 1, getIntValue(matcher.group(3)));
+			} else {
+				token = new Token(matcher.group(0), matcher.group(1), matcher.start(), matcher.end() - 1, getIntValue(matcher.group(3)), getIntValue(matcher.group(5)));
+			}
 			int start = (preToken == null ? 0 : preToken.getEnd() + 1);
 			int end = token.getStart() - 1;
 			if (end >= start) {
@@ -207,7 +246,9 @@ public class SimTemplate {
 				return null;
 			return parseLine(contentLine.substring(token.getText().length()), tokenList, tokenIndex + 1);
 		} else {
-			for (int i = 0; i <= contentLine.length(); i++) {
+			int min = token.getMinLen() < 0 ? 0 : token.getMinLen();
+			int max = token.getMaxLen() < 0 ? contentLine.length() : token.getMaxLen();
+			for (int i = min; i <= max; i++) {
 				Map<String, Object> result = parseLine(contentLine.substring(i, contentLine.length()), tokenList, tokenIndex + 1);
 				if (result != null) {
 					result.put(token.getName(), contentLine.substring(0, i));
