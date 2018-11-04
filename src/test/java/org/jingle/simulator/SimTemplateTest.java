@@ -181,5 +181,48 @@ public class SimTemplateTest {
 			fail("unexpected exception:" + e);
 		}
 	}
+	
+	@Test
+	public void testParse5() {
+		try {
+			SimTemplate template = new SimTemplate("Our team has {$name}, {$name} and {$name}.");
+			
+			Map<String, Object> map = template.parse("Our team has Alex, Bruce and Chris.");
+			assertEquals(1, map.size());
+			assertEquals("Chris", map.get("name"));
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
 
+	@Test
+	public void testParse6() {
+		try {
+			SimTemplate template = new SimTemplate("Our team has {$name[]}, {$name[]} and {$name[]}.");
+			
+			Map<String, Object> map = template.parse("Our team has Alex, Bruce and Chris.");
+			assertEquals(1, map.size());
+			assertEquals("Alex", ((Object[])map.get("name"))[0]);
+			assertEquals("Bruce", ((Object[])map.get("name"))[1]);
+			assertEquals("Chris", ((Object[])map.get("name"))[2]);
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
+
+	@Test
+	public void testParse7() {
+		try {
+			SimTemplate template = new SimTemplate("Our team has {$name[]} and {$name[]}.\nTheir team has {$name[]} and {$name[]}.");
+			
+			Map<String, Object> map = template.parse("Our team has Alex and Bruce.\nTheir team has Chris and David.");
+			assertEquals(1, map.size());
+			assertEquals("Alex", ((Object[])map.get("name"))[0]);
+			assertEquals("Bruce", ((Object[])map.get("name"))[1]);
+			assertEquals("Chris", ((Object[])map.get("name"))[2]);
+			assertEquals("David", ((Object[])map.get("name"))[3]);
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
 }

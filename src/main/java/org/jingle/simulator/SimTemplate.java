@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ public class SimTemplate {
 		private String text;
 		private boolean isVariable = false;
 		private String name;
+		private boolean isArray = false;
 		private int start;
 		private int end;
 		private int minLen = -1;
@@ -29,8 +31,13 @@ public class SimTemplate {
 		}
 
 		public Token(String text, String name, int start, int end, int minLen, int maxLen) {
+			if (name.endsWith("[]")) {
+				this.name = name.substring(0, name.length() - 2);
+				this.isArray = true;
+			} else {
+				this.name = name;
+			}
 			this.text = text;
-			this.name = name;
 			this.start = start;
 			this.end = end;
 			this.isVariable = true;
@@ -47,6 +54,10 @@ public class SimTemplate {
 
 		public String getName() {
 			return name;
+		}
+
+		public boolean isArray() {
+			return isArray;
 		}
 
 		public int getStart() {
@@ -73,18 +84,12 @@ public class SimTemplate {
 			return maxLen;
 		}
 
-	
-		@Override
-		public String toString() {
-			return "Token [text=" + text + ", name=" + name + ", isVariable=" + isVariable + ", start=" + start
-					+ ", end=" + end + ", minLen=" + minLen + ", maxLen=" + maxLen + "]";
-		}
-
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + end;
+			result = prime * result + (isArray ? 1231 : 1237);
 			result = prime * result + (isVariable ? 1231 : 1237);
 			result = prime * result + maxLen;
 			result = prime * result + minLen;
@@ -104,6 +109,8 @@ public class SimTemplate {
 				return false;
 			Token other = (Token) obj;
 			if (end != other.end)
+				return false;
+			if (isArray != other.isArray)
 				return false;
 			if (isVariable != other.isVariable)
 				return false;
@@ -125,9 +132,16 @@ public class SimTemplate {
 				return false;
 			return true;
 		}
+
+		@Override
+		public String toString() {
+			return "Token [text=" + text + ", isVariable=" + isVariable + ", name=" + name + ", isArray=" + isArray
+					+ ", start=" + start + ", end=" + end + ", minLen=" + minLen + ", maxLen=" + maxLen + "]";
+		}
+
 	}
 
-	static final String PATTERN_STR = "\\{\\$([a-zA-Z0-9_.\\-]+)(:([0-9]*)(,([0-9]*))?)?\\}";
+	static final String PATTERN_STR = "\\{\\$([a-zA-Z0-9_.\\-\\[\\]]+)(:([0-9]*)(,([0-9]*))?)?\\}";
 	static final Pattern PATTERN = Pattern.compile(PATTERN_STR);
 	private String templateContent;
 	private List<List<Token>> allTokens = new ArrayList<>();
@@ -170,7 +184,8 @@ public class SimTemplate {
 			if (tokenList != null) {
 				Map<String, Object> lineResult = parseLine(contentLine, tokenList, 0);
 				if (lineResult != null) {
-					ret.putAll(lineResult);
+//					ret.putAll(lineResult);
+					merge(ret, lineResult);
 				} else {
 					ret = null;
 					break;
@@ -187,7 +202,19 @@ public class SimTemplate {
 		return ret;
 	}
 	
-
+	protected void merge(Map<String, Object> source, Map<String, Object> dest) {
+		for (Map.Entry<String, Object> entry : dest.entrySet()) {
+			Object srcValue = source.get(entry.getKey());
+			if (srcValue != null && srcValue.getClass().isArray() && entry.getValue().getClass().isArray()){
+				Object[] newValue = new Object[((Object[])srcValue).length + ((Object[])entry.getValue()).length];
+				System.arraycopy((Object[])srcValue, 0, newValue, 0, ((Object[])srcValue).length);
+				System.arraycopy((Object[])entry.getValue(), 0, newValue, ((Object[])srcValue).length, ((Object[])entry.getValue()).length);
+				source.put(entry.getKey(), newValue);
+			} else {
+				source.put(entry.getKey(), entry.getValue());
+			}
+		}
+	}
 	
 	protected void init() throws IOException {
 		try (BufferedReader reader = new BufferedReader(new StringReader(templateContent))) {
@@ -251,7 +278,22 @@ public class SimTemplate {
 			for (int i = min; i <= max; i++) {
 				Map<String, Object> result = parseLine(contentLine.substring(i, contentLine.length()), tokenList, tokenIndex + 1);
 				if (result != null) {
-					result.put(token.getName(), contentLine.substring(0, i));
+					if (!token.isArray) {
+						if (result.get(token.getName()) == null) {
+							result.put(token.getName(), contentLine.substring(0, i));
+						}
+					} else {
+						Object[] objArray = (Object[]) result.get(token.getName());
+						if (objArray == null) {
+							objArray = new Object[] {contentLine.substring(0, i)};
+						} else {
+							Object[] newArray = new Object[objArray.length + 1];
+							System.arraycopy(objArray, 0, newArray, 1, objArray.length);
+							newArray[0] = contentLine.substring(0, i);
+							objArray = newArray;
+						}
+						result.put(token.getName(), objArray);
+					}
 					return result;
 				}
 			}
