@@ -62,6 +62,11 @@ public class JMSSimRequest implements SimRequest {
 		
 	}
 	
+	@Override
+	public ReqRespConvertor getReqRespConvertor() {
+		return this.convertor;
+	}
+	
 	public Message getMessage() {
 		return this.message;
 	}

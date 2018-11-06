@@ -60,8 +60,11 @@ public interface ResponseHandler {
 	}
 	
 	static class DefaultResponseHandler implements ResponseHandler {
+		public static final String CONTEXT_NAME_SIMUTILS = "SimUtils";
+
 		@Override
 		public byte[] handle(Map<String, Object> headers, VelocityContext vc, SimResponseTemplate resp) throws IOException {
+			vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
 			return SimUtils.mergeResult(vc, "body", resp.getBody()).getBytes();
 		}
 	}

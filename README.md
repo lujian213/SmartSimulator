@@ -66,3 +66,4 @@ Request template has 3 parts: topline, headers, and payload.
 <p>Topline is one line description about the request. It is protocol specific. For example, `GET {$url}/hello/{$name} HTTP/1.1` for http protocol.</p>
 
 ### 2.2 Response Template
+

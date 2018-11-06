@@ -3,6 +3,8 @@ package org.jingle.simulator;
 import java.io.IOException;
 import java.util.List;
 
+import org.jingle.simulator.util.ReqRespConvertor;
+
 public interface SimRequest {
 	public List<String> getAllHeaderNames();
 
@@ -15,4 +17,6 @@ public interface SimRequest {
 	public String getTopLine();
 
 	public void fillResponse(SimResponse response) throws IOException; 
+	
+	public ReqRespConvertor getReqRespConvertor();
 }

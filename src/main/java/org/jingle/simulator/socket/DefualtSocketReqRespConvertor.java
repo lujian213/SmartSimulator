@@ -2,6 +2,8 @@ package org.jingle.simulator.socket;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.util.ReqRespConvertor;
@@ -24,4 +26,8 @@ public class DefualtSocketReqRespConvertor implements ReqRespConvertor {
 		((ByteBuf)rawResponse).writeBytes(simResponse.getBody());
 	}
 
+	@Override
+	public Map<String, Object> getRespContext() throws IOException {
+		return new HashMap<>();
+	}
 }

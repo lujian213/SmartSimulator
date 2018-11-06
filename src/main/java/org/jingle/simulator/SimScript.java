@@ -334,6 +334,7 @@ public class SimScript {
 					allContext.put(key, config.getString(key));
 				}
 				allContext.putAll(context);
+				allContext.putAll(request.getReqRespConvertor().getRespContext());
 				for (SimResponseTemplate respTemplate: pair.getResps()) {
 					request.fillResponse(new SimResponse(allContext, respTemplate));
 				}

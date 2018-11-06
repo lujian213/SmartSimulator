@@ -46,5 +46,4 @@ public class SimUtilsTest {
 		assertEquals(1, ret[1].array().length);
 		assertEquals(10, ret[1].array()[0]);
 	}
-
 }

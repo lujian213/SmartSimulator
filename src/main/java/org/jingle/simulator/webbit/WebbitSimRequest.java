@@ -41,6 +41,11 @@ public class WebbitSimRequest implements SimRequest {
 	}
 	
 	@Override
+	public ReqRespConvertor getReqRespConvertor() {
+		return this.convertor;
+	}
+	
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.topLine).append("\n");

@@ -39,6 +39,11 @@ public class WebbitWSSimRequest implements SimRequest {
 		
 	}
 	
+	@Override
+	public ReqRespConvertor getReqRespConvertor() {
+		return this.convertor;
+	}
+	
 	public WebSocketConnection getConnection() {
 		return connection;
 	}
