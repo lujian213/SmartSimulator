@@ -81,7 +81,7 @@ public class XPathRequestHandlerTest extends XPathRequestHandler {
 			assertEquals(3, ret.size());
 			assertEquals("XQuery Kick Start", ret.get("title"));
 			assertEquals("2005", ret.get("year"));
-			assertEquals(2, ((NodeList)ret.get("prices")).getLength());
+			assertEquals(2, ((String[])ret.get("prices")).length);
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}
@@ -140,5 +140,15 @@ public class XPathRequestHandlerTest extends XPathRequestHandler {
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}
-	}
+
+		xPathMap = new HashMap<>();
+		xPathMap.put("sendTo", new XPathExp("//ns9:citimlSendTo/text()", XPathConstants.NODESET));
+		try {
+			Map<String, Object> ret = handler.retrieveXPathValue(requestBody, xPathMap);
+			assertEquals(1, ret.size());
+			assertEquals("RIO", ((String[])ret.get("sendTo"))[0]);
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+}
 }

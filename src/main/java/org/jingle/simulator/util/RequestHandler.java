@@ -42,8 +42,9 @@ public interface RequestHandler {
 	static RequestHandlerChain inst = new RequestHandlerChain (
 			new XPathRequestHandler(),
 			new JSonPathRequestHandler(),
+			new GroovyRequestHandler(),
 			new DefaultRequestHandler()
-			);
+	);
 			
 	public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException;
 	
@@ -181,7 +182,15 @@ public interface RequestHandler {
 						SimLogger.getLogger().error("can not find value for xpath [" + entry.getValue() + "]");
 						return null;
 					}
-					ret.put(entry.getKey(), value);
+					if (entry.getValue().getType().equals(XPathConstants.NODESET)) {
+						String[] valueArray = new String[((NodeList)value).getLength()];
+						for (int i = 1; i <= valueArray.length; i++) {
+							valueArray[i - 1] = ((NodeList)value).item(i - 1).getTextContent();
+						}
+						ret.put(entry.getKey(), valueArray);
+					} else {
+						ret.put(entry.getKey(), value);
+					}
 				}
 				return ret;
 			} catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
@@ -212,7 +221,19 @@ public interface RequestHandler {
 					SimLogger.getLogger().error("can not find value for path [" + entry.getValue() + "]");
 					return null;
 				}
-				ret.put(entry.getKey(), value);
+				if (entry.getValue().getType().equals(XPathConstants.NODESET)) {
+					Object[] valueArray = new String[((JSONArray)value).size()];
+					for (int i = 1; i <= valueArray.length; i++) {
+						valueArray[i - 1] = ((JSONArray)value).get(i - 1);
+					}
+					ret.put(entry.getKey(), valueArray);
+				} else {
+					if (value instanceof JSONArray) {
+						ret.put(entry.getKey(), ((JSONArray)value).get(0));
+					} else {
+						ret.put(entry.getKey(), value);
+					}
+				}
 			}
 			return ret;
 		}

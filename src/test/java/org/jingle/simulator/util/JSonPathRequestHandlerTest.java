@@ -61,10 +61,20 @@ public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 		try {
 			ret = handler.retrievePathValue(requestBody, pathMap);
 			assertEquals(1, ret.size());
-			assertEquals("J. R. R. Tolkien", ((JSONArray)ret.get("author")).get(0));
+			assertEquals("J. R. R. Tolkien", ((String[])ret.get("author"))[0]);
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}
-	}
+
+		pathMap = new HashMap<>();
+		pathMap.put("author", new XPathExp("$.store.book[?(@.price>20)].author", XPathConstants.STRING));
+		try {
+			ret = handler.retrievePathValue(requestBody, pathMap);
+			assertEquals(1, ret.size());
+			assertEquals("J. R. R. Tolkien", ret.get("author"));
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+}
 
 }
