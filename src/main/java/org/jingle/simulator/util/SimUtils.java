@@ -20,6 +20,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -308,5 +309,29 @@ public class SimUtils {
 	public static String getCurrentTime(String format) {
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
 		return sdf.format(new Date());
+	}
+
+	public static String transformTime(String format1, String strTime, String format2) {
+		SimpleDateFormat sdf1 = new SimpleDateFormat(format1);
+		SimpleDateFormat sdf2 = new SimpleDateFormat(format2);
+		try {
+			return sdf2.format(sdf1.parse(strTime));
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static String transformTime(String format, Date date) {
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		return sdf.format(date);
+	}
+
+	public static Date transformTime(String format, String strTime) {
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		try {
+			return sdf.parse(strTime);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

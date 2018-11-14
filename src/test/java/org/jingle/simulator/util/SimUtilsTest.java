@@ -5,6 +5,8 @@ import static org.junit.Assert.fail;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.junit.Test;
 
@@ -45,5 +47,11 @@ public class SimUtilsTest {
 		assertEquals(10, ret[0].array()[1]);
 		assertEquals(1, ret[1].array().length);
 		assertEquals(10, ret[1].array()[0]);
+	}
+
+	@Test
+	public void testTransformTime() {
+		String s= "20180823";
+		assertEquals("2018-08-23T00:00:00", SimUtils.transformTime("yyyyMMdd", s, "yyyy-MM-dd'T'HH:mm:ss"));
 	}
 }
