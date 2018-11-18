@@ -61,7 +61,7 @@ public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 		try {
 			ret = handler.retrievePathValue(requestBody, pathMap);
 			assertEquals(1, ret.size());
-			assertEquals("J. R. R. Tolkien", ((String[])ret.get("author"))[0]);
+			assertEquals("J. R. R. Tolkien", ((Object[])ret.get("author"))[0]);
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}
@@ -75,6 +75,26 @@ public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}
-}
+
+		pathMap = new HashMap<>();
+		pathMap.put("price", new XPathExp("$.store.book[?(@.price>20)].price", XPathConstants.STRING));
+		try {
+			ret = handler.retrievePathValue(requestBody, pathMap);
+			assertEquals(1, ret.size());
+			assertEquals(22.99, ret.get("price"));
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+
+		pathMap = new HashMap<>();
+		pathMap.put("price", new XPathExp("$.store.book[?(@.author=='J. R. R. Tolkien')].price", XPathConstants.NODESET));
+		try {
+			ret = handler.retrievePathValue(requestBody, pathMap);
+			assertEquals(1, ret.size());
+			assertEquals(1, ((Object[])ret.get("price")).length);
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
 
 }

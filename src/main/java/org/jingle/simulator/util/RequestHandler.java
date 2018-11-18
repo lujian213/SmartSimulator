@@ -222,11 +222,15 @@ public interface RequestHandler {
 					return null;
 				}
 				if (entry.getValue().getType().equals(XPathConstants.NODESET)) {
-					Object[] valueArray = new String[((JSONArray)value).size()];
-					for (int i = 1; i <= valueArray.length; i++) {
-						valueArray[i - 1] = ((JSONArray)value).get(i - 1);
+					if (value instanceof JSONArray) {
+						Object[] valueArray = new Object[((JSONArray)value).size()];
+						for (int i = 1; i <= valueArray.length; i++) {
+							valueArray[i - 1] = ((JSONArray)value).get(i - 1);
+						}
+						ret.put(entry.getKey(), valueArray);
+					} else {
+						ret.put(entry.getKey(), new Object[] {value});
 					}
-					ret.put(entry.getKey(), valueArray);
 				} else {
 					if (value instanceof JSONArray) {
 						ret.put(entry.getKey(), ((JSONArray)value).get(0));

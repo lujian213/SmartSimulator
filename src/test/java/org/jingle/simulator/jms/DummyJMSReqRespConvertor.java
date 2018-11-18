@@ -1,11 +1,9 @@
 package org.jingle.simulator.jms;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.jms.JMSException;
 import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.util.ReqRespConvertor;
@@ -35,10 +33,5 @@ public class DummyJMSReqRespConvertor implements ReqRespConvertor {
 		} catch (JMSException e) {
 			throw new IOException("error when doing response convert", e);
 		}
-	}
-
-	@Override
-	public Map<String, Object> getRespContext() throws IOException {
-		return new HashMap<>();
 	}
 }
