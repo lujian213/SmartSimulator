@@ -2,11 +2,8 @@ package org.jingle.simulator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.jingle.simulator.manager.SimulatorManager;
-import org.jingle.simulator.util.BeanRepository;
 import org.jingle.simulator.util.SimLogger;
 
 public class SimulatorService {
@@ -15,20 +12,19 @@ public class SimulatorService {
 	static {
 		SimLogger.setLogger(logger);
 	}
-	private SimulatorManager sm;
+	private SimulatorRepository sr;
 	
 	
 	public SimulatorService(File folder) throws IOException {
-		sm = new SimulatorManager(folder);
-		BeanRepository.getInstance().addBean(sm);
+		sr = new SimulatorRepository(folder);
 	}
 	
 	public void start() throws IOException {
-		sm.getAllSimulators().stream().
+		sr.getAllSimulators().stream().
 		filter((sim) -> sim.getScript().getConfig().getBoolean(SimScript.PROP_NAME_SIMULATOR_AUTOSTART, false))
 		.forEach((sim) -> {
 			try {
-				sm.startSimulator(sim.getScript().getSimulatorName());
+				sr.startSimulator(sim.getScript().getSimulatorName());
 			} catch (Exception e) {
 				logger.error("start simultor [" + sim.getName() + "] error", e);
 			}

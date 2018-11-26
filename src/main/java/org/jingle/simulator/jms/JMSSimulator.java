@@ -174,6 +174,7 @@ public class JMSSimulator extends SimSimulator {
 
 	@Override
 	public void stop() {
+		super.stop();
 		SimLogger.getLogger().info("about to stop ...");
 		for (JMSBroker broker: brokerMap.values()) {
 			broker.stop();

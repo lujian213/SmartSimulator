@@ -80,6 +80,7 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 
 	@Override
 	public void stop() {
+		super.stop();
 		SimLogger.getLogger().info("about to stop");
 		webServer.stop();
 		WebbitWSHandler.closeAllConnections();

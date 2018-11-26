@@ -97,4 +97,21 @@ public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 		}
 	}
 
+	
+	@Test
+	public void test2() {
+		JSonPathRequestHandler handler = new JSonPathRequestHandler();
+		String requestBody = "[\"p1\",\"p2\",\"p3\"]";
+		Map<String, XPathExp> pathMap = new HashMap<>();
+		pathMap.put("ids", new XPathExp("$[*]", XPathConstants.NODESET));
+		Map<String, Object> ret;
+		try {
+			ret = handler.retrievePathValue(requestBody, pathMap);
+			assertEquals(1, ret.size());
+			assertEquals(3, ((Object[])ret.get("ids")).length);
+			assertEquals("p1", ((Object[])ret.get("ids"))[0]);
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
 }

@@ -123,6 +123,9 @@ public interface ResponseHandler {
 			String methodName = (String) headers.remove(HEADER_NAME_METHOD);
 			String contentType = (String) headers.get(HEADER_NAME_CONTENT_TYPE);
 			if (className != null) {
+				for (Map.Entry<String, Object> entry: headers.entrySet()) {
+					vc.put(entry.getKey(), entry.getValue());
+				}
 				Object result = BeanRepository.getInstance().invoke(className, methodName, vc);
 				if (result != null) {
 					if (contentType != null && contentType.contains(MediaType.APPLICATION_JSON)) {

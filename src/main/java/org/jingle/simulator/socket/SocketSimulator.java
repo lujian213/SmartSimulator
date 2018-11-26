@@ -211,6 +211,7 @@ public class SocketSimulator extends SimSimulator {
 
 	@Override
 	public void stop() {
+		super.stop();
 		SimLogger.getLogger().info("about to stop ...");
         try {
         	if (cf != null) {

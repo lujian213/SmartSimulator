@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import org.jingle.simulator.util.BeanRepository;
+
 public abstract class SimSimulator {
 	public static final String PROP_NAME_PROXY = "simulator.proxy";
 	public static final String PROP_NAME_PROXY_URL = "simulator.proxy.url";
@@ -36,7 +38,9 @@ public abstract class SimSimulator {
 
 	public abstract void start() throws IOException;
 
-	public abstract void stop();
+	public void stop() {
+		BeanRepository.getInstance().removeSimulatorBeans(getName());
+	}
 
 	public boolean isRunning() {
 		return running;
