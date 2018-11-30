@@ -5,6 +5,10 @@
     <artifactId>SmartSimulator</artifactId>
     <version>0.0.9</version>
     <packaging>jar</packaging>
+    <properties>
+	    <maven.compiler.source>1.8</maven.compiler.source>
+	    <maven.compiler.target>1.8</maven.compiler.target>
+  	</properties>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.webbitserver/webbit -->
         <dependency>
@@ -121,6 +125,5 @@
 		    <artifactId>commons-beanutils</artifactId>
 		    <version>1.9.3</version>
 		</dependency>
-		
     </dependencies>
 </project>
