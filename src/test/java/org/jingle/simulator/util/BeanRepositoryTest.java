@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.apache.velocity.VelocityContext;
 import org.jingle.simulator.SimScript;
+import org.jingle.simulator.util.FunctionBean.FunctionContext;
 import org.jingle.simulator.util.function.SimConstructor;
 import org.jingle.simulator.util.function.SimParam;
 import org.jingle.simulator.util.function.SimulatorListener;
@@ -124,13 +125,13 @@ public class BeanRepositoryTest {
 		VelocityContext vc = new VelocityContext();
 		vc.put("num", "101");
 		vc.put(SimScript.PROP_NAME_SIMULATOR_NAME, "dummy");
-		C7 c7Inst = (C7)BeanRepository.getInstance().addBean(BeanRepositoryTest.C7.class, vc);
-		assertEquals(101, c7Inst.getNum());
+		FunctionBean c7Inst = BeanRepository.getInstance().addBean(BeanRepositoryTest.C7.class, vc);
+		assertEquals(101, ((C7)c7Inst.getBean()).getNum());
 		assertEquals(1, BeanRepository.getInstance().beanMap.size());
 		assertEquals(1, BeanRepository.getInstance().beanMap.get("dummy").size());
 		BeanRepository.getInstance().removeSimulatorBeans("dummy");
 		assertEquals(0, BeanRepository.getInstance().beanMap.size());
-		assertEquals(200, c7Inst.getNum());
+		assertEquals(200, ((C7)c7Inst.getBean()).getNum());
 	}
 
 }

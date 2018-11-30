@@ -11,6 +11,9 @@ import javax.xml.xpath.XPathConstants;
 import org.jingle.simulator.util.RequestHandler.JSonPathRequestHandler;
 import org.junit.Test;
 
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
+
 import net.minidev.json.JSONArray;
 
 public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
@@ -110,6 +113,27 @@ public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 			assertEquals(1, ret.size());
 			assertEquals(3, ((Object[])ret.get("ids")).length);
 			assertEquals("p1", ((Object[])ret.get("ids"))[0]);
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
+
+	@Test
+	public void test3() {
+		JSonPathRequestHandler handler = new JSonPathRequestHandler();
+		String requestBody = "{\r\n" + 
+				"  \"key1\" : \"value1\",\r\n" + 
+				"  \"key2\" : \"value2\"\r\n" + 
+				"}";
+		Map<String, XPathExp> pathMap = new HashMap<>();
+		pathMap.put("root", new XPathExp("$", XPathConstants.NODESET));
+		Map<String, Object> ret;
+		try {
+			ret = handler.retrievePathValue(requestBody, pathMap);
+			System.out.println(ret);
+			assertEquals(1, ret.size());
+//			assertEquals(3, ((Object[])ret.get("ids")).length);
+//			assertEquals("p1", ((Object[])ret.get("ids"))[0]);
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}

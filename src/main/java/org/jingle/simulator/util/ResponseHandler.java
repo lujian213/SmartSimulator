@@ -115,7 +115,6 @@ public interface ResponseHandler {
 	static class FunctionResponseHandler implements ResponseHandler {
 		public static final String HEADER_NAME_CLASS = "_Class.Name";
 		public static final String HEADER_NAME_METHOD = "_Method.Name";
-		private ObjectMapper objectMapper = new ObjectMapper();
 		
 		@Override
 		public byte[] handle(Map<String, Object> headers, VelocityContext vc, SimResponseTemplate resp) throws IOException {
@@ -129,7 +128,8 @@ public interface ResponseHandler {
 				Object result = BeanRepository.getInstance().invoke(className, methodName, vc);
 				if (result != null) {
 					if (contentType != null && contentType.contains(MediaType.APPLICATION_JSON)) {
-						return objectMapper.writeValueAsBytes(result);
+						FunctionBean bean = BeanRepository.getInstance().addBean(className, vc);
+						return bean.getContext().getObjectMapper().writeValueAsBytes(result);
 					} else if (MediaTypeHelper.isText(contentType) && result instanceof String) {
 						return ((String)result).getBytes();
 					} else {

@@ -16,7 +16,7 @@ import org.jingle.simulator.util.function.SimulatorListener;
 public class BeanRepository {
 	private static BeanRepository repository = new BeanRepository();
 	
-	Map<String, Map<String,Object>> beanMap = new HashMap<>();
+	Map<String, Map<String,FunctionBean>> beanMap = new HashMap<>();
 	
 	public static BeanRepository getInstance() {
 		return repository;
@@ -45,25 +45,29 @@ public class BeanRepository {
 		}
 	}
 	
-	public Object addBean(Class<?> clazz, VelocityContext vc) {
+	public FunctionBean addBean(Class<?> clazz, VelocityContext vc) {
 		String simulatorName = (String) vc.get(SimScript.PROP_NAME_SIMULATOR_NAME);
-		Object obj = null;
+		FunctionBean bean = null;
 		synchronized (beanMap) {
-			Map<String, Object> simMap = beanMap.get(simulatorName);
+			Map<String, FunctionBean> simMap = beanMap.get(simulatorName);
 			if (simMap == null) {
 				simMap = new HashMap<>();
 				beanMap.put(simulatorName, simMap);
 			}
-			obj = simMap.get(clazz.getName());
-			if (obj == null) {
-				obj = createInstance(clazz, vc);
-				simMap.put(clazz.getName(), obj);
+			bean = simMap.get(clazz.getName());
+			if (bean == null) {
+				Object obj = createInstance(clazz, vc);
+				bean = new FunctionBean(obj);
+				if (obj instanceof SimulatorListener) {
+					((SimulatorListener)obj).onCreate(simulatorName, bean.getContext());
+				}
+				simMap.put(clazz.getName(), bean);
 			}
 		}
-		return obj;
+		return bean;
 	}
 
-	public Object addBean(String className, VelocityContext vc) {
+	public FunctionBean addBean(String className, VelocityContext vc) {
 		try {
 			return addBean(Class.forName(className), vc);
 		} catch (ClassNotFoundException e) {
@@ -72,14 +76,14 @@ public class BeanRepository {
 	}
 	
 	public void removeSimulatorBeans(String simulatorName) {
-		Map<String, Object> simMap = null;
+		Map<String, FunctionBean> simMap = null;
 		synchronized (beanMap) {
 			simMap = beanMap.remove(simulatorName);
 		}
 		if (simMap != null) {
-			for (Object bean: simMap.values()) {
-				if (bean instanceof SimulatorListener) {
-					((SimulatorListener)bean).onClose(simulatorName);
+			for (FunctionBean bean: simMap.values()) {
+				if (bean.getBean() instanceof SimulatorListener) {
+					((SimulatorListener)bean.getBean()).onClose(simulatorName);
 				}
 			}
 		}
@@ -111,7 +115,7 @@ public class BeanRepository {
 		Object[] paramValues = new Object[parameters.length];
 		for (int i = 1; i <= parameters.length; i++) {
 			String paramName = getParameterName(parameters[i - 1]);
-			paramValues[i - 1] = smartValuePickup(parameters[i - 1], vc.get(paramName));
+			paramValues[i - 1] = smartValuePickup(parameters[i - 1].getType(), paramName, vc.get(paramName));
 		}
 		return paramValues;
 	}
@@ -127,117 +131,119 @@ public class BeanRepository {
 		}
 	}
 	
-	protected Object smartValuePickup(Parameter param, Object value) {
+	protected Object smartValuePickup(Class<?> paramType, String paramName, Object value) {
 		if (!(value instanceof String) && value != null) {
 			return value;
 		}
 		String valueStr = (String) value;
-		Class<?> type = param.getType();
 		try {
-		if (type == Character.class) {
-			if (valueStr != null && valueStr.length() == 1) {
-				return valueStr.charAt(0);
+			if (paramType == Character.class) {
+				if (valueStr != null && valueStr.length() == 1) {
+					return valueStr.charAt(0);
+				}
+				if (valueStr == null) {
+					return null;
+				}
 			}
-			if (valueStr == null) {
+			if (paramType == Integer.class) {
+				if (valueStr != null) {
+					return Integer.parseInt(valueStr);
+				}
 				return null;
 			}
-		}
-		if (type == Integer.class) {
-			if (valueStr != null) {
-				return Integer.parseInt(valueStr);
+			if (paramType == Long.class) {
+				if (valueStr != null) {
+					return Long.parseLong(valueStr);
+				}
+				return null;
 			}
-			return null;
-		}
-		if (type == Long.class) {
-			if (valueStr != null) {
-				return Long.parseLong(valueStr);
+			if (paramType == Byte.class) {
+				if (valueStr != null) {
+					return Byte.parseByte(valueStr);
+				}
+				return null;
 			}
-			return null;
-		}
-		if (type == Byte.class) {
-			if (valueStr != null) {
-				return Byte.parseByte(valueStr);
+			if (paramType == Short.class) {
+				if (valueStr != null) {
+					return Short.parseShort(valueStr);
+				}
+				return null;
 			}
-			return null;
-		}
-		if (type == Short.class) {
-			if (valueStr != null) {
-				return Short.parseShort(valueStr);
+			if (paramType == Boolean.class) {
+				if (valueStr != null) {
+					return Boolean.parseBoolean(valueStr);
+				}
+				return null;
 			}
-			return null;
-		}
-		if (type == Boolean.class) {
-			if (valueStr != null) {
-				return Boolean.parseBoolean(valueStr);
+			if (paramType == Double.class) {
+				if (valueStr != null) {
+					return Double.parseDouble(valueStr);
+				}
+				return null;
 			}
-			return null;
-		}
-		if (type == Double.class) {
-			if (valueStr != null) {
-				return Double.parseDouble(valueStr);
+			if (paramType == Float.class) {
+				if (valueStr != null) {
+					return Float.parseFloat(valueStr);
+				}
+				return null;
 			}
-			return null;
-		}
-		if (type == Float.class) {
-			if (valueStr != null) {
-				return Float.parseFloat(valueStr);
+			if (paramType == String.class) {
+				return valueStr;
 			}
-			return null;
-		}
-		if (type == String.class) {
-			return valueStr;
-		}
-		if (type == char.class) {
-			if (valueStr != null && valueStr.length() == 1) {
-				return valueStr.charAt(0);
+			if (paramType == char.class) {
+				if (valueStr != null && valueStr.length() == 1) {
+					return valueStr.charAt(0);
+				}
 			}
-		}
-		if (type == int.class) {
-			if (valueStr != null) {
-				return Integer.parseInt(valueStr);
+			if (paramType == int.class) {
+				if (valueStr != null) {
+					return Integer.parseInt(valueStr);
+				}
 			}
-		}
-		if (type == long.class) {
-			if (valueStr != null) {
-				return Long.parseLong(valueStr);
+			if (paramType == long.class) {
+				if (valueStr != null) {
+					return Long.parseLong(valueStr);
+				}
 			}
-		}
-		if (type == byte.class) {
-			if (valueStr != null) {
-				return Byte.parseByte(valueStr);
+			if (paramType == byte.class) {
+				if (valueStr != null) {
+					return Byte.parseByte(valueStr);
+				}
 			}
-		}
-		if (type == short.class) {
-			if (valueStr != null) {
-				return Short.parseShort(valueStr);
+			if (paramType == short.class) {
+				if (valueStr != null) {
+					return Short.parseShort(valueStr);
+				}
 			}
-		}
-		if (type == boolean.class) {
-			if (valueStr != null) {
-				return Boolean.parseBoolean(valueStr);
+			if (paramType == boolean.class) {
+				if (valueStr != null) {
+					return Boolean.parseBoolean(valueStr);
+				}
 			}
-		}
-		if (type == double.class) {
-			if (valueStr != null) {
-				return Double.parseDouble(valueStr);
+			if (paramType == double.class) {
+				if (valueStr != null) {
+					return Double.parseDouble(valueStr);
+				}
 			}
-		}
-		if (type == float.class) {
-			if (valueStr != null) {
-				return Float.parseFloat(valueStr);
+			if (paramType == float.class) {
+				if (valueStr != null) {
+					return Float.parseFloat(valueStr);
+				}
 			}
-		}
+			if (paramType == Object.class) {
+				return valueStr;
+			}
 		} catch (NumberFormatException e) {
-			throw new RuntimeException("Can not use [" + valueStr + "] as parameter [" + param.getName() + "]");
+			throw new RuntimeException("Can not use [" + valueStr + "] as parameter [" + paramName + "]");
 		}
-		throw new RuntimeException("Can not use [" + valueStr + "] as parameter [" + param.getName() + "]");
+		throw new RuntimeException("Can not use [" + valueStr + "] as parameter [" + paramName + "]");
 	}
 	
 	public Object invoke(String className, String methodName, VelocityContext vc) {
-		Object obj = addBean(className, vc);
-		Method targetMethod = findMethod(obj, methodName);
+		FunctionBean bean = addBean(className, vc);
+		Method targetMethod = findMethod(bean.getBean(), methodName);
 		if (targetMethod != null) {
-			return invoke(obj, targetMethod, vc);
+			return invoke(bean.getBean(), targetMethod, vc);
 		} else {
 			throw new RuntimeException("no such method [" + methodName + "] for bean [" + className + "]");
 		}
