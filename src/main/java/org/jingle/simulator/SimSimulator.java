@@ -3,14 +3,18 @@ package org.jingle.simulator;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import org.jingle.simulator.util.BeanRepository;
+import org.jingle.simulator.util.ListenerHub;
 
-public abstract class SimSimulator {
+public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	public static final String PROP_NAME_PROXY = "simulator.proxy";
 	public static final String PROP_NAME_PROXY_URL = "simulator.proxy.url";
 	public static final String PROP_NAME_MESSAGE_CONVERTOR = "simulator.messageconvertor";
+	public static final String PROP_NAME_LISTENER = "simulator.listener";
 
+	protected ListenerHub<SimulatorListener> listenerHub = ListenerHub.createListenerHub(SimulatorListener.class);
 	protected SimScript script;
 	protected boolean running = false;
 	protected String runningURL = null;
@@ -26,6 +30,16 @@ public abstract class SimSimulator {
 	}
 
 	protected void init() throws IOException {
+		List<String> listenerClasses = script.getConfig().getList(String.class, PROP_NAME_LISTENER);
+		if (listenerClasses != null) {
+			for (String listenerClass: listenerClasses) {
+				try {
+					this.addListener((SimulatorListener) Class.forName(listenerClass).newInstance());
+				} catch (Exception e) {
+					throw new IOException("error when create simpulator listener", e);
+				}
+			}
+		}
 		proxy = Boolean.parseBoolean(script.getProperty(PROP_NAME_PROXY));
 		if (proxy) {
 			proxyURL = script.getMandatoryProperty(PROP_NAME_PROXY_URL, "no proxy url defined");
@@ -36,10 +50,13 @@ public abstract class SimSimulator {
 		return script.getSimulatorName();
 	}
 
-	public abstract void start() throws IOException;
+	public void start() throws IOException {
+		castToSimulatorListener().onStart(getName());
+	}
 
 	public void stop() {
 		BeanRepository.getInstance().removeSimulatorBeans(getName());
+		castToSimulatorListener().onStop(getName());
 	}
 
 	public boolean isRunning() {
@@ -69,4 +86,19 @@ public abstract class SimSimulator {
 	public SimScript getScript() {
 		return this.script;
 	}
+	
+	@Override
+	public void addListener(SimulatorListener listener) {
+		listenerHub.addListener(listener);
+	}
+	
+	@Override
+	public void removeListener(SimulatorListener listener) {
+		listenerHub.removeListener(listener);
+	}
+	
+	protected SimulatorListener castToSimulatorListener() {
+		return SimulatorListener.class.cast(listenerHub);
+	}
+
 }

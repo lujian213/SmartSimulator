@@ -82,6 +82,7 @@ public class SimpleSimulator extends HTTPSimulator implements HttpHandler {
 		runningURL = (useSSL ? "https://" : "http://") + InetAddress.getLocalHost().getHostName() + ":" + port;
 		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
 		this.running = true;
+		super.start();
 	}
 
 	@Override

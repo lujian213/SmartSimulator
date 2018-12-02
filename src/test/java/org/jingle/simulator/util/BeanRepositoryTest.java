@@ -7,7 +7,7 @@ import org.jingle.simulator.SimScript;
 import org.jingle.simulator.util.FunctionBean.FunctionContext;
 import org.jingle.simulator.util.function.SimConstructor;
 import org.jingle.simulator.util.function.SimParam;
-import org.jingle.simulator.util.function.SimulatorListener;
+import org.jingle.simulator.util.function.FunctionBeanListener;
 import org.junit.Test;
 
 public class BeanRepositoryTest {
@@ -73,7 +73,7 @@ public class BeanRepositoryTest {
 		}
 	}
 
-	public static class C7 implements SimulatorListener {
+	public static class C7 implements FunctionBeanListener {
 		private int num;
 		@SimConstructor
 		public C7(@SimParam("num") int num) {

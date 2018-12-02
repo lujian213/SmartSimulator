@@ -11,7 +11,7 @@ import org.apache.velocity.VelocityContext;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.util.function.SimConstructor;
 import org.jingle.simulator.util.function.SimParam;
-import org.jingle.simulator.util.function.SimulatorListener;
+import org.jingle.simulator.util.function.FunctionBeanListener;
 
 public class BeanRepository {
 	private static BeanRepository repository = new BeanRepository();
@@ -58,8 +58,8 @@ public class BeanRepository {
 			if (bean == null) {
 				Object obj = createInstance(clazz, vc);
 				bean = new FunctionBean(obj);
-				if (obj instanceof SimulatorListener) {
-					((SimulatorListener)obj).onCreate(simulatorName, bean.getContext());
+				if (obj instanceof FunctionBeanListener) {
+					((FunctionBeanListener)obj).onCreate(simulatorName, bean.getContext());
 				}
 				simMap.put(clazz.getName(), bean);
 			}
@@ -82,8 +82,8 @@ public class BeanRepository {
 		}
 		if (simMap != null) {
 			for (FunctionBean bean: simMap.values()) {
-				if (bean.getBean() instanceof SimulatorListener) {
-					((SimulatorListener)bean.getBean()).onClose(simulatorName);
+				if (bean.getBean() instanceof FunctionBeanListener) {
+					((FunctionBeanListener)bean.getBean()).onClose(simulatorName);
 				}
 			}
 		}

@@ -201,6 +201,7 @@ public class SocketSimulator extends SimSimulator {
 				runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
 				SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
 				this.running = true;
+				super.start();
 	        } catch (IOException | RuntimeException e) {
 	        	workerGroup.shutdownGracefully();
 	        	bossGroup.shutdownGracefully();

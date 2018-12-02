@@ -165,6 +165,7 @@ public class JMSSimulator extends SimSimulator {
 			this.running = true;
 			this.runningURL = SimUtils.concatContent(subDestNameList);
 			success = true;
+			super.start();
 		} finally {
 			if (!success) {
 				stop();

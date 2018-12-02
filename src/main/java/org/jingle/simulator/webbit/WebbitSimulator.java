@@ -64,6 +64,7 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
         this.runningURL = (useSSL ? "https" : "http") + "://" + uri.getHost() + ":" + uri.getPort();
         SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
         this.running = true;
+        super.start();
 	}
 	
 	@Override
