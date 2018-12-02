@@ -1,6 +1,7 @@
 package org.jingle.simulator.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,11 +11,6 @@ import javax.xml.xpath.XPathConstants;
 
 import org.jingle.simulator.util.RequestHandler.JSonPathRequestHandler;
 import org.junit.Test;
-
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.JsonPath;
-
-import net.minidev.json.JSONArray;
 
 public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 

@@ -1,13 +1,14 @@
 package org.jingle.simulator.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import org.apache.velocity.VelocityContext;
 import org.jingle.simulator.SimScript;
-import org.jingle.simulator.util.FunctionBean.FunctionContext;
+import org.jingle.simulator.util.function.FunctionBeanListener;
 import org.jingle.simulator.util.function.SimConstructor;
 import org.jingle.simulator.util.function.SimParam;
-import org.jingle.simulator.util.function.FunctionBeanListener;
 import org.junit.Test;
 
 public class BeanRepositoryTest {

@@ -3,12 +3,12 @@ package org.jingle.simulator.util;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.jingle.simulator.SimulatorListener;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-class ListenerHubTest {
+public class ListenerHubTest {
 
 	@Test
-	void test1() {
+	public void test1() {
 		ListenerHub<SimulatorListener> inst = ListenerHub.createListenerHub(SimulatorListener.class);
 		assertTrue(inst instanceof SimulatorListener);
 		System.out.println(inst.getClass());
