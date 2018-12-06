@@ -322,7 +322,7 @@ public class SimScript {
 		return subScripts;
 	}
 	
-	public void genResponse(SimRequest request) throws IOException {
+	public List<SimResponse> genResponse(SimRequest request) throws IOException {
 		for (TemplatePair pair: templatePairs) {
 			Map<String, Object> context = pair.getReq().match(request);
 			if (context != null) {
@@ -335,10 +335,13 @@ public class SimScript {
 				}
 				allContext.putAll(context);
 				allContext.putAll(request.getReqRespConvertor().getRespContext());
+				List<SimResponse> ret = new ArrayList<>();
 				for (SimResponseTemplate respTemplate: pair.getResps()) {
-					request.fillResponse(new SimResponse(allContext, respTemplate));
+					SimResponse response = new SimResponse(allContext, respTemplate);
+					request.fillResponse(response);
+					ret.add(response);
 				}
-				return;
+				return ret;
 			}
 		}
 		msgLogger.info(request);

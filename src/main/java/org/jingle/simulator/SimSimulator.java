@@ -3,7 +3,6 @@ package org.jingle.simulator;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 import org.jingle.simulator.util.BeanRepository;
 import org.jingle.simulator.util.ListenerHub;
@@ -30,11 +29,11 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	}
 
 	protected void init() throws IOException {
-		List<String> listenerClasses = script.getConfig().getList(String.class, PROP_NAME_LISTENER);
-		if (listenerClasses != null) {
-			for (String listenerClass: listenerClasses) {
+		String listenerStr = script.getProperty(PROP_NAME_LISTENER);
+		if (listenerStr != null) {
+			for (String listenerClass: listenerStr.split(",")) {
 				try {
-					this.addListener((SimulatorListener) Class.forName(listenerClass).newInstance());
+					this.addListener((SimulatorListener) Class.forName(listenerClass.trim()).newInstance());
 				} catch (Exception e) {
 					throw new IOException("error when create simpulator listener", e);
 				}

@@ -9,8 +9,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
+import org.jingle.simulator.SimulatorListener;
 import org.jingle.simulator.http.HTTPSimulator;
 import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
@@ -59,13 +61,17 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 	private final static String TYPE_MESSAGE = "MESSAGE";
 	private static List<ConnectionWithDelegator> bundles = new ArrayList<>();
     
-    private String channel;
+	private WebbitSimulator simulator;
+	private SimulatorListener simulatorListener;
+	private String channel;
     private SimScript script;
 	protected boolean proxy;
 	protected String proxyURL;
 	private ReqRespConvertor convertor;
     
-    public WebbitWSHandler(String channel, SimScript script) {
+    public WebbitWSHandler(WebbitSimulator simulator, SimulatorListener simulatorListener, String channel, SimScript script) {
+    	this.simulator = simulator;
+    	this.simulatorListener = simulatorListener;
     	this.channel = channel;
     	this.script = script;
     	this.convertor = SimUtils.createMessageConvertor(script, new DefaultWebbitWSReqRespConvertor());
@@ -84,8 +90,9 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		SimLogger.setLogger(script.getLogger());
 		SimLogger.getLogger().info("on open ...");
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_OPEN, null, convertor);
+		List<SimResponse> respList = new ArrayList<>();
     	try {
-	    	script.genResponse(request);
+    		respList = script.genResponse(request);
 	    	addConnection(new ConnectionWithDelegator(connection));
     	} catch (Exception e) {
 			if (proxy) {
@@ -96,6 +103,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 					WebbitWSClient wsClient = new WebbitWSClient(uri, connection, script);
 					wsClient.start();
 			    	addConnection(new ConnectionWithDelegator(connection, wsClient));
+					respList.add(new SimResponse("Unknown due to proxy mechanism"));
 				} catch (IOException | URISyntaxException e1) {
 					SimLogger.getLogger().error("proxy error", e1);
 				}
@@ -104,6 +112,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 			}
     	} finally {
     		handleIDChange(request);
+    		simulatorListener.onHandleMessage(simulator.getName(), request, respList, !respList.isEmpty());
     	}
     }
 
@@ -111,18 +120,21 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     public void onClose(WebSocketConnection connection) {
 		SimLogger.setLogger(script.getLogger());
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_CLOSE, null, convertor);
+		List<SimResponse> respList = new ArrayList<>();
     	try {
-	    	script.genResponse(request);
+	    	respList = script.genResponse(request);
     	} catch (IOException e) {
 			if (proxy) {
 				WebbitWSClient wsClient = findDelegator(connection);
 				wsClient.stop();
+				respList.add(new SimResponse("Unknown due to proxy mechanism"));
 			} else {
 				SimLogger.getLogger().error("error when close WS [" + channel + "]", e);
 			}
     	} finally {
     		removeConnection(connection);
     		connection.close();
+    		simulatorListener.onHandleMessage(simulator.getName(), request, respList, !respList.isEmpty());
     	}
     }
 
@@ -136,17 +148,20 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		SimLogger.setLogger(script.getLogger());
 
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_MESSAGE, message, convertor);
+		List<SimResponse> respList = new ArrayList<>();
     	try {
-	    	script.genResponse(request);
+	    	respList = script.genResponse(request);
     	} catch (Exception e) {
 			if (proxy) {
 				WebbitWSClient wsClient = findDelegator(connection);
 				wsClient.send(message);
+				respList.add(new SimResponse("Unknown due to proxy mechanism"));
 			} else {
 	    		SimLogger.getLogger().error("error when handle message in WS [" + channel + "]", e);
 			}
     	} finally {
     		handleIDChange(request);
+    		simulatorListener.onHandleMessage(simulator.getName(), request, respList, !respList.isEmpty());
     	}
     }
 

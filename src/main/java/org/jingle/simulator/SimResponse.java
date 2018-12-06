@@ -17,10 +17,15 @@ public class SimResponse {
 		generate(context, response);
 	}
 
-	public SimResponse(int code, Map<String, Object> headers, byte[] body) throws IOException {
+	public SimResponse(int code, Map<String, Object> headers, byte[] body) {
 		this.code = code;
 		this.headers = headers;
 		this.body = body;
+	}
+
+	public SimResponse(String message) {
+		this.code = 200;
+		this.body = message.getBytes();
 	}
 
 	public int getCode() {

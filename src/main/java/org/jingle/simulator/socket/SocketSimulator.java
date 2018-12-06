@@ -3,8 +3,11 @@ package org.jingle.simulator.socket;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
 import org.jingle.simulator.util.ReqRespConvertor;
@@ -34,20 +37,23 @@ public class SocketSimulator extends SimSimulator {
 	    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 			SimLogger.setLogger(script.getLogger());
 			SimRequest request = null;
+			List<SimResponse> respList = new ArrayList<>();
 			try {
 				request = new SocketSimRequest(ctx, TYPE_MESSAGE, (ByteBuf)msg, convertor);
 				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
-				script.genResponse(request);
+				respList = script.genResponse(request);
 	    	} catch (IOException e) {
 				if (proxy) {
 					SimLogger.getLogger().info("send to remote ...");
 					sClient.sendMsg(Unpooled.copiedBuffer((ByteBuf)msg));
 					sClient.sendMsg(Unpooled.copiedBuffer(delimiters[0]));
+					respList.add(new SimResponse("Unknown due to proxy mechanism"));
 				} else {
 					SimLogger.getLogger().error("match and fill error", e);
 				}
 			} finally {
 //				ReferenceCountUtil.release(msg);
+				castToSimulatorListener().onHandleMessage(getName(), request, respList, !respList.isEmpty());
 	    	}
 	    }
 
@@ -62,19 +68,22 @@ public class SocketSimulator extends SimSimulator {
 	    public void channelActive(ChannelHandlerContext ctx) throws Exception {
 			SimLogger.setLogger(script.getLogger());
 			SimRequest request = null;
+			List<SimResponse> respList = new ArrayList<>();
 			try {
 				request = new SocketSimRequest(ctx, TYPE_OPEN, null, convertor);
 				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
-				script.genResponse(request);
+				respList = script.genResponse(request);
 	    	} catch (IOException e) {
 				if (proxy) {
 					sClient = new SocketClient(proxyURL, new DelimiterBasedFrameDecoder(frameMaxLength, delimiters), new ClientHandler(ctx));
 					sClient.start();
+					respList.add(new SimResponse("Unknown due to proxy mechanism"));
 				} else {
 					SimLogger.getLogger().error("match and fill error", e);
 				}
 			} finally {
 //				ReferenceCountUtil.release(msg);
+				castToSimulatorListener().onHandleMessage(getName(), request, respList, !respList.isEmpty());
 	    	}
 	    }
 
@@ -82,19 +91,22 @@ public class SocketSimulator extends SimSimulator {
 	    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 			SimLogger.setLogger(script.getLogger());
 			SimRequest request = null;
+			List<SimResponse> respList = new ArrayList<>();
 			try {
 				request = new SocketSimRequest(ctx, TYPE_CLOSE, null, convertor);
 				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
-				script.genResponse(request);
+				respList = script.genResponse(request);
 	    	} catch (IOException e) {
 				if (proxy) {
 					SimLogger.getLogger().info("close remote connection");
 					sClient.stop();
+					respList.add(new SimResponse("Unknown due to proxy mechanism"));
 				} else {
 					SimLogger.getLogger().error("match and fill error", e);
 				}
 			} finally {
 //				ReferenceCountUtil.release(msg);
+				castToSimulatorListener().onHandleMessage(getName(), request, respList, !respList.isEmpty());
 	    	}
 	    }
 }

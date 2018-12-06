@@ -59,21 +59,24 @@ public class JMSSimulator extends SimSimulator {
 			} catch (Exception e) {
 				SimLogger.getLogger().error("error when create SimRequest", e);
 			}
-			try {
-				if (request != null) {
-					script.genResponse(request);
-				}
-			} catch (Exception e) {
-				if (proxy) {
-					try {
-						SimResponse resp = SimUtils.doJMSProxy(proxyURL, request);
-						request.fillResponse(resp);
-					} catch (IOException e1) {
-						SimLogger.getLogger().error("proxy error", e1);
+			if (request != null) {
+				List<SimResponse> respList = new ArrayList<>();
+				try {
+					respList = script.genResponse(request);
+				} catch (Exception e) {
+					if (proxy) {
+						try {
+							SimResponse resp = SimUtils.doJMSProxy(proxyURL, request);
+							request.fillResponse(resp);
+							respList.add(resp);
+						} catch (IOException e1) {
+							SimLogger.getLogger().error("proxy error", e1);
+						}
+					} else {
+						SimLogger.getLogger().error("match and fill error", e);
 					}
-				} else {
-					SimLogger.getLogger().error("match and fill error", e);
 				}
+				castToSimulatorListener().onHandleMessage(getName(), request, respList, !respList.isEmpty());
 			}
 		}
 		
