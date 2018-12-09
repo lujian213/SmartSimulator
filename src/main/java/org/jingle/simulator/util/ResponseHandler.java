@@ -14,8 +14,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.velocity.VelocityContext;
 import org.jingle.simulator.SimResponseTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public interface ResponseHandler {
 	public static final String HEADER_NAME_CONTENT_TYPE = "Content-Type";
 	static ResponseHandlerChain inst = new ResponseHandlerChain(

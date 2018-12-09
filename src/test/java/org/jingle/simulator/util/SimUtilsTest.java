@@ -3,8 +3,10 @@ package org.jingle.simulator.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.velocity.VelocityContext;
 import org.junit.Test;
 
 import io.netty.buffer.ByteBuf;
@@ -50,5 +52,19 @@ public class SimUtilsTest {
 	public void testTransformTime() {
 		String s= "20180823";
 		assertEquals("2018-08-23T00:00:00", SimUtils.transformTime("yyyyMMdd", s, "yyyy-MM-dd'T'HH:mm:ss"));
+	}
+
+	@Test
+	public void testMergeResult() {
+		VelocityContext context = new VelocityContext();
+		context.put("simulator.url", "file:/c:/temp/abc/");
+		context.put("simulator_url", "file:/c:/temp/abc/");
+		String templateStr = "${simulator_url}index.html";
+		try {
+			String result = SimUtils.mergeResult(context, "tag", templateStr);
+			assertEquals("file:/c:/temp/abc/index.html", result);
+		} catch (IOException e) {
+			fail("unexpected exception: " + e);
+		}
 	}
 }

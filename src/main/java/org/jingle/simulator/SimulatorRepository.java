@@ -47,7 +47,7 @@ public class SimulatorRepository {
 			if (file.isDirectory()) {
 				simScript = new SimScript(script, file);
 			} else {
-				simScript = new SimScript(script, new ZipFile(file));
+				simScript = new SimScript(script, new ZipFile(file), file);
 			}
 			if (!simScript.isValid()) {
 				SimLogger.getLogger().info(file.getName() + " is not a valid script folder/file, skip ...");

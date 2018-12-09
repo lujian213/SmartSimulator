@@ -47,7 +47,7 @@ public class SimResponse {
 	protected void generate(Map<String, Object> context, SimResponseTemplate resp) throws IOException {
 		VelocityContext vc = new VelocityContext();
 		for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
-			vc.put(contextEntry.getKey(), contextEntry.getValue());
+			vc.put(contextEntry.getKey().replace('.', '_'), contextEntry.getValue());
 		}
 		for (Map.Entry<String, String> entry : resp.getHeaders().entrySet()) {
 			headers.put(entry.getKey(), SimUtils.mergeResult(vc, entry.getKey(), entry.getValue()));

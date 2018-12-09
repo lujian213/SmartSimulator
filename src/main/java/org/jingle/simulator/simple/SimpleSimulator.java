@@ -102,20 +102,7 @@ public class SimpleSimulator extends HTTPSimulator {
 	public SimpleSimulator(SimScript script) throws IOException {
 		super(script);		
 		this.convertor = SimUtils.createMessageConvertor(script, new DefaultSimpleReqRespConvertor());
-
 	}
-  
-//	protected void gen500Response(HttpExchange exchange, String errorMsg) {
-//		try {
-//			byte[] response = errorMsg.getBytes();
-//			exchange.sendResponseHeaders(500, response.length);
-//			try (OutputStream os = exchange.getResponseBody()) {
-//				os.write(response);
-//			}
-//		} catch (Exception e) {
-//			SimLogger.getLogger().error("error when write 500 error response", e);
-//		}
-//	}
 
 	@Override
 	public void start() throws IOException {

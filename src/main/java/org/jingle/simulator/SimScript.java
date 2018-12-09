@@ -60,6 +60,7 @@ public class SimScript {
 	public static final String PROP_NAME_SIMULATOR_CLASS = "simulator.class"; 
 	public static final String PROP_NAME_SIMULATOR_NAME = "simulator.name"; 
 	public static final String PROP_NAME_SIMULATOR_AUTOSTART = "simulator.autostart"; 
+	public static final String PROP_NAME_SIMULATOR_URL = "simulator.url"; 
 	
 	private Logger scriptLogger = null;
 
@@ -69,12 +70,14 @@ public class SimScript {
 	
 	public SimScript(SimScript parent, File file) throws IOException {
 		config.copy(parent.getConfig());
+		config.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		templatePairs.addAll(parent.getTemplatePairs());
 		loadFolder(file, true); 
 	}
 	
-	public SimScript(SimScript parent, final ZipFile zf) throws IOException {
+	public SimScript(SimScript parent, final ZipFile zf, File file) throws IOException {
 		config.copy(parent.getConfig());
+		config.setProperty(PROP_NAME_SIMULATOR_URL, "jar:" + file.toURI() + "!/");
 		templatePairs.addAll(parent.getTemplatePairs());
 		ZipFileVisitorHandler<SimScript> handler = new ZipFileVisitorHandler<SimScript>() {
 
@@ -86,7 +89,7 @@ public class SimScript {
 
 			@Override
 			public EntryWrapper<SimScript> handleDir(ZipEntry entry) {
-				SimScript sim = new SimScript(parent.getTarget());
+				SimScript sim = new SimScript(parent.getTarget(), entry);
 				File file = new File(entry.getName());
 				subScripts.put(file.getName(), sim);
 				return new EntryWrapper<SimScript>(entry, sim);
@@ -118,12 +121,14 @@ public class SimScript {
 	}
 
 	public SimScript(File file) throws IOException {
+		config.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		loadFolder(file, false); 
 	}
 	
-	SimScript(SimScript parent) {
+	SimScript(SimScript parent, ZipEntry entry) {
 		config.copy(parent.getConfig());
 		templatePairs.addAll(parent.getTemplatePairs());
+		config.setProperty(PROP_NAME_SIMULATOR_URL, parent.getProperty(PROP_NAME_SIMULATOR_URL) + entry.getName());
 	}
 	
 	protected SimScript() {

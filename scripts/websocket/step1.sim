@@ -1,7 +1,7 @@
 GET {$url}/index.html HTTP/1.1
 
 HTTP/1.1 200 OK
-_Bridge: file:///$Script_Home/websocket/index.html
+_Bridge: ${simulator_url}index.html
 Content-Type: text/html
 
 ------------------------------------------------------------------
