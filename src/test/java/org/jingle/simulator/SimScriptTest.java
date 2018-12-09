@@ -185,7 +185,7 @@ public class SimScriptTest {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new ZipFile("scripts/websocket2.zip"), new File("scripts/websocket2.zip"));
 			assertEquals(2, script.getTemplatePairs().size());
-			assertEquals(3, script.getSubScripts().size());
+			assertEquals(2, script.getSubScripts().size());
 			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getTemplatePairs().size());
 		} catch (IOException e) {
 			fail("unexpected exception" + e);
