@@ -36,7 +36,7 @@ public class SimulatorRepository {
 
 			@Override
 			public boolean accept(File file) {
-				if (file.isDirectory() || file.getName().endsWith(SimScript.SCRIPT_ZIP)) {
+				if (file.isDirectory() || file.getName().endsWith(SimScript.ZIP_EXT)) {
 					return true;
 				}
 				return false;
@@ -51,7 +51,9 @@ public class SimulatorRepository {
 			}
 			if (!simScript.isValid()) {
 				SimLogger.getLogger().info(file.getName() + " is not a valid script folder/file, skip ...");
-			} else {
+			} else if (simScript.isIgnored()) {
+				SimLogger.getLogger().info(file.getName() + " is ignored");
+			}else {
 				simScript.prepareLogger();
 				ret.add(simScript);
 			}

@@ -238,4 +238,15 @@ public class SimScriptTest {
 		}
 		return sb.toString();
 	}
+
+	@Test
+	public void test11() {
+		try {
+			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/dummy"));
+			assertTrue(script.isIgnored());
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("unexpected exception" + e);
+		}
+	}
 }

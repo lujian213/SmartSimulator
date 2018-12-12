@@ -55,7 +55,8 @@ public class SimScript {
 	private static final String SEP_LINE = "------------------------------------------------------------------"; 
 	private static final String RESP_START = "HTTP/"; 
 	public static final String SCRIPT_EXT = ".sim"; 
-	public static final String SCRIPT_ZIP = ".zip"; 
+	public static final String ZIP_EXT = ".zip"; 
+	public static final String IGNORE_EXT = ".ignore"; 
 	public static final String INIT_FILE = "init.properties"; 
 	public static final String PROP_NAME_SIMULATOR_CLASS = "simulator.class"; 
 	public static final String PROP_NAME_SIMULATOR_NAME = "simulator.name"; 
@@ -67,6 +68,7 @@ public class SimScript {
 	private List<TemplatePair> templatePairs = new ArrayList<>();
 	private Map<String, SimScript> subScripts = new HashMap<>();
 	private PropertiesConfiguration config = new PropertiesConfiguration();
+	private boolean ignored = false;
 	
 	public SimScript(SimScript parent, File file) throws IOException {
 		config.copy(parent.getConfig());
@@ -91,27 +93,33 @@ public class SimScript {
 			public EntryWrapper<SimScript> handleDir(ZipEntry entry) {
 				SimScript sim = new SimScript(parent.getTarget(), entry);
 				File file = new File(entry.getName());
-				subScripts.put(file.getName(), sim);
+				parent.getTarget().subScripts.put(file.getName(), sim);
 				return new EntryWrapper<SimScript>(entry, sim);
 			}
 
 			@Override
 			public void handleFile(ZipEntry entry) throws IOException {
-				String name = new File(entry.getName()).getName();
-				if (name.equals(INIT_FILE)) {
-					SimLogger.getLogger().info("loadint init file [" + name + "] in [" + parent.getEntry() + "]");
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {
-						PropertiesConfiguration propConfig = new PropertiesConfiguration();
-						propConfig.read(reader);
-						parent.getTarget().config.copy(propConfig);
-					} catch (ConfigurationException e) {
-						throw new IOException(e);
-					} 
-				} else if (name.endsWith(SCRIPT_EXT)) {
-					SimLogger.getLogger().info("loading script file [" + name + "] in [" + parent.getEntry() + "]");
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry), "utf-8"))) {
-						List<TemplatePair> pairList = load(reader); 
-						parent.getTarget().templatePairs.addAll(0, pairList);
+				if (!parent.getTarget().isIgnored()) {
+					String name = new File(entry.getName()).getName();
+					if (name.equals(INIT_FILE)) {
+						SimLogger.getLogger().info("loadint init file [" + name + "] in [" + parent.getEntry() + "]");
+						try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {
+							PropertiesConfiguration propConfig = new PropertiesConfiguration();
+							propConfig.read(reader);
+							parent.getTarget().config.copy(propConfig);
+						} catch (ConfigurationException e) {
+							throw new IOException(e);
+						} 
+					} else if (name.endsWith(SCRIPT_EXT)) {
+						SimLogger.getLogger().info("loading script file [" + name + "] in [" + parent.getEntry() + "]");
+						try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry), "utf-8"))) {
+							List<TemplatePair> pairList = load(reader); 
+							parent.getTarget().templatePairs.addAll(0, pairList);
+						}
+					} else if (name.endsWith(IGNORE_EXT)) {
+						SimLogger.getLogger().info("find ignore file, [" + parent.getEntry() + "] will be ignored");
+						parent.getTarget().ignored = true;
+						parent.getTarget().subScripts.remove(file.getName());
 					}
 				}
 			}
@@ -141,6 +149,11 @@ public class SimScript {
 		}
 		return true;
 	}
+	
+	public boolean isIgnored() {
+		return this.ignored;
+	}
+	
 	public void prepareLogger() {
 		String simulatorName = this.getSimulatorName();
 
@@ -172,7 +185,7 @@ public class SimScript {
 
 			@Override
 			public boolean accept(File file) {
-				if (file.isFile() && (file.getName().endsWith(SCRIPT_EXT) || file.getName().equals(INIT_FILE)) || (includeSubFolder && file.isDirectory())) {
+				if (file.isFile() && (file.getName().endsWith(SCRIPT_EXT) || file.getName().endsWith(IGNORE_EXT)|| file.getName().equals(INIT_FILE)) || (includeSubFolder && file.isDirectory())) {
 					return true;
 				}
 				return false;
@@ -199,13 +212,17 @@ public class SimScript {
 					} catch (ConfigurationException e) {
 						throw new IOException(e);
 					}
-				} else {
+				} else if (file.getName().endsWith(SCRIPT_EXT)){
 					SimLogger.getLogger().info("loading script file [" + file + "] in [" + folder + "]");
 					try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 						List<TemplatePair> pairList = load(reader); 
 						templatePairs.addAll(0, pairList);
 						total += pairList.size();
 					}
+				} else if (file.getName().endsWith(IGNORE_EXT)) {
+					SimLogger.getLogger().info("find ignore file, folder [" + folder + "] is not a script folder, ignore ...");
+					this.ignored = true;
+					break;
 				}
 			} else {
 				subScripts.put(file.getName(), new SimScript(this, file));
