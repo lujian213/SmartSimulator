@@ -69,7 +69,7 @@ public class BeanRepository {
 
 	public FunctionBean addBean(String className, VelocityContext vc) {
 		try {
-			return addBean(Class.forName(className), vc);
+			return addBean(Class.forName(className, true, Thread.currentThread().getContextClassLoader()), vc);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException("error to create instance of class [" + className + "]", e);
 		}

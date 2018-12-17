@@ -54,7 +54,7 @@ public class SimulatorRepository {
 			} else if (simScript.isIgnored()) {
 				SimLogger.getLogger().info(file.getName() + " is ignored");
 			}else {
-				simScript.prepareLogger();
+				simScript.init();
 				ret.add(simScript);
 			}
 		}

@@ -33,7 +33,7 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 		if (listenerStr != null) {
 			for (String listenerClass: listenerStr.split(",")) {
 				try {
-					this.addListener((SimulatorListener) Class.forName(listenerClass.trim()).newInstance());
+					this.addListener((SimulatorListener) Class.forName(listenerClass.trim(), true, script.getClassLoader()).newInstance());
 				} catch (Exception e) {
 					throw new IOException("error when create simpulator listener", e);
 				}

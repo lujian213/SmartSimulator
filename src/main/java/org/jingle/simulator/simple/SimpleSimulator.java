@@ -37,7 +37,7 @@ public class SimpleSimulator extends HTTPSimulator {
 
 		@Override
 		public void handle(HttpExchange exchange) {
-			SimLogger.setLogger(script.getLogger());
+			SimUtils.setThreadContext(script);
 			SimRequest request = null;
 			try {
 				request = new SimpleSimRequest(exchange, convertor);
@@ -62,35 +62,35 @@ public class SimpleSimulator extends HTTPSimulator {
 		@Override
 		public void handle(HttpExchange exchange) {
 			try {
-			SimLogger.setLogger(script.getLogger());
-			URI uri = exchange.getRequestURI();
-			String path = uri.getPath();
-			File file = new File(webFolder + path).getCanonicalFile();
-			SimLogger.getLogger().info("looking for: " + file);
-
-			if (!file.isFile()) {
-				// Object does not exist or is not a file: reject with 404 error.
-				String response = "404 (Not Found)\n";
-				exchange.sendResponseHeaders(404, response.length());
-				try (OutputStream os = exchange.getResponseBody()) {
-					os.write(response.getBytes());
-				} catch (IOException e) {
-					SimLogger.getLogger().error("error when write 404 error message", e);
-				}
-			} else {
-				// Object exists and is a file: accept with response code 200.
-				Headers h = exchange.getResponseHeaders();
-				h.set("Content-Type", map.getContentType(file));
-				exchange.sendResponseHeaders(200, 0);
-				try (OutputStream os = exchange.getResponseBody();
-						BufferedInputStream fs = new BufferedInputStream(new FileInputStream(file))) {
-					final byte[] buffer = new byte[BUFFER_SIZE];
-					int count = 0;
-					while ((count = fs.read(buffer)) >= 0) {
-						os.write(buffer, 0, count);
+				SimUtils.setThreadContext(script);
+				URI uri = exchange.getRequestURI();
+				String path = uri.getPath();
+				File file = new File(webFolder + path).getCanonicalFile();
+				SimLogger.getLogger().info("looking for: " + file);
+	
+				if (!file.isFile()) {
+					// Object does not exist or is not a file: reject with 404 error.
+					String response = "404 (Not Found)\n";
+					exchange.sendResponseHeaders(404, response.length());
+					try (OutputStream os = exchange.getResponseBody()) {
+						os.write(response.getBytes());
+					} catch (IOException e) {
+						SimLogger.getLogger().error("error when write 404 error message", e);
+					}
+				} else {
+					// Object exists and is a file: accept with response code 200.
+					Headers h = exchange.getResponseHeaders();
+					h.set("Content-Type", map.getContentType(file));
+					exchange.sendResponseHeaders(200, 0);
+					try (OutputStream os = exchange.getResponseBody();
+							BufferedInputStream fs = new BufferedInputStream(new FileInputStream(file))) {
+						final byte[] buffer = new byte[BUFFER_SIZE];
+						int count = 0;
+						while ((count = fs.read(buffer)) >= 0) {
+							os.write(buffer, 0, count);
+						}
 					}
 				}
-			}
 			} catch (Exception e) {
 				SimLogger.getLogger().error(e);
 			}

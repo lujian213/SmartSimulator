@@ -35,7 +35,7 @@ public class SocketSimulator extends SimSimulator {
 	public class SocketHandler extends ChannelInboundHandlerAdapter {
 	    @Override
 	    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-			SimLogger.setLogger(script.getLogger());
+	    	SimUtils.setThreadContext(script);
 			SimRequest request = null;
 			List<SimResponse> respList = new ArrayList<>();
 			try {
@@ -59,14 +59,14 @@ public class SocketSimulator extends SimSimulator {
 
 	    @Override
 	    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-			SimLogger.setLogger(script.getLogger());
+	    	SimUtils.setThreadContext(script);
 			SimLogger.getLogger().error("exception caught", cause);
 	        ctx.close();
 	    }
 	    
 	    @Override
 	    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-			SimLogger.setLogger(script.getLogger());
+	    	SimUtils.setThreadContext(script);
 			SimRequest request = null;
 			List<SimResponse> respList = new ArrayList<>();
 			try {
@@ -89,7 +89,7 @@ public class SocketSimulator extends SimSimulator {
 
 	    @Override
 	    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-			SimLogger.setLogger(script.getLogger());
+	    	SimUtils.setThreadContext(script);
 			SimRequest request = null;
 			List<SimResponse> respList = new ArrayList<>();
 			try {
@@ -118,7 +118,7 @@ public class SocketSimulator extends SimSimulator {
 		}
 	    @Override
 	    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-			SimLogger.setLogger(script.getLogger());
+			SimUtils.setThreadContext(script);
 			SimLogger.getLogger().info("get message from remote ...");
 			
 			try {
@@ -131,14 +131,14 @@ public class SocketSimulator extends SimSimulator {
 
 	    @Override
 	    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-			SimLogger.setLogger(script.getLogger());
+			SimUtils.setThreadContext(script);
 			SimLogger.getLogger().error("exception caught", cause);
 	        ctx.close();
 	    }
 	    
 	    @Override
 	    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-			SimLogger.setLogger(script.getLogger());
+			SimUtils.setThreadContext(script);
 			delegator.close();
 	    }
 

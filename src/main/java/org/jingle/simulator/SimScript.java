@@ -57,6 +57,7 @@ public class SimScript {
 	public static final String SCRIPT_EXT = ".sim"; 
 	public static final String ZIP_EXT = ".zip"; 
 	public static final String IGNORE_EXT = ".ignore"; 
+	public static final String LIB_DIR = "lib"; 
 	public static final String INIT_FILE = "init.properties"; 
 	public static final String PROP_NAME_SIMULATOR_CLASS = "simulator.class"; 
 	public static final String PROP_NAME_SIMULATOR_NAME = "simulator.name"; 
@@ -64,11 +65,13 @@ public class SimScript {
 	public static final String PROP_NAME_SIMULATOR_URL = "simulator.url"; 
 	
 	private Logger scriptLogger = null;
-
+	private ClassLoader simClassLoader = ClassLoader.getSystemClassLoader();
+	
 	private List<TemplatePair> templatePairs = new ArrayList<>();
 	private Map<String, SimScript> subScripts = new HashMap<>();
 	private PropertiesConfiguration config = new PropertiesConfiguration();
 	private boolean ignored = false;
+	private File libFile = null;
 	
 	public SimScript(SimScript parent, File file) throws IOException {
 		config.copy(parent.getConfig());
@@ -154,7 +157,11 @@ public class SimScript {
 		return this.ignored;
 	}
 	
-	public void prepareLogger() {
+	public ClassLoader getClassLoader() {
+		return simClassLoader;
+	}
+	
+	public void init() throws IOException {
 		String simulatorName = this.getSimulatorName();
 
 		this.scriptLogger = Logger.getLogger(simulatorName);
@@ -175,6 +182,9 @@ public class SimScript {
 		for (SimScript subScript: subScripts.values()) {
 			subScript.scriptLogger = scriptLogger;
 		}
+		if (libFile != null) {
+			this.simClassLoader = new SimClassLoader(libFile, ClassLoader.getSystemClassLoader());
+		} 
 	}
 	
 	protected void loadFolder(File folder, boolean includeSubFolder) throws IOException {
@@ -225,7 +235,11 @@ public class SimScript {
 					break;
 				}
 			} else {
-				subScripts.put(file.getName(), new SimScript(this, file));
+				if (LIB_DIR.equals(file.getName())) {
+					this.libFile = file;
+				} else {
+					subScripts.put(file.getName(), new SimScript(this, file));
+				}
 			}
 		}
 		SimLogger.getLogger().info("Total " + total + " req/resp pairs loaded in [" + folder + "]");

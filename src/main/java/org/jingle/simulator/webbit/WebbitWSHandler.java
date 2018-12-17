@@ -87,7 +87,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     
     @Override
 	public void onOpen(WebSocketConnection connection) {
-		SimLogger.setLogger(script.getLogger());
+    	SimUtils.setThreadContext(script);
 		SimLogger.getLogger().info("on open ...");
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_OPEN, null, convertor);
 		List<SimResponse> respList = new ArrayList<>();
@@ -118,7 +118,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 
 	@Override
     public void onClose(WebSocketConnection connection) {
-		SimLogger.setLogger(script.getLogger());
+		SimUtils.setThreadContext(script);
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_CLOSE, null, convertor);
 		List<SimResponse> respList = new ArrayList<>();
     	try {
@@ -145,7 +145,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 
 	@Override
     public void onMessage(WebSocketConnection connection, byte[] message) {
-		SimLogger.setLogger(script.getLogger());
+		SimUtils.setThreadContext(script);
 
 		WebbitWSSimRequest request = new WebbitWSSimRequest(connection, channel, TYPE_MESSAGE, message, convertor);
 		List<SimResponse> respList = new ArrayList<>();

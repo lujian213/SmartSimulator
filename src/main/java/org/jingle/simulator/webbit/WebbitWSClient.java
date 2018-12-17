@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.http.HTTPSimulator;
 import org.jingle.simulator.util.SimLogger;
+import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.BaseWebSocketHandler;
 import org.webbitserver.WebSocketConnection;
 import org.webbitserver.netty.WebSocketClient;
@@ -87,7 +88,7 @@ public class WebbitWSClient extends BaseWebSocketHandler {
 	
 	@Override
 	public void onOpen(WebSocketConnection connection) throws Exception {
-		SimLogger.setLogger(script.getLogger());
+		SimUtils.setThreadContext(script);
 		SimLogger.getLogger().info("proxy connection established");
 		synchronized (lock) {
 			this.connection = connection;
@@ -97,7 +98,7 @@ public class WebbitWSClient extends BaseWebSocketHandler {
 
 	@Override
 	public void onClose(WebSocketConnection connection) throws Exception {
-		SimLogger.setLogger(script.getLogger());
+		SimUtils.setThreadContext(script);
 		SimLogger.getLogger().info("proxy close");
 		if (connection != null) {
 			connection.close();
@@ -106,7 +107,7 @@ public class WebbitWSClient extends BaseWebSocketHandler {
 
 	@Override
 	public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
-		SimLogger.setLogger(script.getLogger());
+		SimUtils.setThreadContext(script);
 		SimLogger.getLogger().info("proxy message:[" + msg + "]");
 		delegation.send(msg);
 	}

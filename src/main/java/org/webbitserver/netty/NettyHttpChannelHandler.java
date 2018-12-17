@@ -1,5 +1,15 @@
 package org.webbitserver.netty;
 
+import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Executor;
+
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -10,18 +20,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.webbitserver.HttpControl;
 import org.webbitserver.HttpHandler;
 import org.webbitserver.WebbitException;
-
-import java.io.IOError;
-import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Executor;
-
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class NettyHttpChannelHandler extends SimpleChannelUpstreamHandler {
     private static final Object IGNORE_REQUEST = new Object();

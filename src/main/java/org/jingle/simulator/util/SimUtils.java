@@ -280,7 +280,7 @@ public class SimUtils {
 		String convertorClassName = script.getProperty(SimSimulator.PROP_NAME_MESSAGE_CONVERTOR);
 		if (convertorClassName != null) {
 			try {
-				return (ReqRespConvertor) Class.forName(convertorClassName).newInstance();
+				return (ReqRespConvertor) Class.forName(convertorClassName, true, script.getClassLoader()).newInstance();
 			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 				throw new RuntimeException("error to create convertor instance [" + convertorClassName + "]", e);
 			}
@@ -333,5 +333,10 @@ public class SimUtils {
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public static void setThreadContext(SimScript script) {
+		SimLogger.setLogger(script.getLogger());
+		Thread.currentThread().setContextClassLoader(script.getClassLoader());
 	}
 }

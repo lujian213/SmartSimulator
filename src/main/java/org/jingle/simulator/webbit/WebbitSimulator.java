@@ -34,7 +34,7 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 
 	@Override
 	public void handleHttpRequest(HttpRequest req, HttpResponse resp, HttpControl ctrl) throws Exception {
-		SimLogger.setLogger(script.getLogger());
+		SimUtils.setThreadContext(script);
 		SimRequest request = null;
 		try {
 			request = new WebbitSimRequest(req, resp, convertor);

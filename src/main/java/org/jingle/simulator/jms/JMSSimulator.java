@@ -51,7 +51,7 @@ public class JMSSimulator extends SimSimulator {
 		
 		@Override
 		public void onMessage(Message message) {
-			SimLogger.setLogger(script.getLogger());
+			SimUtils.setThreadContext(script);
 			JMSSimRequest request = null;
 			try {
 				request = new JMSSimRequest(message, session, unifiedDestName, producerMap, brokerMap, convertor);
