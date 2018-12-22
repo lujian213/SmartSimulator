@@ -6,6 +6,8 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,8 +74,11 @@ public class SimScript {
 	private PropertiesConfiguration config = new PropertiesConfiguration();
 	private boolean ignored = false;
 	private File libFile = null;
+	private List<URL> libURLs = new ArrayList<>();
+	private SimScript parent = null;
 	
 	public SimScript(SimScript parent, File file) throws IOException {
+		this.parent = parent;
 		config.copy(parent.getConfig());
 		config.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		templatePairs.addAll(parent.getTemplatePairs());
@@ -81,6 +86,7 @@ public class SimScript {
 	}
 	
 	public SimScript(SimScript parent, final ZipFile zf, File file) throws IOException {
+		this.parent = parent;
 		config.copy(parent.getConfig());
 		config.setProperty(PROP_NAME_SIMULATOR_URL, "jar:" + file.toURI() + "!/");
 		templatePairs.addAll(parent.getTemplatePairs());
@@ -94,35 +100,52 @@ public class SimScript {
 
 			@Override
 			public EntryWrapper<SimScript> handleDir(ZipEntry entry) {
-				SimScript sim = new SimScript(parent.getTarget(), entry);
 				File file = new File(entry.getName());
-				parent.getTarget().subScripts.put(file.getName(), sim);
-				return new EntryWrapper<SimScript>(entry, sim);
+				if (LIB_DIR.equals(file.getName())) {
+					try {
+						parent.getTarget().libURLs.add(new URL(parent.getTarget().getProperty(PROP_NAME_SIMULATOR_URL) + file.getName() + "/"));
+					} catch (MalformedURLException e) {
+						SimLogger.getLogger().warn("wrong URL", e);
+					}
+					return new EntryWrapper<SimScript>(entry, parent.getTarget());
+				} else {
+					SimScript sim = new SimScript(parent.getTarget(), entry);
+					parent.getTarget().subScripts.put(file.getName(), sim);
+					return new EntryWrapper<SimScript>(entry, sim);
+				}
 			}
 
 			@Override
 			public void handleFile(ZipEntry entry) throws IOException {
-				if (!parent.getTarget().isIgnored()) {
+				SimScript script = parent.getTarget();
+				if (!script.isIgnored()) {
 					String name = new File(entry.getName()).getName();
 					if (name.equals(INIT_FILE)) {
-						SimLogger.getLogger().info("loadint init file [" + name + "] in [" + parent.getEntry() + "]");
+						SimLogger.getLogger().info("loadint init file [" + name + "] in [" + parent.getTarget().getProperty(PROP_NAME_SIMULATOR_URL) + "]");
 						try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {
 							PropertiesConfiguration propConfig = new PropertiesConfiguration();
 							propConfig.read(reader);
-							parent.getTarget().config.copy(propConfig);
+							script.config.copy(propConfig);
 						} catch (ConfigurationException e) {
 							throw new IOException(e);
 						} 
 					} else if (name.endsWith(SCRIPT_EXT)) {
-						SimLogger.getLogger().info("loading script file [" + name + "] in [" + parent.getEntry() + "]");
+						SimLogger.getLogger().info("loading script file [" + name + "] in [" + parent.getTarget().getProperty(PROP_NAME_SIMULATOR_URL) + "]");
 						try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry), "utf-8"))) {
 							List<TemplatePair> pairList = load(reader); 
-							parent.getTarget().templatePairs.addAll(0, pairList);
+							script.templatePairs.addAll(0, pairList);
 						}
 					} else if (name.endsWith(IGNORE_EXT)) {
-						SimLogger.getLogger().info("find ignore file, [" + parent.getEntry() + "] will be ignored");
-						parent.getTarget().ignored = true;
-						parent.getTarget().subScripts.remove(file.getName());
+						SimLogger.getLogger().info("find ignore file, [" + parent.getTarget().getProperty(PROP_NAME_SIMULATOR_URL) + "] will be ignored");
+						script.ignored = true;
+						if (parent.getEntry() != null) {
+							script.getParent().subScripts.remove(new File(parent.getEntry().getName()).getName());
+						}
+					} else if (name.endsWith(".jar") || name.endsWith(".zip")) {
+						File file = new File(entry.getName());
+						if (LIB_DIR.equals(file.getParent())) {
+							script.libURLs.add(new URL(script.getProperty(PROP_NAME_SIMULATOR_URL) + LIB_DIR + "/" + file.getName()));
+						}
 					}
 				}
 			}
@@ -137,9 +160,10 @@ public class SimScript {
 	}
 	
 	SimScript(SimScript parent, ZipEntry entry) {
+		this.parent = parent;
 		config.copy(parent.getConfig());
 		templatePairs.addAll(parent.getTemplatePairs());
-		config.setProperty(PROP_NAME_SIMULATOR_URL, parent.getProperty(PROP_NAME_SIMULATOR_URL) + entry.getName());
+		config.setProperty(PROP_NAME_SIMULATOR_URL, parent.getProperty(PROP_NAME_SIMULATOR_URL) + new File(entry.getName()).getName() + "/");
 	}
 	
 	protected SimScript() {
@@ -159,6 +183,10 @@ public class SimScript {
 	
 	public ClassLoader getClassLoader() {
 		return simClassLoader;
+	}
+	
+	public SimScript getParent() {
+		return this.parent;
 	}
 	
 	public void init() throws IOException {
@@ -184,6 +212,8 @@ public class SimScript {
 		}
 		if (libFile != null) {
 			this.simClassLoader = new SimClassLoader(libFile, ClassLoader.getSystemClassLoader());
+		} else if (!libURLs.isEmpty()) {
+			this.simClassLoader = new SimClassLoader(libURLs.toArray(new URL[0]), ClassLoader.getSystemClassLoader());
 		} 
 	}
 	
@@ -236,9 +266,12 @@ public class SimScript {
 				}
 			} else {
 				if (LIB_DIR.equals(file.getName())) {
-					this.libFile = file;
+					libFile = file;
 				} else {
-					subScripts.put(file.getName(), new SimScript(this, file));
+					SimScript subScript = new SimScript(this, file);
+					if (!subScript.isIgnored()) {
+						subScripts.put(file.getName(), subScript);
+					}
 				}
 			}
 		}
@@ -356,6 +389,15 @@ public class SimScript {
 	
 	public Map<String, SimScript> getSubScripts() {
 		return subScripts;
+	}
+	
+	public void close() {
+		if (simClassLoader instanceof SimClassLoader) {
+			try {
+				SimClassLoader.class.cast(simClassLoader).close();
+			} catch (IOException e) {
+			}
+		}
 	}
 	
 	public List<SimResponse> genResponse(SimRequest request) throws IOException {

@@ -56,6 +56,7 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	public void stop() {
 		BeanRepository.getInstance().removeSimulatorBeans(getName());
 		castToSimulatorListener().onStop(getName());
+		this.script.close();
 	}
 
 	public boolean isRunning() {

@@ -1,0 +1,9 @@
+GET {$url}/foo HTTP/1.1
+
+HTTP/1.1 200 OK
+_Class.Name: $className
+_Method.Name: foo
+Content-Type: application/json
+Access-Control-Allow-Origin: *
+
+------------------------------------------------------------------

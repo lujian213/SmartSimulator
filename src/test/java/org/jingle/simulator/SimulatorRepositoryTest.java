@@ -28,10 +28,8 @@ public class SimulatorRepositoryTest {
 			SimSimulator simulator = rep.getSimulator("foo");
 			assertEquals(1, simulator.getScript().getSubScripts().size());
 			assertNotNull(simulator.getScript().getSubScripts().get("foo2"));
-			fail("RuntimeException expected");
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
-		} catch (RuntimeException e) {
 		}
 	}
 
@@ -53,11 +51,9 @@ public class SimulatorRepositoryTest {
 			SimulatorRepository rep = new SimulatorRepository(new File("scripts"));
 			SimSimulator simulator = rep.getSimulator("WebSocket4");
 			assertEquals(1, simulator.getScript().getSubScripts().get("control").getSubScripts().size());
-			assertNotNull(simulator.getScript().getSubScripts().get("control").getSubScripts().get("control1"));
-			fail("RuntimeException expected");
+			assertNotNull(simulator.getScript().getSubScripts().get("control").getSubScripts().get("control2"));
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
-		} catch (RuntimeException e) {
 		}
 	}
 }
