@@ -8,15 +8,17 @@ import java.io.IOException;
 import org.junit.Test;
 
 public class SimulatorRepositoryTest {
-
 	@Test
 	public void test() {
+		SimulatorRepository rep = null;
 		try {
-			SimulatorRepository rep = new SimulatorRepository(new File("scripts"));
+			rep = new SimulatorRepository(new File("scripts"));
+		} catch (IOException e1) {
+			fail("unexpected exception:" + e1);
+		}
+		try {
 			rep.getSimulator("dummy");
 			fail("RuntimeException expected");
-		} catch (IOException e) {
-			fail("unexpected exception:" + e);
 		} catch (RuntimeException e) {
 		}
 	}
@@ -35,12 +37,15 @@ public class SimulatorRepositoryTest {
 
 	@Test
 	public void test3() {
+		SimulatorRepository rep = null;
 		try {
-			SimulatorRepository rep = new SimulatorRepository(new File("scripts"));
+			rep = new SimulatorRepository(new File("scripts"));
+		} catch (IOException e1) {
+			fail("Unexpected exception:" + e1);
+		}
+		try {
 			rep.getSimulator("WebSocket3");
 			fail("RuntimeException expected");
-		} catch (IOException e) {
-			fail("unexpected exception:" + e);
 		} catch (RuntimeException e) {
 		}
 	}

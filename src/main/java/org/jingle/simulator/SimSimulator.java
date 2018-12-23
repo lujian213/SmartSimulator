@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.jingle.simulator.util.BeanRepository;
 import org.jingle.simulator.util.ListenerHub;
+import org.jingle.simulator.util.SimLogger;
 
 public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	public static final String PROP_NAME_PROXY = "simulator.proxy";
@@ -50,6 +51,18 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	}
 
 	public void start() throws IOException {
+		try {
+			doStart();
+		} finally {
+		}
+		postStart();
+	}
+	
+	protected abstract void doStart() throws IOException;
+
+	protected void postStart() {
+		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
+		this.running = true;
 		castToSimulatorListener().onStart(getName());
 	}
 

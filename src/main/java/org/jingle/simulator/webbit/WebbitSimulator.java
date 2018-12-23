@@ -47,7 +47,8 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 	}
   
 	@Override
-	public void start() throws IOException {
+	protected void doStart() throws IOException {
+		super.doStart();
 		webServer = WebServers.createWebServer(port);
 		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
 			String channelName = "/" + reformatChannelName(entry.getKey());
@@ -67,6 +68,7 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 		webServer.add(this);
 		
 		if (useSSL) {
+			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
 			try (InputStream is = new FileInputStream(keystore)){
 				webServer.setupSsl(is, ksPwd);
 			} 
@@ -74,19 +76,8 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
         webServer.start();
         URI uri = webServer.getUri();
         this.runningURL = (useSSL ? "https" : "http") + "://" + uri.getHost() + ":" + uri.getPort();
-        SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
-        this.running = true;
-        super.start();
 	}
 	
-	@Override
-	protected void init() throws IOException {
-		super.init();
-		if (useSSL) {
-			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-		}
-	}
-
 	protected String reformatChannelName(String channelName) {
 		return channelName.replaceAll("\\.", "/");
 	}

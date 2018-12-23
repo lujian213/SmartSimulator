@@ -178,7 +178,7 @@ public class SocketSimulator extends SimSimulator {
 	}
   
 	@Override
-	public void start() throws IOException {
+	protected void doStart() throws IOException {
 		if (!running) {
 			if (useSSL) {
 				try {
@@ -211,9 +211,6 @@ public class SocketSimulator extends SimSimulator {
 	            cf = b.bind(port);
 
 				runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
-				SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
-				this.running = true;
-				super.start();
 	        } catch (IOException | RuntimeException e) {
 	        	workerGroup.shutdownGracefully();
 	        	bossGroup.shutdownGracefully();

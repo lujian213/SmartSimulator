@@ -53,7 +53,6 @@ public abstract class HTTPSimulator extends SimSimulator {
 		if (useSSL) {
 			keystore = script.getMandatoryProperty(PROP_NAME_KEYSTORE, "no keystore defined");
 			ksPwd = script.getMandatoryProperty(PROP_NAME_KS_PASSWD, "no keystore passwd defined");
-			sslContext = SimUtils.initSSL(keystore, ksPwd);
 		}
 		if (staticWeb) {
 			webRoot = script.getProperty(PROP_NAME_STATIC_ROOT);
@@ -106,4 +105,10 @@ public abstract class HTTPSimulator extends SimSimulator {
 		}
 	}
 
+	@Override
+	protected void doStart() throws IOException {
+		if (useSSL) {
+			sslContext = SimUtils.initSSL(keystore, ksPwd);
+		}
+	}
 }

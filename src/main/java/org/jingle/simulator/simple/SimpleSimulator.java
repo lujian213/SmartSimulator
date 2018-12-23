@@ -105,7 +105,8 @@ public class SimpleSimulator extends HTTPSimulator {
 	}
 
 	@Override
-	public void start() throws IOException {
+	protected void doStart() throws IOException {
+		super.doStart();
 		if (useSSL) {
 			server = HttpsServer.create(new InetSocketAddress(port), 0);
 		} else {
@@ -136,9 +137,6 @@ public class SimpleSimulator extends HTTPSimulator {
 		}
 		server.start();
 		runningURL = (useSSL ? "https://" : "http://") + InetAddress.getLocalHost().getHostName() + ":" + port;
-		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
-		this.running = true;
-		super.start();
 	}
 
 	@Override

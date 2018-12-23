@@ -161,14 +161,12 @@ public class JMSSimulator extends SimSimulator {
 	}
 
 	@Override
-	public void start() throws IOException {
+	protected void doStart() throws IOException {
 		boolean success = false;
 		try {
 			List<String> subDestNameList = prepare();
-			this.running = true;
 			this.runningURL = SimUtils.concatContent(subDestNameList);
 			success = true;
-			super.start();
 		} finally {
 			if (!success) {
 				stop();
