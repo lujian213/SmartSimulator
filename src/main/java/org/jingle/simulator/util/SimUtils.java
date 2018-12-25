@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
@@ -280,7 +281,9 @@ public class SimUtils {
 		String convertorClassName = script.getProperty(SimSimulator.PROP_NAME_MESSAGE_CONVERTOR);
 		if (convertorClassName != null) {
 			try {
-				return (ReqRespConvertor) Class.forName(convertorClassName, true, script.getClassLoader()).newInstance();
+				ReqRespConvertor convertor = ReqRespConvertor.class.cast(Class.forName(convertorClassName, true, script.getClassLoader()).newInstance());
+				convertor.init(script.getConfigAsProperties());
+				return convertor;
 			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 				throw new RuntimeException("error to create convertor instance [" + convertorClassName + "]", e);
 			}
@@ -338,5 +341,13 @@ public class SimUtils {
 	public static void setThreadContext(SimScript script) {
 		SimLogger.setLogger(script.getLogger());
 		Thread.currentThread().setContextClassLoader(script.getClassLoader());
+	}
+	
+	public static Properties context2Properties(VelocityContext vc) {
+		Properties props = new Properties();
+		for (Object key: vc.getKeys()) {
+			props.put(key, vc.get(key.toString()));
+		}
+		return props;
 	}
 }

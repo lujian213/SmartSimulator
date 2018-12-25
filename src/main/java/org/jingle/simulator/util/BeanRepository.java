@@ -57,6 +57,9 @@ public class BeanRepository {
 			bean = simMap.get(clazz.getName());
 			if (bean == null) {
 				Object obj = createInstance(clazz, vc);
+				if (obj instanceof SimContextAwareness) {
+					SimContextAwareness.class.cast(obj).init(SimUtils.context2Properties(vc));
+				}
 				bean = new FunctionBean(obj);
 				if (obj instanceof FunctionBeanListener) {
 					((FunctionBeanListener)obj).onCreate(simulatorName, bean.getContext());

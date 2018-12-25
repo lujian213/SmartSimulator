@@ -30,16 +30,6 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	}
 
 	protected void init() throws IOException {
-		String listenerStr = script.getProperty(PROP_NAME_LISTENER);
-		if (listenerStr != null) {
-			for (String listenerClass: listenerStr.split(",")) {
-				try {
-					this.addListener((SimulatorListener) Class.forName(listenerClass.trim(), true, script.getClassLoader()).newInstance());
-				} catch (Exception e) {
-					throw new IOException("error when create simpulator listener", e);
-				}
-			}
-		}
 		proxy = Boolean.parseBoolean(script.getProperty(PROP_NAME_PROXY));
 		if (proxy) {
 			proxyURL = script.getMandatoryProperty(PROP_NAME_PROXY_URL, "no proxy url defined");
@@ -51,6 +41,18 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	}
 
 	public void start() throws IOException {
+		String listenerStr = script.getProperty(PROP_NAME_LISTENER);
+		if (listenerStr != null) {
+			for (String listenerClass: listenerStr.split(",")) {
+				try {
+					SimulatorListener listener = SimulatorListener.class.cast(Class.forName(listenerClass.trim(), true, script.getClassLoader()).newInstance());
+					listener.init(script.getConfigAsProperties());
+					this.addListener(listener);
+				} catch (Exception e) {
+					throw new IOException("error when create simpulator listener", e);
+				}
+			}
+		}
 		try {
 			doStart();
 		} finally {

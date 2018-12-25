@@ -1,6 +1,7 @@
 package org.jingle.simulator;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,5 +57,15 @@ public class SimResponse {
 		body = ResponseHandler.getHandlerChain().handle(headers, vc, resp);
 		code = resp.getCode();
 	}
+	
+	public void print(PrintWriter pw) {
+		pw.println("HTTP/1.1 " + getCode());
+		for (Map.Entry<String, Object> entry: headers.entrySet()) {
+			pw.println(entry.getKey() + ": " + entry.getValue());
+		}
+		pw.println(getBodyAsString());
+		pw.flush();
+	}
+
 }
 

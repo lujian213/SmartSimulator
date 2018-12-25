@@ -1,7 +1,6 @@
 package org.jingle.simulator;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -22,9 +21,7 @@ public interface SimRequest {
 	
 	public ReqRespConvertor getReqRespConvertor();
 	
-	default void print() {
-		PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out));
-		
+	default void print(PrintWriter pw) {
 		pw.println(getTopLine());
 		for (String header: getAllHeaderNames()) {
 			pw.println(getHeaderLine(header));

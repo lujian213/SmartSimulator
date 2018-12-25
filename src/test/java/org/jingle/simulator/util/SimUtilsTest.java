@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Properties;
 
 import org.apache.velocity.VelocityContext;
 import org.junit.Test;
@@ -66,5 +67,15 @@ public class SimUtilsTest {
 		} catch (IOException e) {
 			fail("unexpected exception: " + e);
 		}
+	}
+	
+	@Test
+	public void testContext2Properties() {
+		VelocityContext context = new VelocityContext();
+		context.put("key1", "value1");
+		context.put("key2", 100);
+		Properties props = SimUtils.context2Properties(context);
+		assertEquals("value1", props.getProperty("key1"));
+		assertEquals(100, props.get("key2"));
 	}
 }
