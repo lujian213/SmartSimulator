@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.zip.ZipFile;
 
+import org.jingle.simulator.monitor.MessageCounter;
 import org.jingle.simulator.util.SimLogger;
 
 public class SimulatorRepository {
@@ -124,6 +125,7 @@ public class SimulatorRepository {
 				SimSimulator simulator = simulatorMap.get(script.getSimulatorName());
 				if (simulator == null) {
 					simulator = SimSimulator.createSimulator(script);
+					simulator.addListener(MessageCounter.getInstance());
 					simulatorMap.put(simulator.getName(), simulator);
 					SimLogger.getLogger().info("Simulator [" + simulator.getName() + "] loaded");
 				}
@@ -150,6 +152,7 @@ public class SimulatorRepository {
 				throw new RuntimeException("no such simulator [" + name + "]");
 			}
 			sim = SimSimulator.createSimulator(opSc.get());
+			sim.addListener(MessageCounter.getInstance());
 			simulatorMap.put(sim.getName(), sim);
 			sim.start();
 			SimLogger.getLogger().info("Simulator [" + name + "] is running at " + sim.getRunningURL());

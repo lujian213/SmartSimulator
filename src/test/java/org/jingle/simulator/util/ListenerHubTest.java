@@ -11,9 +11,7 @@ public class ListenerHubTest {
 	public void test1() {
 		ListenerHub<SimulatorListener> inst = ListenerHub.createListenerHub(SimulatorListener.class);
 		assertTrue(inst instanceof SimulatorListener);
-		System.out.println(inst.getClass());
 		assertNotNull(inst.getClass());
-		System.out.println(inst.hashCode());
 		assertFalse(inst.hashCode() == 0);
 		
 		final int[] i = new int[] {1};

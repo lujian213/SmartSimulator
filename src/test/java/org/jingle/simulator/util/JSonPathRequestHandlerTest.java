@@ -126,10 +126,7 @@ public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 		Map<String, Object> ret;
 		try {
 			ret = handler.retrievePathValue(requestBody, pathMap);
-			System.out.println(ret);
 			assertEquals(1, ret.size());
-//			assertEquals(3, ((Object[])ret.get("ids")).length);
-//			assertEquals("p1", ((Object[])ret.get("ids"))[0]);
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}
