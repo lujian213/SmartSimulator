@@ -32,7 +32,8 @@ public class SimulatorRepository {
 	protected List<SimScript> loadScripts(File folder) throws IOException {
 		List<SimScript> ret = new ArrayList<>();
 		SimScript script = new SimScript(folder);
-
+		script.init();
+		
 		File[] files = folder.listFiles(new FileFilter() {
 
 			@Override

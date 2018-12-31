@@ -211,9 +211,9 @@ public class SimScript {
 			subScript.scriptLogger = scriptLogger;
 		}
 		if (libFile != null) {
-			this.simClassLoader = new SimClassLoader(libFile, ClassLoader.getSystemClassLoader());
+			this.simClassLoader = new SimClassLoader(libFile, parent == null ? ClassLoader.getSystemClassLoader() : parent.getClassLoader());
 		} else if (!libURLs.isEmpty()) {
-			this.simClassLoader = new SimClassLoader(libURLs.toArray(new URL[0]), ClassLoader.getSystemClassLoader());
+			this.simClassLoader = new SimClassLoader(libURLs.toArray(new URL[0]), parent == null ? ClassLoader.getSystemClassLoader() : parent.getClassLoader());
 		} 
 	}
 	
@@ -225,7 +225,7 @@ public class SimScript {
 
 			@Override
 			public boolean accept(File file) {
-				if (file.isFile() && (file.getName().endsWith(SCRIPT_EXT) || file.getName().endsWith(IGNORE_EXT)|| file.getName().equals(INIT_FILE)) || (includeSubFolder && file.isDirectory())) {
+				if (file.isFile() && (file.getName().endsWith(SCRIPT_EXT) || file.getName().endsWith(IGNORE_EXT)|| file.getName().equals(INIT_FILE)) || file.isDirectory()) {
 					return true;
 				}
 				return false;
@@ -267,7 +267,7 @@ public class SimScript {
 			} else {
 				if (LIB_DIR.equals(file.getName())) {
 					libFile = file;
-				} else {
+				} else if (includeSubFolder) {
 					SimScript subScript = new SimScript(this, file);
 					if (!subScript.isIgnored()) {
 						subScripts.put(file.getName(), subScript);
@@ -318,6 +318,9 @@ public class SimScript {
 	}
 
 	public String getSimulatorName() {
+		if (parent == null) {
+			return "root";
+		}
 		return config.getString(PROP_NAME_SIMULATOR_NAME);
 	}
 
