@@ -109,7 +109,13 @@ public class SocketSimulator extends SimSimulator {
 				castToSimulatorListener().onHandleMessage(getName(), request, respList, !respList.isEmpty());
 	    	}
 	    }
-}
+	}
+	
+	@Override
+	public String getType() {
+		return "socket";
+	}
+
 	
 	public class ClientHandler extends ChannelInboundHandlerAdapter {
 		private ChannelHandlerContext delegator;

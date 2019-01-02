@@ -190,4 +190,10 @@ public class JMSSimulator extends SimSimulator {
 	protected void init() throws IOException {
 		super.init();
 	}
+	
+	@Override
+	public String getType() {
+		return "JMS";
+	}
+
 }

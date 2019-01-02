@@ -19,7 +19,7 @@ public class SimulatorStatus {
 	
 	public SimulatorStatus(SimSimulator simulator) {
 		this.name = simulator.getName();
-		this.type = simulator.getClass().getName();
+		this.type = simulator.getType();
 		this.status = simulator.isRunning() ? "running" : "stopped";
 		this.runningURL = simulator.getRunningURL();
 		

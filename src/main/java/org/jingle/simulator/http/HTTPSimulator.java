@@ -45,6 +45,11 @@ public abstract class HTTPSimulator extends SimSimulator {
 	}
 
 	@Override
+	public String getType() {
+		return "http/https";
+	}
+
+	@Override
 	protected void init() throws IOException {
 		super.init();
 		port = script.getMandatoryIntProperty(PROP_NAME_PORT, "no http port defined");

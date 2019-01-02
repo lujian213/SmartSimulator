@@ -29,6 +29,8 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	protected SimSimulator() {
 	}
 
+	public abstract String getType();
+	
 	protected void init() throws IOException {
 		proxy = Boolean.parseBoolean(script.getProperty(PROP_NAME_PROXY));
 		if (proxy) {
