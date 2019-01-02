@@ -224,4 +224,18 @@ public class SimTemplateTest {
 			fail("unexpected exception:" + e);
 		}
 	}
+
+	@Test
+	public void testParse8() {
+		try {
+			SimTemplate template = new SimTemplate("2000TRADE{$p10:301}{$p311:2}{$p313:8}{$p321:12}{$p333:10}{$p343:8}{$p351:814}{$p1165:3}{$p1168:61}{$p1229:3}{$p1232:115}{$p1347:6}{$p1353:18}{$p1371:28}{$p1399:80}{$p1479:2}{$p1481:520}");
+			
+			Map<String, Object> map = template.parse("2000TRADECDTSTES ZMQX    TES.TPSCORP.S.OUTPUT20190101084901CDTS1T  CDTS1MQTTEQB0006TQ1     0101      N139          2019010220190101 20:48          010250NAAF2019X S459200HT1                     CAICB           N139    010419USD                 LMCOP           11000000          $77.8               E-CDTSMQ    00        8558000.0002          84608.33                                                                                                                                                                                                                                                                       20                M             X                                                                                                                                                                                                  7DTC 0901                      A/C 003414                     .                                                          02/12 CPN 1.95                02/06 1 will be corr                                                                                                                                                         142                                                             840                                                                                                                   70.164                  8642608.33 010250NAAF7362811RESP-140876166,1,TPS,CDTS                                                       TA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ");
+			assertEquals(17, map.size());
+			assertEquals("00", map.get("p311"));
+			assertEquals("8558000.0002", map.get("p321"));
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
 }
