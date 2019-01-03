@@ -10,7 +10,7 @@ public class SimulatorDetail {
 	public SimulatorDetail(SimSimulator simulator) {
 		this.name = simulator.getName();
 		this.type = simulator.getType();
-		this.scriptInfo = new ScriptInfo(simulator.getScript());
+		this.scriptInfo = new ScriptInfo("root", simulator.getScript());
 	}
 
 	public String getName() {

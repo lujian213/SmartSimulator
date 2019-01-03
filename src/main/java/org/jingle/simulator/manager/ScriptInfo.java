@@ -5,21 +5,18 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jingle.simulator.SimScript;
-import org.jingle.simulator.SimScript.TemplatePair;
 
 public class ScriptInfo {
+	String name;
 	List<TemplatePairInfo> templatePairs = new ArrayList<>();
 	List<ScriptInfo> subScripts = new ArrayList<>();
 	Properties props = new Properties();
 
-	public ScriptInfo(SimScript script) {
+	public ScriptInfo(String name, SimScript script) {
+		this.name = name;
 		this.props = script.getConfigAsProperties();
-		for (SimScript s: script.getSubScripts().values()) {
-			subScripts.add(new ScriptInfo(s));
-		}
-		for (TemplatePair pair: script.getTemplatePairs()) {
-			this.templatePairs.add(new TemplatePairInfo(pair));
-		}
+		script.getSubScripts().forEach((key, value)->subScripts.add(new ScriptInfo(key, value)));
+		script.getTemplatePairs().forEach((pair) ->this.templatePairs.add(new TemplatePairInfo(pair)));
 	}
 
 	public List<TemplatePairInfo> getTemplatePairs() {
@@ -33,6 +30,8 @@ public class ScriptInfo {
 	public Properties getProps() {
 		return props;
 	}
-	
-	
+
+	public String getName() {
+		return name;
+	}
 }
