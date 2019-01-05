@@ -24,9 +24,9 @@ public class SimulatorManager {
 		return ret;
 	}
 
-	public SimulatorDetail getSimulatorInfo(@SimParam("simulatorName") String name) {
+	public SimulatorDetail getSimulatorInfo(@SimParam("simulatorName") String name, @SimParam("_raw") boolean raw) {
 		SimSimulator simulator = rep.getSimulator(name);
-		return new SimulatorDetail(simulator);
+		return new SimulatorDetail(simulator, raw);
 	}
 
 	public String startSimulator(@SimParam("simulatorName") String name) throws IOException {

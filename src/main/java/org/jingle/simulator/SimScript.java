@@ -288,6 +288,19 @@ public class SimScript {
 		return props;
 	}
 	
+	public Properties getConfigAsRawProperties() {
+		Properties props = new Properties();
+		Iterator<String> keyIt = config.getKeys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			Object value = config.getProperty(key);
+			if (value instanceof String) {
+				props.setProperty(key, (String) config.getProperty(key));
+			}
+		}
+		return props;
+	}
+
 	public Configuration getConfig() {
 		return this.config;
 	}

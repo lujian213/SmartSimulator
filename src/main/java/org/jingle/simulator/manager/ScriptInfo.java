@@ -13,9 +13,13 @@ public class ScriptInfo {
 	Properties props = new Properties();
 
 	public ScriptInfo(String name, SimScript script) {
+		this(name, script, false);
+	}
+
+	public ScriptInfo(String name, SimScript script, boolean raw) {
 		this.name = name;
-		this.props = script.getConfigAsProperties();
-		script.getSubScripts().forEach((key, value)->subScripts.add(new ScriptInfo(key, value)));
+		this.props = raw ? script.getConfigAsRawProperties() : script.getConfigAsProperties();
+		script.getSubScripts().forEach((key, value)->subScripts.add(new ScriptInfo(key, value, raw)));
 		script.getTemplatePairs().forEach((pair) ->this.templatePairs.add(new TemplatePairInfo(pair)));
 	}
 
