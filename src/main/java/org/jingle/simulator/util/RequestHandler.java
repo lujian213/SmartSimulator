@@ -29,6 +29,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 
@@ -42,6 +43,7 @@ public interface RequestHandler {
 	static RequestHandlerChain inst = new RequestHandlerChain (
 			new XPathRequestHandler(),
 			new JSonPathRequestHandler(),
+			new JSonObjectRequestHandler(),
 			new GroovyRequestHandler(),
 			new DefaultRequestHandler()
 	);
@@ -84,11 +86,14 @@ public interface RequestHandler {
 	static class DefaultRequestHandler implements RequestHandler {
 		@Override
 		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			Map<String, Object> ret = new SimTemplate(templateBody).parse(request.getBody());
-			if (ret == null) {
-				SimUtils.printMismatchInfo("body template", templateBody, request.getBody());
+			if (templateBody != null) {
+				Map<String, Object> ret = new SimTemplate(templateBody).parse(request.getBody());
+				if (ret == null) {
+					SimUtils.printMismatchInfo("body template", templateBody, request.getBody());
+				}
+				return ret;
 			}
-			return ret;
+			return new HashMap<>();
 		}
 	}
 
@@ -179,7 +184,7 @@ public interface RequestHandler {
 			        XPathExpression expr = xpath.compile(entry.getValue().getXpath());
 					Object value = expr.evaluate(document, entry.getValue().getType());
 					if (value == null || (value instanceof String && ((String)value).isEmpty()) || (value instanceof NodeList && ((NodeList)value).getLength() == 0)) {
-						SimLogger.getLogger().error("can not find value for xpath [" + entry.getValue() + "]");
+						SimLogger.getLogger().error("can not find value for xpath [" + entry.getValue().getXpath() + "]");
 						return null;
 					}
 					if (entry.getValue().getType().equals(XPathConstants.NODESET)) {
@@ -218,7 +223,7 @@ public interface RequestHandler {
 			for (Map.Entry<String, XPathExp> entry: pathMap.entrySet()) {
 				Object value = JsonPath.read(document, entry.getValue().getXpath());
 				if (value == null || (value instanceof String && ((String)value).isEmpty()) || (value instanceof JSONArray && ((JSONArray)value).isEmpty())) {
-					SimLogger.getLogger().error("can not find value for path [" + entry.getValue() + "]");
+					SimLogger.getLogger().error("can not find value for path [" + entry.getValue().getXpath() + "]");
 					return null;
 				}
 				if (entry.getValue().getType().equals(XPathConstants.NODESET)) {
@@ -239,6 +244,34 @@ public interface RequestHandler {
 					}
 				}
 			}
+			return ret;
+		}
+	}
+
+	static class JSonObjectRequestHandler implements RequestHandler {
+		public static final String BODY_TYPE_JSONOBJECT = "JSonObject";
+		public static final String HEADER_JSON_CLASS_NAME = "_JSonObject.classname";
+		public static final String HEADER_JSON_VAR_NAME = "_JSonObject.varname";
+
+		@Override
+		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
+			String bodyType = (String) headers.get(HEADER_BODY_TYPE);
+			if (BODY_TYPE_JSONOBJECT.equals(bodyType)) {
+				return retrieveJSonObject(request.getBody(), headers);
+			}
+			return null;
+		}
+		
+		protected Map<String, Object> retrieveJSonObject(String requestBody, Map<String, String> headers) throws IOException {
+			Map<String, Object> ret = new HashMap<>();
+			ObjectMapper mapper = new ObjectMapper();
+			Object obj;
+			try {
+				obj = mapper.readValue(requestBody, Class.forName(headers.get(HEADER_JSON_CLASS_NAME), true, Thread.currentThread().getContextClassLoader()));
+			} catch (ClassNotFoundException e) {
+				throw new IOException(e);
+			}
+			ret.put(headers.get(HEADER_JSON_VAR_NAME), obj);
 			return ret;
 		}
 	}

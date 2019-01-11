@@ -17,11 +17,11 @@ public interface SimRequest {
 
 	public String getTopLine();
 
-	public void fillResponse(SimResponse response) throws IOException; 
+	public void fillResponse(SimResponse response) throws IOException;
 	
 	public ReqRespConvertor getReqRespConvertor();
 	
-	default void print(PrintWriter pw) {
+	default public void print(PrintWriter pw) {
 		pw.println(getTopLine());
 		for (String header: getAllHeaderNames()) {
 			pw.println(getHeaderLine(header));
@@ -29,4 +29,5 @@ public interface SimRequest {
 		pw.println(getBody());
 		pw.flush();
 	}
+	
 }

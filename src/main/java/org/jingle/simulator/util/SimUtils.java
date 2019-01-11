@@ -45,6 +45,7 @@ import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
 import org.jingle.simulator.SimSimulator;
 import org.jingle.simulator.jms.JMSSimRequest;
+import org.jingle.simulator.jms.JMSSimulator;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -217,7 +218,7 @@ public class SimUtils {
 				String propName = it.nextElement();
 				headers.put(propName, message.getObjectProperty(propName));
 			}
-			headers.put(JMSSimRequest.HEADER_NAME_CHANNEL, proxyURL);
+			headers.put(JMSSimulator.HEADER_NAME_CHANNEL, proxyURL);
 			return new SimResponse(200, headers, message.getText().getBytes());
 		} catch (JMSException e) {
 			SimLogger.getLogger().error(e);
@@ -247,12 +248,16 @@ public class SimUtils {
     }
     
 	public static String concatContent(List<String> lines) {
+		return concatContent(lines, "\n");
+	}
+
+	public static String concatContent(List<String> lines, String delim) {
 		if (lines.size() > 0) {
 			StringBuffer sb = new StringBuffer();
 			for (int i = 1; i <= lines.size(); i++) {
 				sb.append(lines.get(i - 1));
 				if (i != lines.size()) {
-					sb.append("\n");
+					sb.append(delim);
 				}
 			}
 			return sb.toString();

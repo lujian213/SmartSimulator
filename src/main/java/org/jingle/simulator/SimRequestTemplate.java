@@ -96,7 +96,7 @@ public class SimRequestTemplate {
 				ret.putAll(res);
 			}
 		}
-		if (bodyContent != null) {
+//		if (bodyContent != null) {
 			res = RequestHandler.getHandlerChain().handle(extraHeader, bodyContent, request);
 			if (res == null) {
 				SimUtils.printMismatchInfo("body template", bodyContent, request.getBody());
@@ -104,7 +104,11 @@ public class SimRequestTemplate {
 			} else {
 				ret.putAll(res);
 			}
-		}
+//		}
 		return ret;
+	}
+
+	public Map<String, String> getExtraHeader() {
+		return extraHeader;
 	}
 }

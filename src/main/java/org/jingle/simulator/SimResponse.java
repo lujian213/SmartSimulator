@@ -10,6 +10,8 @@ import org.jingle.simulator.util.ResponseHandler;
 import org.jingle.simulator.util.SimUtils;
 
 public class SimResponse {
+	public static final String PROP_NAME_RESPONSE_TARGETSIMULATOR = "_response.targetSimulator";
+
 	private int code;
 	private Map<String, Object> headers = new HashMap<>();
 	private byte[] body;

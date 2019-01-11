@@ -14,6 +14,7 @@ import javax.naming.NamingException;
 
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.SimScript;
+import org.jingle.simulator.SimSesseionLessSimulator;
 import org.jingle.simulator.SimSimulator;
 import org.jingle.simulator.jms.JMSBroker.SimMessageConsumer;
 import org.jingle.simulator.jms.JMSBroker.SimMessageProducer;
@@ -21,11 +22,18 @@ import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
-public class JMSSimulator extends SimSimulator {
+public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulator {
 	public static final String PROP_NAME_DESTINATION_TYPE = "simulator.jms.destination.type";
 	public static final String PROP_NAME_DESTINATION_BROKER = "simulator.jms.destination.broker";
 	public static final String PROP_NAME_DESTINATION_NAME = "simulator.jms.destination.name";
 	public static final String PROP_NAME_CLIENT_TYPE = "simulator.jms.client.type";
+
+	public static final String HEADER_NAME_CHANNEL = "_Channel";
+	public static final String HEADER_NAME_MESSAGE_TYPE = "_Message.Type";
+	public static final String HEADER_NAME_PRODUCER = "_Producer";
+	public static final String MESSAGE_TYPE_TEXT = "Text";
+	public static final String MESSAGE_TYPE_BYTES = "Bytes";
+
 	
 	public static final String CLIENT_TYPE_PUB = "Pub";
 	public static final String CLIENT_TYPE_SUB = "Sub";
@@ -34,6 +42,7 @@ public class JMSSimulator extends SimSimulator {
 	private Map<String, JMSBroker> brokerMap = new HashMap<>();
 	private boolean proxy;
 	private String proxyURL;
+	private ReqRespConvertor convertor;
 
 	
 	public class SimMessageListener implements MessageListener {
@@ -42,11 +51,11 @@ public class JMSSimulator extends SimSimulator {
 		private Session session;
 		private ReqRespConvertor convertor;
 		
-		public SimMessageListener(SimScript script, Session session, String unifiedDestName) {
+		public SimMessageListener(SimScript script, Session session, String unifiedDestName, ReqRespConvertor convertor) {
 			this.script = script;
 			this.unifiedDestName = unifiedDestName;
 			this.session = session;
-			this.convertor = SimUtils.createMessageConvertor(script, new DefaultJMSReqRespConvertor());
+			this.convertor = convertor;
 		}
 		
 		@Override
@@ -54,7 +63,7 @@ public class JMSSimulator extends SimSimulator {
 			SimUtils.setThreadContext(script);
 			JMSSimRequest request = null;
 			try {
-				request = new JMSSimRequest(message, session, unifiedDestName, producerMap, brokerMap, convertor);
+				request = new JMSSimRequest(script, message, session, unifiedDestName, convertor);
 				SimLogger.getLogger().info("incoming request from [" + unifiedDestName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
 			} catch (Exception e) {
 				SimLogger.getLogger().error("error when create SimRequest", e);
@@ -85,6 +94,7 @@ public class JMSSimulator extends SimSimulator {
 	
 	public JMSSimulator(SimScript script) throws IOException {
 		super(script);
+		convertor = SimUtils.createMessageConvertor(script, new DefaultJMSReqRespConvertor());
 	}
 	
 	protected JMSSimulator() {
@@ -137,7 +147,7 @@ public class JMSSimulator extends SimSimulator {
 			} 
 			if (clientType.contains(CLIENT_TYPE_SUB)) {
 				SimMessageConsumer simConsumer = broker.createConsumer(script, destName, destType);
-				simConsumer.getConsumer().setMessageListener(new SimMessageListener(script, simConsumer.getSession(), getUnifiedDestName(brokerName, destName)));
+				simConsumer.getConsumer().setMessageListener(new SimMessageListener(script, simConsumer.getSession(), getUnifiedDestName(brokerName, destName), convertor));
 				handled = true;
 				ret = getUnifiedDestName(brokerName, destName);
 			}
@@ -165,7 +175,7 @@ public class JMSSimulator extends SimSimulator {
 		boolean success = false;
 		try {
 			List<String> subDestNameList = prepare();
-			this.runningURL = SimUtils.concatContent(subDestNameList);
+			this.runningURL = SimUtils.concatContent(subDestNameList, ",");
 			success = true;
 		} finally {
 			if (!success) {
@@ -195,5 +205,40 @@ public class JMSSimulator extends SimSimulator {
 	public String getType() {
 		return "JMS";
 	}
+
+	@Override
+	public void fillResponse(SimResponse response) throws IOException {
+		try {
+			Map<String, Object> headers = response.getHeaders();
+			SimMessageProducer producer = (SimMessageProducer) headers.remove(HEADER_NAME_PRODUCER);
+			String channel = (String) headers.remove(HEADER_NAME_CHANNEL);
+			if (producer == null) {
+				producer = producerMap.get(channel);
+			}
+			if (producer == null) {
+				throw new IOException("can not find producer for channel [" + channel + "]");
+			}
+			String messageType = (String) headers.remove(HEADER_NAME_MESSAGE_TYPE);
+			Message respMsg = createMessage(producer.getSession(), messageType);
+			for (Map.Entry<String, Object> entry : headers.entrySet()) {
+				respMsg.setObjectProperty(entry.getKey(), entry.getValue());
+			}
+			convertor.fillRawResponse(respMsg, response);
+			producer.getProducer().send(respMsg);
+		} catch (JMSException e) {
+			throw new IOException(e);
+		}
+	}
+	
+	protected static Message createMessage(Session session, String type) throws JMSException {
+		if (MESSAGE_TYPE_TEXT.equals(type) || type == null) {
+			return session.createTextMessage();
+		} else if (MESSAGE_TYPE_BYTES.equals(type)) {
+			return session.createBytesMessage();
+		} else {
+			throw new JMSException("can't support message type [" + type + "]");
+		}
+	}
+
 
 }

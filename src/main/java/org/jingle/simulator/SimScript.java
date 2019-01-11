@@ -73,11 +73,13 @@ public class SimScript {
 	private Map<String, SimScript> subScripts = new HashMap<>();
 	private PropertiesConfiguration config = new PropertiesConfiguration();
 	private boolean ignored = false;
+	private File myself = null;
 	private File libFile = null;
 	private List<URL> libURLs = new ArrayList<>();
 	private SimScript parent = null;
 	
 	public SimScript(SimScript parent, File file) throws IOException {
+		this.myself = file;
 		this.parent = parent;
 		config.copy(parent.getConfig());
 		config.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
@@ -86,6 +88,7 @@ public class SimScript {
 	}
 	
 	public SimScript(SimScript parent, final ZipFile zf, File file) throws IOException {
+		this.myself = file;
 		this.parent = parent;
 		config.copy(parent.getConfig());
 		config.setProperty(PROP_NAME_SIMULATOR_URL, "jar:" + file.toURI() + "!/");
@@ -155,6 +158,7 @@ public class SimScript {
 	}
 
 	public SimScript(File file) throws IOException {
+		this.myself = file;
 		config.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		loadFolder(file, false); 
 	}
@@ -177,6 +181,10 @@ public class SimScript {
 		return true;
 	}
 	
+	public File getMyself() {
+		return myself;
+	}
+
 	public boolean isIgnored() {
 		return this.ignored;
 	}

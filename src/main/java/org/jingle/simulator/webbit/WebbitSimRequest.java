@@ -6,14 +6,14 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.AbstractSimRequest;
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
 
-public class WebbitSimRequest implements SimRequest {
+public class WebbitSimRequest extends AbstractSimRequest {
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String AUTHENTICATION_LINE_FORMAT = "Authentication: %s,%s";
@@ -106,7 +106,8 @@ public class WebbitSimRequest implements SimRequest {
 		return this.body;
 	}
 	
-	public void fillResponse(SimResponse resp) throws IOException {
+	@Override
+	protected void doFillResponse(SimResponse resp) throws IOException {
 		for (Map.Entry<String, Object> entry : resp.getHeaders().entrySet()) {
 			response.header(entry.getKey(), entry.getValue().toString());
 		}

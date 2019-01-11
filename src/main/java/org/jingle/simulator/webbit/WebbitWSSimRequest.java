@@ -6,13 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jingle.simulator.AbstractSimRequest;
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimUtils;
 import org.webbitserver.WebSocketConnection;
 
-public class WebbitWSSimRequest implements SimRequest {
+public class WebbitWSSimRequest extends AbstractSimRequest {
 	public static final String HEADER_NAME_CHANNEL = "_Channel";
 	public static final String HEADER_NAME_CHANNEL_ID = "_Channel_ID";
 
@@ -81,7 +82,8 @@ public class WebbitWSSimRequest implements SimRequest {
 		return this.body;
 	}
 	
-	public void fillResponse(SimResponse resp) throws IOException {
+	@Override
+	protected void doFillResponse(SimResponse resp) throws IOException {
 		String actualChannel = (String) resp.getHeaders().get(HEADER_NAME_CHANNEL);
 		String channelID = (String) resp.getHeaders().get(HEADER_NAME_CHANNEL_ID);
 		if (channelID != null) {

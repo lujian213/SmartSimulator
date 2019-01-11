@@ -100,7 +100,7 @@ public class JMSBroker {
 				} else {
 					tc = tcf.createConnection();
 				}
-				ts = tc.createSession();
+				ts = tc.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			}
 			String qcfName = script.getProperty(PROP_NAME_QUEUE_FACTORY_NAME);
 			if (qcfName != null) {
@@ -110,7 +110,7 @@ public class JMSBroker {
 				} else {
 					qc = qcf.createConnection();
 				}
-				qs = qc.createSession();
+				qs = qc.createSession(false, Session.AUTO_ACKNOWLEDGE);
 			}
         } catch (NamingException | JMSException e) {
 			throw new RuntimeException(e);

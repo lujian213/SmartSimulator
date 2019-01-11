@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jingle.simulator.AbstractSimRequest;
 import org.jingle.simulator.SimRequest;
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.util.ReqRespConvertor;
@@ -14,7 +15,7 @@ import org.jingle.simulator.util.SimUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public class SocketSimRequest implements SimRequest {
+public class SocketSimRequest extends AbstractSimRequest {
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String TOP_LINE_FORMAT = "%s %s";
 
@@ -72,7 +73,8 @@ public class SocketSimRequest implements SimRequest {
 		return this.body;
 	}
 	
-	public void fillResponse(SimResponse response) throws IOException {
+	@Override
+	protected void doFillResponse(SimResponse response) throws IOException {
 		byte[] body = response.getBody();
 		long length = body.length;
 		ByteBuf buf = context.alloc().buffer((int)length);

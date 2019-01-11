@@ -7,7 +7,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.AbstractSimRequest;
 import org.jingle.simulator.SimResponse;
 import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
@@ -17,7 +17,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
 @SuppressWarnings("restriction")
-public class SimpleSimRequest implements SimRequest {
+public class SimpleSimRequest extends AbstractSimRequest {
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String AUTHENTICATION_LINE_FORMAT = "Authentication: %s,%s";
@@ -113,8 +113,10 @@ public class SimpleSimRequest implements SimRequest {
 		return this.body;
 	}
 	
-	public void fillResponse(SimResponse response) throws IOException {
+	@Override
+	protected void doFillResponse(SimResponse response) throws IOException {
 		Headers respHeaders = httpExchange.getResponseHeaders();
+
 		for (Map.Entry<String, Object> entry : response.getHeaders().entrySet()) {
 			respHeaders.add(entry.getKey(), entry.getValue().toString());
 		}

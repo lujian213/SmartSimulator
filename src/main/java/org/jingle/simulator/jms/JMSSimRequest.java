@@ -14,37 +14,34 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jingle.simulator.SimRequest;
+import org.jingle.simulator.AbstractSimRequest;
 import org.jingle.simulator.SimResponse;
+import org.jingle.simulator.SimScript;
 import org.jingle.simulator.jms.JMSBroker.SimMessageProducer;
 import org.jingle.simulator.util.ReqRespConvertor;
 import org.jingle.simulator.util.SimLogger;
 import org.jingle.simulator.util.SimUtils;
 
-public class JMSSimRequest implements SimRequest {
-	public static final String HEADER_NAME_CHANNEL = "_Channel";
+public class JMSSimRequest extends AbstractSimRequest {
 	public static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
 	public static final String CHANNEL_NAME_TEMP_QUEUE = "???";
 	public static final String CHANNEL_NAME_TEMP_TOPIC = "###";
-	public static final String HEADER_NAME_MESSAGE_TYPE = "_Message.Type";
-	public static final String MESSAGE_TYPE_TEXT = "Text";
-	public static final String MESSAGE_TYPE_BYTES = "Bytes";
 	
 	private static final String[] JMS_HEADER_NAMES = {"JMSCorrelationID", "JMSDeliveryMode", "JMSDeliveryTime", "JMSDestination", "JMSExpiration", "JMSMessageID", "JMSPriority", "JMSRedelivered", "JMSReplyTo", "JMSTimestamp", "JMSType"};
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private Message message;
 	private String unifiedDestName;
-	private Map<String, SimMessageProducer> producerMap;
 	private String topLine;
 	private Map<String, Object> headers = new HashMap<>();
 	private String body;
 	private Session session;
 	private ReqRespConvertor convertor;
+	private SimScript script;
 	
-	public JMSSimRequest(Message message, Session session, String unifiedDestName, Map<String, SimMessageProducer> producerMap, Map<String, JMSBroker> brokerMap, ReqRespConvertor convertor) throws IOException {
+	public JMSSimRequest(SimScript script, Message message, Session session, String unifiedDestName, ReqRespConvertor convertor) throws IOException {
+		this.script = script;
 		this.message = message;
 		this.unifiedDestName = unifiedDestName;
-		this.producerMap = producerMap;
 		this.session = session;
 		this.convertor = convertor;
 		if (message instanceof TextMessage) {
@@ -105,13 +102,13 @@ public class JMSSimRequest implements SimRequest {
 		Map<String, Object> ret = new HashMap<>();
 		for (String jmsHeader: JMS_HEADER_NAMES) {
 			try {
-			Method m = Message.class.getMethod("get" + jmsHeader, new Class[0]);
-			Object value = m.invoke(message, new Object[0]);
+				Method m = Message.class.getMethod("get" + jmsHeader, new Class[0]);
+				Object value = m.invoke(message, new Object[0]);
 			if (value != null) {
 				ret.put(jmsHeader, m.invoke(message, new Object[0]));
 			}
 			} catch (Exception e) {
-				SimLogger.getLogger().error("error when get JMS headers", e);
+				SimLogger.getLogger().warn("problem when get JMS header [" + jmsHeader + "], " + e);
 			}
 		}
 		return ret;
@@ -139,44 +136,23 @@ public class JMSSimRequest implements SimRequest {
 	}
 	
 	@Override
-	public void fillResponse(SimResponse response) throws IOException {
+	protected void doFillResponse(SimResponse response) throws IOException {
 		try {
-			Map<String, Object> headers = response.getHeaders();
-			String channel = (String) headers.remove(HEADER_NAME_CHANNEL);
-			channel = (channel == null ? unifiedDestName: channel);
-			
-			SimMessageProducer producer = null;
+			String channel = (String) headers.get(JMSSimulator.HEADER_NAME_CHANNEL);
+			if (channel == null) {
+				headers.put(JMSSimulator.HEADER_NAME_CHANNEL, unifiedDestName);
+			}
 			if (CHANNEL_NAME_JMSREPLYTO.equals(channel)) {
 				SimLogger.getLogger().info("use destination in JMSReplyTo header [" + message.getJMSReplyTo() + "]");
-				producer = new SimMessageProducer(session, session.createProducer(message.getJMSReplyTo()));
-			} else {
-				producer = producerMap.get(channel);
+				SimMessageProducer producer = new SimMessageProducer(session, session.createProducer(message.getJMSReplyTo()));
+				headers.put(JMSSimulator.HEADER_NAME_PRODUCER, producer);
 			}
-			if (producer == null) {
-				throw new IOException("can not find producer for channel [" + channel + "]");
-			}
-			String messageType = (String) headers.remove(HEADER_NAME_MESSAGE_TYPE);
-			Message respMsg = createMessage(producer.getSession(), messageType);
-			for (Map.Entry<String, Object> entry : headers.entrySet()) {
-				respMsg.setObjectProperty(entry.getKey(), entry.getValue());
-			}
-			convertor.fillRawResponse(respMsg, response);
-			producer.getProducer().send(respMsg);
+			headers.put(SimResponse.PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
 		} catch (JMSException e) {
 			throw new IOException(e);
 		}
 	}
 	
-	protected Message createMessage(Session session, String type) throws JMSException {
-		if (MESSAGE_TYPE_TEXT.equals(type) || type == null) {
-			return session.createTextMessage();
-		} else if (MESSAGE_TYPE_BYTES.equals(type)) {
-			return session.createBytesMessage();
-		} else {
-			throw new JMSException("can't support message type [" + type + "]");
-		}
-	}
-
 	@Override
 	public List<String> getAllHeaderNames() {
 		return new ArrayList<>(headers.keySet());

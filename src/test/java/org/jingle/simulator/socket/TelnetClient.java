@@ -35,7 +35,7 @@ public final class TelnetClient {
 
     static final boolean SSL = System.getProperty("ssl") != null;
     static final String HOST = System.getProperty("host", "127.0.0.1");
-    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8100" : "8100"));
+    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8950" : "8950"));
 
     public static void main(String[] args) throws Exception {
         // Configure SSL.
