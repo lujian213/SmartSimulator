@@ -28,6 +28,7 @@ public class DefaultSimpleReqRespConvertor implements ReqRespConvertor {
 
 	@Override
 	public void fillRawResponse(Object rawResponse, SimResponse simResponse) throws IOException {
+		((HttpExchange)rawResponse).sendResponseHeaders(simResponse.getCode(), simResponse.getBody().length);
 		try (OutputStream os = ((HttpExchange) rawResponse).getResponseBody()) {
 			os.write(simResponse.getBody());
 		}

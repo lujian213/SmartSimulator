@@ -127,7 +127,7 @@ public class SimpleSimRequest extends AbstractSimRequest {
 			SimLogger.getLogger().info("set contentLength to 0 since TransferEncoding is chunked");
 			length = 0;
 		}
-		httpExchange.sendResponseHeaders(response.getCode(), length);
+		//httpExchange.sendResponseHeaders(response.getCode(), length);
 		convertor.fillRawResponse(httpExchange, response);
 	}
 
