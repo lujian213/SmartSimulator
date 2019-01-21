@@ -199,6 +199,7 @@ public class SimScript {
 	
 	public void init() throws IOException {
 		String simulatorName = this.getSimulatorName();
+		SimLogger.getLogger().info("initial Simulator [" + simulatorName + "]");
 
 		this.scriptLogger = Logger.getLogger(simulatorName);
 		String appenderName = simulatorName + "_file";
@@ -222,7 +223,10 @@ public class SimScript {
 			this.simClassLoader = new SimClassLoader(libFile, parent == null ? ClassLoader.getSystemClassLoader() : parent.getClassLoader());
 		} else if (!libURLs.isEmpty()) {
 			this.simClassLoader = new SimClassLoader(libURLs.toArray(new URL[0]), parent == null ? ClassLoader.getSystemClassLoader() : parent.getClassLoader());
-		} 
+		} else {
+			this.simClassLoader = (parent == null ? ClassLoader.getSystemClassLoader() : parent.getClassLoader());
+		}
+		SimLogger.getLogger().info("classloader is " + this.simClassLoader);
 	}
 	
 	protected void loadFolder(File folder, boolean includeSubFolder) throws IOException {

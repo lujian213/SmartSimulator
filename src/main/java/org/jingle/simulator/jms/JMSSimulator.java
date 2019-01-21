@@ -33,6 +33,7 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 	public static final String HEADER_NAME_PRODUCER = "_Producer";
 	public static final String MESSAGE_TYPE_TEXT = "Text";
 	public static final String MESSAGE_TYPE_BYTES = "Bytes";
+	public static final String MESSAGE_TYPE_OBJECT = "Object";
 
 	
 	public static final String CLIENT_TYPE_PUB = "Pub";
@@ -224,6 +225,7 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 				respMsg.setObjectProperty(entry.getKey(), entry.getValue());
 			}
 			convertor.fillRawResponse(respMsg, response);
+			SimLogger.getLogger().info("Use producer [" + producer.getProducer() + "] to send out message");
 			producer.getProducer().send(respMsg);
 		} catch (JMSException e) {
 			throw new IOException(e);
@@ -235,6 +237,8 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 			return session.createTextMessage();
 		} else if (MESSAGE_TYPE_BYTES.equals(type)) {
 			return session.createBytesMessage();
+		} else if (MESSAGE_TYPE_OBJECT.equals(type)) {
+			return session.createObjectMessage();
 		} else {
 			throw new JMSException("can't support message type [" + type + "]");
 		}

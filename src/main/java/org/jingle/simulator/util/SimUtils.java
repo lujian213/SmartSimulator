@@ -84,6 +84,28 @@ public class SimUtils {
 		return sb.toString();
 	}
 
+	public static Map<String, String> parseURL(String url) throws UnsupportedEncodingException {
+		Map<String, String> ret = new HashMap<>();
+		String[] parts = url.split("\\?");
+		if (parts.length > 1) {
+			String queryStr = parts.length > 1 ? parts[1] : null;
+			if (queryStr != null) {
+				final String[] pairs = queryStr.split("&");
+				for (String pair : pairs) {
+					final int idx = pair.indexOf("=");
+					final String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+					final String value = idx > 0 && pair.length() > idx + 1
+							? URLDecoder.decode(pair.substring(idx + 1), "UTF-8")
+							: null;
+					if (value != null) {
+						ret.put(key,  value);
+					}
+				}
+			}
+		}
+		return ret;
+	}
+
 	public static String mergeResult(VelocityContext context, String tagName, String templateStr) throws IOException {
 		try (StringWriter writer = new StringWriter()) {
 			ve.evaluate(context, writer, tagName, templateStr);

@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
+import org.jingle.simulator.util.SimLogger;
+
 public class SimClassLoader extends URLClassLoader {
 	private boolean supportNestedtJar = false;
 	
@@ -23,7 +25,9 @@ public class SimClassLoader extends URLClassLoader {
 		Arrays.asList(libDir.listFiles((dir_file, name)-> name.endsWith(".jar")||name.endsWith(".zip")))
 		.stream().forEach((f)->{
 			try {
-				this.addURL(f.toURI().toURL());
+				URL url = f.toURI().toURL();
+				this.addURL(url);
+				SimLogger.getLogger().info("add url: " + url);
 			} catch (MalformedURLException e) {
 			}
 		});

@@ -1,7 +1,6 @@
 package org.jingle.simulator.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -26,6 +25,20 @@ public class SimUtilsTest {
 		}
 	}
 	
+	@Test
+	public void testParseURL() {
+		try {
+			assertTrue(SimUtils.parseURL("/abc").isEmpty());
+			assertEquals(1, SimUtils.parseURL("/abc?a=1").size());
+			assertEquals("1", SimUtils.parseURL("/abc?a=1").get("a"));
+			assertEquals(2, SimUtils.parseURL("/abc?a=1&b=2").size());
+			assertEquals("2", SimUtils.parseURL("/abc?a=1&b=2").get("b"));
+			assertEquals(2, SimUtils.parseURL("/abc?a=1&b=2&c=").size());
+		} catch (UnsupportedEncodingException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
+
 	@Test
 	public void testEncodeURL() {
 		String source = "/jira/rest/api/2/search?jql=project = 21406  and labels IN (\"QTP_AUTOMATION\",\"MANUAL_TESTING\",\"Hammer_AUTOMATION\"  ,\"API_TESTING\" ,\"QA\") AND \"TPS Stream\" = \"Cash\"&fields=labels&maxResults=0";

@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
@@ -48,6 +49,8 @@ public class JMSSimRequest extends AbstractSimRequest {
 			this.topLine = "TextMessage";
 		} else if (message instanceof BytesMessage) {
 			this.topLine = "BytesMessage";
+		} else if (message instanceof ObjectMessage) {
+			this.topLine = "ObjectMessage";
 		} else {
 			this.topLine = "OtherMessage";
 		}
@@ -138,16 +141,17 @@ public class JMSSimRequest extends AbstractSimRequest {
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
 		try {
-			String channel = (String) headers.get(JMSSimulator.HEADER_NAME_CHANNEL);
+			Map<String, Object> respHeaders = response.getHeaders();
+			String channel = (String) respHeaders.get(JMSSimulator.HEADER_NAME_CHANNEL);
 			if (channel == null) {
-				headers.put(JMSSimulator.HEADER_NAME_CHANNEL, unifiedDestName);
+				respHeaders.put(JMSSimulator.HEADER_NAME_CHANNEL, unifiedDestName);
 			}
 			if (CHANNEL_NAME_JMSREPLYTO.equals(channel)) {
 				SimLogger.getLogger().info("use destination in JMSReplyTo header [" + message.getJMSReplyTo() + "]");
 				SimMessageProducer producer = new SimMessageProducer(session, session.createProducer(message.getJMSReplyTo()));
-				headers.put(JMSSimulator.HEADER_NAME_PRODUCER, producer);
+				respHeaders.put(JMSSimulator.HEADER_NAME_PRODUCER, producer);
 			}
-			headers.put(SimResponse.PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
+			respHeaders.put(SimResponse.PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
 		} catch (JMSException e) {
 			throw new IOException(e);
 		}
