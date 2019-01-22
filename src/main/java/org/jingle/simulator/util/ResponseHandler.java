@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.velocity.VelocityContext;
@@ -72,7 +73,14 @@ public interface ResponseHandler {
 		public static final String HEADER_NAME_BRIDGE_TYPE = "_Bridge.Type";
 		public static final String BRIDGE_TYPE_VM = "VM";
 		public static final String CONTEXT_NAME_SIMUTILS = "SimUtils";
+		private MimetypesFileTypeMap map;
 
+		public BridgeResponseHandler() {
+			map = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
+			map.addMimeTypes("text/css css");
+			map.addMimeTypes("application/javascript js");
+		}
+		
 		@Override
 		public byte[] handle(Map<String, Object> headers, VelocityContext vc, SimResponseTemplate resp) throws IOException {
 			String bridge = (String) headers.remove(HEADER_NAME_BRIDGE);
@@ -80,15 +88,14 @@ public interface ResponseHandler {
 			if (bridge != null) {
 				String contentType = (String) headers.get(HEADER_NAME_CONTENT_TYPE);
 				byte[] bodyBytes = handleBridgeRequest(bridge);
-				if (MediaTypeHelper.isText(contentType)) {
-					if (BRIDGE_TYPE_VM.equals(bridgeType)) {
-						vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
-						return SimUtils.mergeResult(vc, "body", bodyBytes).getBytes();
-					}
-					return bodyBytes;
-				} else {
-					return bodyBytes;
+				if (contentType == null) {
+					headers.put(HEADER_NAME_CONTENT_TYPE, map.getContentType(bridge));
 				}
+				if (BRIDGE_TYPE_VM.equals(bridgeType)) {
+					vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
+					return SimUtils.mergeResult(vc, "body", bodyBytes).getBytes();
+				}
+				return bodyBytes;
 			}
 			return null;
 		}

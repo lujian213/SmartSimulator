@@ -125,6 +125,8 @@ public class SimResponse {
 		}
 		for (Map.Entry<String, String> entry : resp.getHeaders().entrySet()) {
 			headers.put(entry.getKey(), SimUtils.mergeResult(vc, entry.getKey(), entry.getValue()));
+			vc.put(entry.getKey(), entry.getValue());
+			vc.put(entry.getKey().replace('.', '_'), entry.getValue());
 		}
 		body = ResponseHandler.getHandlerChain().handle(headers, vc, resp);
 		code = resp.getCode();

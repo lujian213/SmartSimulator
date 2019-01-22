@@ -49,54 +49,6 @@ public class SimpleSimulator extends HTTPSimulator {
 		}
 	}
 
-	public class StaticFileHandler implements HttpHandler {
-		private MimetypesFileTypeMap map;
-		private final int BUFFER_SIZE = 64 * 1024;
-		public StaticFileHandler() {
-			map = (MimetypesFileTypeMap) MimetypesFileTypeMap.getDefaultFileTypeMap();
-			for (Map.Entry<String, String> entry: mimeMap.entrySet()) {
-				map.addMimeTypes(entry.getValue() + " " + entry.getKey());
-			}
-		}
-
-		@Override
-		public void handle(HttpExchange exchange) {
-			try {
-				SimUtils.setThreadContext(script);
-				URI uri = exchange.getRequestURI();
-				String path = uri.getPath();
-				File file = new File(webFolder + path).getCanonicalFile();
-				SimLogger.getLogger().info("looking for: " + file);
-	
-				if (!file.isFile()) {
-					// Object does not exist or is not a file: reject with 404 error.
-					String response = "404 (Not Found)\n";
-					exchange.sendResponseHeaders(404, response.length());
-					try (OutputStream os = exchange.getResponseBody()) {
-						os.write(response.getBytes());
-					} catch (IOException e) {
-						SimLogger.getLogger().error("error when write 404 error message", e);
-					}
-				} else {
-					// Object exists and is a file: accept with response code 200.
-					Headers h = exchange.getResponseHeaders();
-					h.set("Content-Type", map.getContentType(file));
-					exchange.sendResponseHeaders(200, 0);
-					try (OutputStream os = exchange.getResponseBody();
-							BufferedInputStream fs = new BufferedInputStream(new FileInputStream(file))) {
-						final byte[] buffer = new byte[BUFFER_SIZE];
-						int count = 0;
-						while ((count = fs.read(buffer)) >= 0) {
-							os.write(buffer, 0, count);
-						}
-					}
-				}
-			} catch (Exception e) {
-				SimLogger.getLogger().error(e);
-			}
-		}
-	}
-
 	private HttpServer server;
 	
 	public SimpleSimulator(SimScript script) throws IOException {
@@ -112,17 +64,7 @@ public class SimpleSimulator extends HTTPSimulator {
 		} else {
 			server = HttpServer.create(new InetSocketAddress(port), 0);
 		}
-		if (staticWeb) {
-			if (webRoot == null) {
-				server.createContext("/", new StaticFileHandler());
-			} else {
-				server.createContext(webRoot, new StaticFileHandler());
-				server.createContext("/", new DefaultHttpHandler());
-			}
-		} else {
-			server.createContext("/", new DefaultHttpHandler());
-		}
-		
+		server.createContext("/", new DefaultHttpHandler());
 		server.setExecutor(null); // creates a default executor
 		if (useSSL) {
 			((HttpsServer) server).setHttpsConfigurator(new HttpsConfigurator(sslContext) {

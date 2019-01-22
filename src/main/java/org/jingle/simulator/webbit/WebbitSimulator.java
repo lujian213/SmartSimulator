@@ -19,7 +19,6 @@ import org.webbitserver.HttpRequest;
 import org.webbitserver.HttpResponse;
 import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
-import org.webbitserver.handler.StaticFileHandler;
 
 public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 	private WebServer webServer;
@@ -53,17 +52,6 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
 			String channelName = "/" + reformatChannelName(entry.getKey());
 			webServer.add(channelName, new WebbitWSHandler(this, castToSimulatorListener(), channelName, entry.getValue()));
-		}
-		if (staticWeb) {
-			StaticFileHandler handler = new StaticFileHandler(webFolder);
-			for (Map.Entry<String, String> entry: mimeMap.entrySet()) {
-				handler.addMimeType(entry.getKey(), entry.getValue());
-			}
-			if (webRoot == null) {
-				webServer.add(handler);
-			} else {
-				webServer.add(webRoot, handler);
-			}
 		}
 		webServer.add(this);
 		

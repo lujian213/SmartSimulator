@@ -212,7 +212,8 @@ public class SimUtils {
 				}
 			}
 			SimLogger.getLogger().info("response ...");
-			try (BufferedInputStream bis = new BufferedInputStream(conn.getInputStream())) {
+			int code = conn.getResponseCode();
+			try (BufferedInputStream bis = new BufferedInputStream((code > 200 ? conn.getErrorStream() : conn.getInputStream()))) {
 				byte[] buffer = new byte[8 * 1024];
 				int count = -1;
 				while ((count = bis.read(buffer)) != -1) {
