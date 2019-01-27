@@ -224,32 +224,4 @@ public class SimTemplateTest {
 			fail("unexpected exception:" + e);
 		}
 	}
-
-	@Test
-	public void testParse8() {
-		try {
-			SimTemplate template = new SimTemplate("2000TRADE{$p10:301}{$p311:2}{$p313:8}{$p321:12}{$p333:10}{$p343:8}{$p351:814}{$p1165:3}{$p1168:61}{$p1229:3}{$p1232:115}{$p1347:6}{$p1353:18}{$p1371:28}{$p1399:80}{$p1479:2}{$p1481:520}");
-			
-			Map<String, Object> map = template.parse("2000TRADECDTSTES ZMQX    TES.TPSCORP.S.OUTPUT20190101084901CDTS1T  CDTS1MQTTEQB0006TQ1     0101      N139          2019010220190101 20:48          010250NAAF2019X S459200HT1                     CAICB           N139    010419USD                 LMCOP           11000000          $77.8               E-CDTSMQ    00        8558000.0002          84608.33                                                                                                                                                                                                                                                                       20                M             X                                                                                                                                                                                                  7DTC 0901                      A/C 003414                     .                                                          02/12 CPN 1.95                02/06 1 will be corr                                                                                                                                                         142                                                             840                                                                                                                   70.164                  8642608.33 010250NAAF7362811RESP-140876166,1,TPS,CDTS                                                       TA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ");
-			assertEquals(17, map.size());
-			assertEquals("00", map.get("p311"));
-			assertEquals("8558000.0002", map.get("p321"));
-		} catch (IOException e) {
-			fail("unexpected exception:" + e);
-		}
-	}
-
-	@Test
-	public void testParse9() {
-		try {
-			SimTemplate template = new SimTemplate("8=FIX 4.4{$p1}35=AE{$p2}571={$REPORT_ID}{$p3}455={$v[]}456={$k[]}455={$v[]}456={$k[]}455={$v[]}456={$k[]}455={$v[]}456={$k[]}{$p4}");
-			
-			Map<String, Object> map = template.parse("8=FIX 4.49=70935=AE49=16378156=15480734=2393305142=NAM43=N97=N52=20190125-02:30:31122=20190125-02:30:31571=4fe0761a-834f-4b56-a28c-970568cf87569262=19265266650=1454=3455=31013125:1456=1001455=41084724:1456=1002455=78034206:1456=1003455=163781:41084724456=1008487=0965=160=20190124-21:30:301132=20190125-02:30:30460=13167=REPO40013=RP788=475=20190124916=20190124915=20190124919=7898=0.040011=01711=1311=912810EE4305=115=USD810=100318=USD879=10000000552=154=1453=2448=N560447=D452=12448=jv60349447=D452=11423=944=2.00000000159=374184.78157=162921=1000000040020=1000000040014=9625815.2240017=N5798=2137=0.0138=USD139=12891=278=279=SALD661=1279=505SPMB661=1110=000");
-			assertEquals(17, map.size());
-			assertEquals("00", map.get("p311"));
-			assertEquals("8558000.0002", map.get("p321"));
-		} catch (IOException e) {
-			fail("unexpected exception:" + e);
-		}
-	}
 }
