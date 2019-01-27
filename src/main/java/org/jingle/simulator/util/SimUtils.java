@@ -51,12 +51,65 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 public class SimUtils {
+	public static class IDGenerator {
+		private static Map<String, IDGenerator> idGeneratorMap = new HashMap<>();
+		
+		private SimpleDateFormat format;
+		private int extraLength;
+		private String name;
+		private long maxCount = 1;
+		private long index = 0;
+		
+		public static synchronized IDGenerator getInstance(String name, String format, int extraLength) {
+			IDGenerator inst = idGeneratorMap.get(name);
+			if (inst == null) {
+				inst = new IDGenerator(name, format, extraLength);
+				idGeneratorMap.put(name,  inst);
+			}
+			return inst;
+		}
+		
+		public IDGenerator(String name, String dateFormat, int extraLength) {
+			this.name = name;
+			this.extraLength = extraLength;
+			this.format = new SimpleDateFormat(dateFormat);
+			for (int i =1; i <= extraLength; i++) {
+				maxCount = maxCount * 10;
+			}
+			maxCount = maxCount - 1;
+		}
+		
+		public synchronized String nextID() {
+			format.format(new Date());
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			pw.printf("%s%0" + extraLength + "d", format.format(new Date()), index++);
+			if (index >= maxCount) {
+				index = 0;
+			}
+			return sw.toString();
+		}
+		
+		public String getName() {
+			return this.name;
+		}
+	}
+	
     private static VelocityEngine ve = new VelocityEngine();
     static {
     	ve.init();
     }
 
-	
+    public static String genID2() {
+    	return "aaaaa";
+    }
+    public static String genID(String name, String format, int extraLength) {
+    	IDGenerator inst = IDGenerator.getInstance(name, format, extraLength);
+    	synchronized(inst) {
+    		return inst.nextID();
+    	}
+    }
+    
 	public static String decodeURL(String url) throws UnsupportedEncodingException {
 		String[] parts = url.split("\\?");
 		StringBuffer sb = new StringBuffer(parts[0]);
