@@ -3,6 +3,8 @@ package org.jingle.simulator.util;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -13,7 +15,11 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.velocity.VelocityContext;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.jingle.simulator.SimResponseTemplate;
+
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 
 public interface ResponseHandler {
 	public static final String HEADER_NAME_CONTENT_TYPE = "Content-Type";
@@ -72,6 +78,7 @@ public interface ResponseHandler {
 		public static final String HEADER_NAME_BRIDGE = "_Bridge";
 		public static final String HEADER_NAME_BRIDGE_TYPE = "_Bridge.Type";
 		public static final String BRIDGE_TYPE_VM = "VM";
+		public static final String BRIDGE_TYPE_GROOVY = "Groovy";
 		public static final String CONTEXT_NAME_SIMUTILS = "SimUtils";
 		private MimetypesFileTypeMap map;
 
@@ -94,6 +101,17 @@ public interface ResponseHandler {
 				if (BRIDGE_TYPE_VM.equals(bridgeType)) {
 					vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
 					return SimUtils.mergeResult(vc, "body", bodyBytes).getBytes();
+				} else if (BRIDGE_TYPE_GROOVY.equals(bridgeType)) {
+					Binding binding = new Binding();
+					vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
+					binding.setVariable("context", vc);
+					GroovyShell shell = new GroovyShell(binding);
+					try {
+						Object ret = shell.evaluate(new URI(bridge));
+						bodyBytes = (ret == null) ? null : ret.toString().getBytes();
+					} catch (CompilationFailedException | URISyntaxException e) {
+						throw new IOException(e);
+					}
 				}
 				return bodyBytes;
 			}
