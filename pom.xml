@@ -1,13 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>9</version>
+	</parent-->
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.lujian213</groupId>
     <artifactId>SmartSimulator</artifactId>
     <version>0.0.9</version>
+    <name>Smart Simulator</name>
+	<description>Smart Simulator</description>
+	<url>https://github.com/lujian213/SmartSimulator</url>
+
+	<organization>
+		<url>https://github.com/lujian213</url>
+		<name>SmartSimulator</name>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Jian Lu</name>
+			<email>lujian213@msn.com</email>
+			<organization>lujian213</organization>
+			<organizationUrl>https://github.com/lujian213</organizationUrl>
+			<timezone>UTC+08:00</timezone>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git://github.com/lujian213/SmartSimulator.git</connection>
+		<developerConnection>scm:git:git@github.com:lujian213/SmartSimulator.git</developerConnection>
+		<url>https://github.com/lujian213/SmartSimulator</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
     <packaging>jar</packaging>
     <properties>
 	    <maven.compiler.source>1.8</maven.compiler.source>
 	    <maven.compiler.target>1.8</maven.compiler.target>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   	</properties>    
     
     <dependencies>
@@ -114,6 +163,46 @@
     
 	<build>
 		<plugins>
+		   <plugin>
+			   <groupId>org.apache.maven.plugins</groupId>
+			   <artifactId>maven-source-plugin</artifactId>
+			   <version>2.2.1</version>
+			   <executions>
+			   <execution>
+			   <id>attach-sources</id>
+			   <goals>
+			   <goal>jar-no-fork</goal>
+			   </goals>
+			   </execution>
+			   </executions>
+		   </plugin>
+		   <plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-javadoc-plugin</artifactId>
+		    <version>2.9.1</version>
+		    <executions>
+		     <execution>
+		      <id>attach-javadocs</id>
+		      <goals>
+		       <goal>jar</goal>
+		      </goals>
+		     </execution>
+		    </executions>
+		   </plugin>
+		   <plugin>
+	           <groupId>org.apache.maven.plugins</groupId>
+	           <artifactId>maven-gpg-plugin</artifactId>
+	           <version>1.5</version>
+	           <executions>
+			     <execution>
+			      <id>sign-artifacts</id>
+			      <phase>verify</phase>
+			      <goals>
+			       <goal>sign</goal>
+			      </goals>
+			     </execution>
+			    </executions>
+	        </plugin>
 			<plugin>
 	            <groupId>org.apache.maven.plugins</groupId>
 	            <artifactId>maven-surefire-plugin</artifactId>
@@ -122,6 +211,19 @@
 	                <useSystemClassLoader>false</useSystemClassLoader>
 	            </configuration>
 	        </plugin>
+	        <plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.2</version>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build> 
 </project>
