@@ -52,18 +52,46 @@ Depends on different type of simulator, it can also contain init.properties and 
 ## 2. Templates
 Template (request template and response template) is the core part of sim file to define the rule. 
 ### 2.1 Request Template
-Request template is a reverse template. Below are some key points of it.
+Request template by default is a reverse template. Below are some key points of reverse template.
 <p>
 * It is lined based. 
-* All variables are defines as {$*var_name*}, like {$name}.
-* Array type variable is end with *[]*, like {$a[]}.
+* All variables are defined as {$*var_name*}, like {$name}.
+* Array type variable is ended with *[]*, like {$a[]}.
+* Variable can set min and max length, like {$a:3,4}.
 * Variable will be assigned values if the incoming message matched template.
 </p>
-<p>For example, String `GET https://www.abc.com/hello/world HTTP/1.1` matched the temaplte `GET {$url}/hello/{$name} HTTP/1.1`. After the match, variable `url = https://www.abc.com`, and `name = world`.</p>
 
-<p>Another example, String `GET https://www.abc.com/hello/world HTTP/1.1` matched the temaplte `GET {$url}/hello/{$name} HTTP/1.1`. After the match, variable `url = https://www.abc.com`, and `name = world`.</p>
+For example, String `GET https://www.abc.com/hello/world HTTP/1.1` matched the template `GET {$url}/hello/{$name} HTTP/1.1`. After the match, variable `url = https://www.abc.com`, and `name = world`.
+
+Another example, String `We have {$name[]} and {$name[]} in the team` matched the template `We have Alice and Bruce in the team`. After the match, variable `name[0] = Alice`, and `name[2] = Bruce`.
+
 Request template has 3 parts: topline, headers, and payload.
-<p>Topline is one line description about the request. It is protocol specific. For example, `GET {$url}/hello/{$name} HTTP/1.1` for http protocol.</p>
+
+*Topline* is one line description about the request. It is protocol specific. For example, `GET {$url}/hello/{$name} HTTP/1.1` for http protocol.
+
+*Headers* are the required headers in the incoming request. Like `key = value`. All the keys which start with "_" is treated as internal control headers. They will not be used to match with incoming request headers. Current supported internal headers are listed below.
+
+| Key | Value | Comments
+| ------ | ------ | ----- |
+| _Body-Type | XPath | Payload will be XPath List |
+| _Body-Type | JSonPath | Payload will be JSonPath List |
+
+If *_Body-Type* is not set, by default, it will be a normal reverse template. 
+
+*Payload* is the main part of the incoming request. Its content is determined by the *_Body-Type* header as mentioned above.
+* XPath list
+
+```
+messageId: //abc:MessageId/text()
+dealId[]: //abc:PostEvent//abc:DealID[@SchemeName="foo"]/text() 
+```
+
+* JSonPath list
+
+```
+author: $.store.book[?(@.price>20)].author
+price[]: $.store.book[?(@.author=='J. R. R. Tolkien')].price 
+```
 
 ### 2.2 Response Template
 
