@@ -50,7 +50,7 @@ public class SimRequestTemplate {
 				lineNum++;
 			}
 			if (body != null && !body.toString().isEmpty()) {
-				this.bodyContent = body.toString().trim(); 
+				this.bodyContent = body.toString(); 
 			}
 		}
 	}

@@ -353,9 +353,9 @@ public class SimUtils {
 	public static void printMismatchInfo(String msg, String s1, String s2) {
 		Logger logger = SimLogger.getLogger();
 		logger.info(msg);
-		logger.info("[" + (s1 == null? null : s1.trim()) + "]");
+		logger.info("[" + (s1 == null? null : s1) + "]");
 		logger.info("VS");
-		logger.info("[" + (s2 == null? null : s2.trim()) + "]");
+		logger.info("[" + (s2 == null? null : s2) + "]");
 	}
 	
 	public static ReqRespConvertor createMessageConvertor(SimScript script, ReqRespConvertor defaultConvertor) {
