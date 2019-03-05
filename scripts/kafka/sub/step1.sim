@@ -1,0 +1,12 @@
+topic1
+_Message.key: Dummy
+
+Message {$number}
+HTTP/1.1 200 OK
+_Channel: pub@broker
+_Message.key: foo
+
+Response $number
+
+------------------------------------------------------------------
+

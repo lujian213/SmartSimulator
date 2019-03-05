@@ -143,14 +143,14 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 			boolean handled = false;
 			if (clientType.contains(CLIENT_TYPE_PUB)) {
 				SimMessageProducer simProducer = broker.createProducer(destName, destType);
-				producerMap.put(getUnifiedDestName(brokerName, destName), simProducer);
+				producerMap.put(SimUtils.createUnifiedName(destName, brokerName), simProducer);
 				handled = true;
 			} 
 			if (clientType.contains(CLIENT_TYPE_SUB)) {
 				SimMessageConsumer simConsumer = broker.createConsumer(script, destName, destType);
-				simConsumer.getConsumer().setMessageListener(new SimMessageListener(script, simConsumer.getSession(), getUnifiedDestName(brokerName, destName), convertor));
+				simConsumer.getConsumer().setMessageListener(new SimMessageListener(script, simConsumer.getSession(), SimUtils.createUnifiedName(destName, brokerName), convertor));
 				handled = true;
-				ret = getUnifiedDestName(brokerName, destName);
+				ret = SimUtils.createUnifiedName(destName, brokerName);
 			}
 			if (!handled) {
 				throw new RuntimeException("unsupported client type [" + clientType + "]");
@@ -160,15 +160,6 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 			throw new RuntimeException("handle destination error", e);
 		}
 
-	}
-
-	public static String getUnifiedDestName(String brokerName, String destName) {
-		return destName + "@" + brokerName;
-	}
-	
-	public static String getBrokerName(String unifiedDestName) {
-		String[] parts = unifiedDestName.split("@");
-		return parts[1];
 	}
 
 	@Override

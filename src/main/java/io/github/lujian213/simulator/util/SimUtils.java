@@ -47,6 +47,7 @@ import io.github.lujian213.simulator.SimScript;
 import io.github.lujian213.simulator.SimSimulator;
 import io.github.lujian213.simulator.jms.JMSSimRequest;
 import io.github.lujian213.simulator.jms.JMSSimulator;
+import io.github.lujian213.simulator.kafka.KafkaSimRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -302,6 +303,25 @@ public class SimUtils {
 		}
     }
 
+    public static SimResponse doKafkaProxy(String proxyURL, KafkaSimRequest request) throws IOException {
+//    	SimLogger.getLogger().info("do proxy ...");
+//		Map<String, Object> headers = new HashMap<>();
+//		try {
+//			TextMessage message = (TextMessage) request.getMessage();
+//			Enumeration<String> it = message.getPropertyNames();
+//			while (it.hasMoreElements()) {
+//				String propName = it.nextElement();
+//				headers.put(propName, message.getObjectProperty(propName));
+//			}
+//			headers.put(JMSSimulator.HEADER_NAME_CHANNEL, proxyURL);
+//			return new SimResponse(200, headers, message.getText().getBytes());
+//		} catch (JMSException e) {
+//			SimLogger.getLogger().error(e);
+//			throw new IOException(e);
+//		}
+    	return null;
+    }
+
     public static String encodeURL(String url) throws UnsupportedEncodingException {
     	int index = url.indexOf('?');
     	if (index < 0) {
@@ -431,4 +451,14 @@ public class SimUtils {
 		}
 		return props;
 	}
+	
+	public static String createUnifiedName(String localName, String brokerName) {
+		return localName + "@" + brokerName;
+	}
+	
+	public static String getBrokerName(String unifiedName) {
+		String[] parts = unifiedName.split("@");
+		return parts[1];
+	}
+
 }
