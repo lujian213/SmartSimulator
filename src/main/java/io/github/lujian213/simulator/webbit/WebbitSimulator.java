@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -16,13 +17,17 @@ import org.webbitserver.WebServer;
 import org.webbitserver.WebServers;
 
 import io.github.lujian213.simulator.SimRequest;
+import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.SimScript;
+import io.github.lujian213.simulator.SimSesseionLessSimulator;
 import io.github.lujian213.simulator.http.HTTPSimulator;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
-public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
+public class WebbitSimulator extends HTTPSimulator implements HttpHandler, SimSesseionLessSimulator {
 	private WebServer webServer;
+	private Map<String, WebbitWSHandler> wsHandlerMap = new HashMap<>();
 	
 	public WebbitSimulator(SimScript script) throws IOException {
 		super(script);
@@ -52,7 +57,9 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 		webServer = WebServers.createWebServer(port);
 		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
 			String channelName = "/" + reformatChannelName(entry.getKey());
-			webServer.add(channelName, new WebbitWSHandler(this, castToSimulatorListener(), channelName, entry.getValue()));
+			WebbitWSHandler wsHandler = new WebbitWSHandler(this, castToSimulatorListener(), channelName, entry.getValue());
+			wsHandlerMap.put(channelName, wsHandler);
+			webServer.add(channelName, wsHandler);
 		}
 		webServer.add(this);
 		
@@ -76,9 +83,22 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler {
 		super.stop();
 		SimLogger.getLogger().info("about to stop");
 		webServer.stop();
-		WebbitWSHandler.closeAllConnections();
+		wsHandlerMap.values().stream().forEach((handler)-> handler.close());
 		SimLogger.getLogger().info("stopped");
 		this.running = false;
 		this.runningURL = null;
+	}
+
+	@Override
+	public void fillResponse(SimResponse response) throws IOException {
+		Map<String, Object> headers = response.getHeaders();
+		String channel = (String) headers.remove(HEADER_NAME_CHANNEL);
+		String channelName = SimUtils.getBrokerName(channel);
+		WebbitWSHandler wsHandler = wsHandlerMap.get(channelName);
+		if (wsHandler == null) {
+			throw new IOException("no such ws channel [" + channelName + "] exists");	
+		}
+		wsHandler.sendResponse(channel, response);
+		SimLogger.getLogger().info("Use channel [" + channel + "] to send out message");
 	}
 }

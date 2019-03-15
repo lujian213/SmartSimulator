@@ -1,5 +1,6 @@
 package io.github.lujian213.simulator.util;
 
+import static io.github.lujian213.simulator.SimSimulatorConstants.PROP_NAME_SIMULATOR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -7,9 +8,6 @@ import static org.junit.Assert.fail;
 import org.apache.velocity.VelocityContext;
 import org.junit.Test;
 
-import io.github.lujian213.simulator.SimScript;
-import io.github.lujian213.simulator.util.BeanRepository;
-import io.github.lujian213.simulator.util.FunctionBean;
 import io.github.lujian213.simulator.util.function.FunctionBeanListener;
 import io.github.lujian213.simulator.util.function.SimConstructor;
 import io.github.lujian213.simulator.util.function.SimParam;
@@ -128,7 +126,7 @@ public class BeanRepositoryTest {
 	public void testRemoveSimulatorBeans() {
 		VelocityContext vc = new VelocityContext();
 		vc.put("num", "101");
-		vc.put(SimScript.PROP_NAME_SIMULATOR_NAME, "dummy");
+		vc.put(PROP_NAME_SIMULATOR_NAME, "dummy");
 		FunctionBean c7Inst = BeanRepository.getInstance().addBean(BeanRepositoryTest.C7.class, vc);
 		assertEquals(101, ((C7)c7Inst.getBean()).getNum());
 		assertEquals(1, BeanRepository.getInstance().beanMap.size());

@@ -16,12 +16,14 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
 
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.SimScript;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.kafka.KafkaSimulatorConstants.*;
 
 public class KafkaBroker {
 	public static final String PROP_NAME_BOOTSTRAP_SERVERS = "simulator.kafka.bootstrap.servers";
@@ -36,7 +38,7 @@ public class KafkaBroker {
 		
 		public KafkaPublisher(SimScript script) {
 			this.script = script;
-			String localName = script.getMandatoryProperty(KafkaSimulator.PROP_NAME_ENDPOINT_NAME, "no publisher name defined");
+			String localName = script.getMandatoryProperty(PROP_NAME_ENDPOINT_NAME, "no publisher name defined");
 			this.name = SimUtils.createUnifiedName(localName, KafkaBroker.this.name);
 			this.topic = script.getMandatoryProperty(PROP_NAME_PUBLISHER_TOPIC, "no publisher topic defined");
 		}
@@ -72,9 +74,21 @@ public class KafkaBroker {
 		
 		public void sendMessage(SimResponse response) throws IOException {
 			Object respMsg = new Object[1];
-			response.getHeaders().put(KafkaSimulator.HEADER_NAME_MESSGAE_TOPIC, topic);
+			response.getHeaders().put(HEADER_NAME_MESSGAE_TOPIC, topic);
 			convertor.fillRawResponse(respMsg, response);
-			producer.send((ProducerRecord) ((Object[])respMsg)[0]);
+			ProducerRecord record = (ProducerRecord<?, ?>) ((Object[])respMsg)[0];
+			for (Map.Entry<String, Object> entry : response.getAllInternalHeaders().entrySet()) {
+				record.headers().add(entry.getKey(), entry.getValue().toString().getBytes());
+			}
+			producer.send(record);
+		}
+
+		public void sendMessage(ConsumerRecord<?, ?> record) throws IOException {
+			ProducerRecord pRecord = new ProducerRecord<>(topic, record.key(), record.value());
+			for (Header header: record.headers()) {
+				pRecord.headers().add(header);
+			}
+			producer.send(pRecord);
 		}
 	}
 	
@@ -97,7 +111,7 @@ public class KafkaBroker {
 		
 		public KafkaSubscriber(SimScript script) {
 			this.script = script;
-			String localName = script.getMandatoryProperty(KafkaSimulator.PROP_NAME_ENDPOINT_NAME, "no subscriber name defined");
+			String localName = script.getMandatoryProperty(PROP_NAME_ENDPOINT_NAME, "no subscriber name defined");
 			this.name = SimUtils.createUnifiedName(localName, KafkaBroker.this.name);
 			String topicsStr = script.getMandatoryProperty(PROP_NAME_SUBSCRIBER_TOPICS, "no subscriber topics defined");
 			Arrays.stream(topicsStr.split(",")).forEach((str)-> {
@@ -229,5 +243,13 @@ public class KafkaBroker {
 			throw new IOException("no such publisher [" + pubName + "] exists");
 		}
 		pub.sendMessage(response);
+	}
+
+	public void sendMessage(String pubName, ConsumerRecord<?, ?> record) throws IOException {
+		KafkaPublisher pub = publisherMap.get(pubName);
+		if (pub == null) {
+			throw new IOException("no such publisher [" + pubName + "] exists");
+		}
+		pub.sendMessage(record);
 	}
 }

@@ -12,9 +12,9 @@ import org.webbitserver.WebSocketConnection;
 import org.webbitserver.netty.WebSocketClient;
 
 import io.github.lujian213.simulator.SimScript;
-import io.github.lujian213.simulator.http.HTTPSimulator;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.http.HTTPSimulatorConstants.*;
 
 public class WebbitWSClient extends BaseWebSocketHandler {
 	private Object lock = new Object();
@@ -32,10 +32,10 @@ public class WebbitWSClient extends BaseWebSocketHandler {
 		this.uri = uri;
 		this.delegation = delegation;
 		this.script = script;
-		useSSL = script.getConfig().getBoolean(HTTPSimulator.PROP_NAME_USE_SSL, false);
+		useSSL = script.getConfig().getBoolean(PROP_NAME_USE_SSL, false);
 		if (useSSL) {
-			keystore = script.getMandatoryProperty(HTTPSimulator.PROP_NAME_KEYSTORE, "no keystore defined");
-			passwd = script.getMandatoryProperty(HTTPSimulator.PROP_NAME_KS_PASSWD, "no keystore passwd defined");
+			keystore = script.getMandatoryProperty(PROP_NAME_KEYSTORE, "no keystore defined");
+			passwd = script.getMandatoryProperty(PROP_NAME_KS_PASSWD, "no keystore passwd defined");
 		}
 	}
 	

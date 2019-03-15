@@ -14,6 +14,7 @@ import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.SimScript;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.kafka.KafkaSimulatorConstants.*;
 
 public class KafkaSimRequest extends AbstractSimRequest {
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
@@ -65,7 +66,7 @@ public class KafkaSimRequest extends AbstractSimRequest {
 			String value = new String(header.value());
 			headers.put(name, value);
 		}
-		headers.put(KafkaSimulator.HEADER_NAME_MESSGAE_KEY, record.key());
+		headers.put(HEADER_NAME_MESSGAE_KEY, record.key());
 	}
 	
 	protected void genBody() throws IOException {
@@ -92,18 +93,27 @@ public class KafkaSimRequest extends AbstractSimRequest {
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
 		Map<String, Object> respHeaders = response.getHeaders();
-		String channel = (String) respHeaders.get(KafkaSimulator.HEADER_NAME_CHANNEL);
+		String channel = (String) respHeaders.get(HEADER_NAME_CHANNEL);
 		if (channel == null) {
-			respHeaders.put(KafkaSimulator.HEADER_NAME_CHANNEL, unifiedEndpointName);
+			respHeaders.put(HEADER_NAME_CHANNEL, unifiedEndpointName);
 		}
-		String simulatorName = (String) respHeaders.get(SimResponse.PROP_NAME_RESPONSE_TARGETSIMULATOR);
+		String simulatorName = (String) respHeaders.get(PROP_NAME_RESPONSE_TARGETSIMULATOR);
 		if (simulatorName == null) {
-			respHeaders.put(SimResponse.PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
+			respHeaders.put(PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
 		}
 	}
 	
 	@Override
 	public List<String> getAllHeaderNames() {
 		return new ArrayList<>(headers.keySet());
+	}
+
+	@Override
+	public String getRemoteAddress() {
+		if (this.record != null) {
+			return this.record.topic();
+		} else {
+			return super.getRemoteAddress();
+		}
 	}
 }

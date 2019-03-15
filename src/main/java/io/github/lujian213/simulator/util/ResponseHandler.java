@@ -20,9 +20,9 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import io.github.lujian213.simulator.SimResponseTemplate;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public interface ResponseHandler {
-	public static final String HEADER_NAME_CONTENT_TYPE = "Content-Type";
 	static ResponseHandlerChain inst = new ResponseHandlerChain(
 			new BridgeResponseHandler(),
 			new FunctionResponseHandler(),
@@ -75,8 +75,6 @@ public interface ResponseHandler {
 	}
 
 	static class BridgeResponseHandler implements ResponseHandler {
-		public static final String HEADER_NAME_BRIDGE = "_Bridge";
-		public static final String HEADER_NAME_BRIDGE_TYPE = "_Bridge.Type";
 		public static final String BRIDGE_TYPE_VM = "VM";
 		public static final String BRIDGE_TYPE_GROOVY = "Groovy";
 		public static final String CONTEXT_NAME_SIMUTILS = "SimUtils";
@@ -93,11 +91,8 @@ public interface ResponseHandler {
 			String bridge = (String) headers.remove(HEADER_NAME_BRIDGE);
 			String bridgeType = (String) headers.remove(HEADER_NAME_BRIDGE_TYPE);
 			if (bridge != null) {
-				String contentType = (String) headers.get(HEADER_NAME_CONTENT_TYPE);
 				byte[] bodyBytes = handleBridgeRequest(bridge);
-				if (contentType == null) {
-					headers.put(HEADER_NAME_CONTENT_TYPE, map.getContentType(bridge));
-				}
+				headers.put(HEADER_NAME_CONTENT_TYPE, map.getContentType(bridge));
 				if (BRIDGE_TYPE_VM.equals(bridgeType)) {
 					vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
 					return SimUtils.mergeResult(vc, "body", bodyBytes).getBytes();
@@ -136,9 +131,6 @@ public interface ResponseHandler {
 	}
 
 	static class FunctionResponseHandler implements ResponseHandler {
-		public static final String HEADER_NAME_CLASS = "_Class.Name";
-		public static final String HEADER_NAME_METHOD = "_Method.Name";
-		
 		@Override
 		public byte[] handle(Map<String, Object> headers, VelocityContext vc, SimResponseTemplate resp) throws IOException {
 			String className = (String) headers.remove(HEADER_NAME_CLASS);
@@ -155,6 +147,13 @@ public interface ResponseHandler {
 						return bean.getContext().getObjectMapper().writeValueAsBytes(result);
 					} else if (MediaTypeHelper.isText(contentType) && result instanceof String) {
 						return ((String)result).getBytes();
+					} else if (contentType == null) {
+						if (result instanceof String) {
+							return ((String)result).getBytes();
+						} else {
+							FunctionBean bean = BeanRepository.getInstance().addBean(className, vc);
+							return bean.getContext().getObjectMapper().writeValueAsBytes(result);
+						}
 					} else {
 						throw new RuntimeException("unsupport Content-Type [" + contentType + "] with result [" + result + "]");
 					}

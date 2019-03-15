@@ -7,6 +7,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
+import static io.github.lujian213.simulator.kafka.KafkaSimulatorConstants.*;
 
 public class DefaultKafkaReqRespConvertor implements ReqRespConvertor {
 
@@ -17,8 +18,8 @@ public class DefaultKafkaReqRespConvertor implements ReqRespConvertor {
 
 	@Override
 	public void fillRawResponse(Object rawResponse, SimResponse simResponse) throws IOException {
-		String topic = (String) simResponse.getHeaders().get(KafkaSimulator.HEADER_NAME_MESSGAE_TOPIC);
-		String key = (String) simResponse.getHeaders().get(KafkaSimulator.HEADER_NAME_MESSGAE_KEY);
+		String topic = (String) simResponse.getHeaders().get(HEADER_NAME_MESSGAE_TOPIC);
+		String key = (String) simResponse.getHeaders().get(HEADER_NAME_MESSGAE_KEY);
 		ProducerRecord<?, ?> record = new ProducerRecord<>(topic, key, simResponse.getBodyAsString());
 		((Object[])rawResponse)[0] = record;
 	}

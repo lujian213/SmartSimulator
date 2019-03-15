@@ -15,11 +15,9 @@ import io.github.lujian213.simulator.util.ResponseHandler;
 import io.github.lujian213.simulator.util.SimUtils;
 
 public class SimResponse {
-	public static final String PROP_NAME_RESPONSE_TARGETSIMULATOR = "_response.targetSimulator";
 	public static final String HEADER_CONTENT_ENCODING1 = "content-encoding";
 	public static final String HEADER_CONTENT_ENCODING2 = "Content-encoding";
 	public static final String HEADER_CONTENT_ENCODING3 = "Content-Encoding";
-
 	private int code;
 	private Map<String, Object> headers = new HashMap<>();
 	private byte[] body;
@@ -45,6 +43,26 @@ public class SimResponse {
 
 	public Map<String, Object> getHeaders() {
 		return headers;
+	}
+
+	public Map<String, Object> getAllInternalHeaders() {
+		Map<String, Object> ret = new HashMap<>();
+		for (Map.Entry<String, Object> entry: headers.entrySet()) {
+			if (entry.getKey().startsWith("_")) {
+				ret.put(entry.getKey(), entry.getValue());
+			}
+		}
+		return ret;
+	}
+
+	public Map<String, Object> getAllPublicHeaders() {
+		Map<String, Object> ret = new HashMap<>();
+		for (Map.Entry<String, Object> entry: headers.entrySet()) {
+			if (!entry.getKey().startsWith("_")) {
+				ret.put(entry.getKey(), entry.getValue());
+			}
+		}
+		return ret;
 	}
 
 	public byte[] getBody() {

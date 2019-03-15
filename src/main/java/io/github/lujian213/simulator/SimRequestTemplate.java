@@ -11,7 +11,7 @@ import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
 
 public class SimRequestTemplate {
-	private static final String HEADER_AUTHENTICATION = "Authentication";
+	public static final String HEADER_AUTHENTICATION = "Authentication";
 	private SimTemplate topLineTemplate;
 	private Map<String, SimTemplate> headerTemplates = new HashMap<>();
 	private SimTemplate authenticationsTemplate = null;
@@ -96,15 +96,13 @@ public class SimRequestTemplate {
 				ret.putAll(res);
 			}
 		}
-//		if (bodyContent != null) {
-			res = RequestHandler.getHandlerChain().handle(extraHeader, bodyContent, request);
-			if (res == null) {
-				SimUtils.printMismatchInfo("body template", bodyContent, request.getBody());
-				return null; 
-			} else {
-				ret.putAll(res);
-			}
-//		}
+		res = RequestHandler.getHandlerChain().handle(extraHeader, bodyContent, request);
+		if (res == null) {
+			SimUtils.printMismatchInfo("body template", bodyContent, request.getBody());
+			return null; 
+		} else {
+			ret.putAll(res);
+		}
 		return ret;
 	}
 

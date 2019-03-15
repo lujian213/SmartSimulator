@@ -33,6 +33,7 @@ import io.github.lujian213.simulator.util.SimUtils;
 import io.github.lujian213.simulator.util.ZipFileVisitor;
 import io.github.lujian213.simulator.util.ZipFileVisitor.EntryWrapper;
 import io.github.lujian213.simulator.util.ZipFileVisitor.ZipFileVisitorHandler;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public class SimScript {
 	public static class TemplatePair {
@@ -62,10 +63,6 @@ public class SimScript {
 	public static final String IGNORE_EXT = ".ignore"; 
 	public static final String LIB_DIR = "lib"; 
 	public static final String INIT_FILE = "init.properties"; 
-	public static final String PROP_NAME_SIMULATOR_CLASS = "simulator.class"; 
-	public static final String PROP_NAME_SIMULATOR_NAME = "simulator.name"; 
-	public static final String PROP_NAME_SIMULATOR_AUTOSTART = "simulator.autostart"; 
-	public static final String PROP_NAME_SIMULATOR_URL = "simulator.url"; 
 	
 	private Logger scriptLogger = null;
 	private ClassLoader simClassLoader = ClassLoader.getSystemClassLoader();

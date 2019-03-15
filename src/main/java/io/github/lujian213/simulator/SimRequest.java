@@ -30,4 +30,7 @@ public interface SimRequest {
 		pw.flush();
 	}
 	
+	public default String getRemoteAddress() {
+		return "UNKNOWN";
+	}
 }

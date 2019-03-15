@@ -6,6 +6,7 @@ import java.util.Properties;
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.QueueConnectionFactory;
@@ -17,36 +18,50 @@ import javax.naming.NamingException;
 
 import io.github.lujian213.simulator.SimScript;
 import io.github.lujian213.simulator.util.SimLogger;
+import static io.github.lujian213.simulator.jms.JMSSimulatorConstants.*;
 
 public class JMSBroker {
-	public static final String PROP_NAME_TOPIC_FACTORY_NAME = "simulator.jms.topicconnectionfactory";
-	public static final String PROP_NAME_QUEUE_FACTORY_NAME = "simulator.jms.queueconnectionfactory";
-	public static final String PROP_NAME_FACTORY_USERNAME = "simulator.jms.factory.username";
-	public static final String PROP_NAME_FACTORY_PASSWORD = "simulator.jms.factory.password";
-	public static final String PROP_NAME_BROKER_NAME = "simulator.jms.broker.name";
 	public static final String DESTINATION_TYPE_TOPIC = "Topic";
 	public static final String DESTINATION_TYPE_QUEUE = "Queue";
 
 	public static class SimMessageProducer  {
 		private MessageProducer producer;
 		private Session session;
+		
 		public SimMessageProducer(Session session, MessageProducer producer) {
 			this.session = session;
 			this.producer = producer;
 		}
-		public MessageProducer getProducer() {
-			return producer;
-		}
+		
 		public Session getSession() {
 			return session;
+		}
+		
+		public void send(Message message) throws IOException {
+			try {
+				producer.send(message);
+			} catch (JMSException e) {
+				throw new IOException(e);
+			}
+		}
+		
+		@Override
+		public String toString() {
+			try {
+				return producer.getDestination().toString();
+			} catch (JMSException e) {
+				return "";
+			}
 		}
 	}
 
 	public static class SimMessageConsumer  {
 		private MessageConsumer consumer;
 		private Session session;
-		public SimMessageConsumer(Session session, MessageConsumer consumer) {
+		private Destination dest;
+		public SimMessageConsumer(Session session, Destination dest, MessageConsumer consumer) {
 			this.session = session;
+			this.dest = dest;
 			this.consumer = consumer;
 		}
 		public MessageConsumer getConsumer() {
@@ -54,6 +69,9 @@ public class JMSBroker {
 		}
 		public Session getSession() {
 			return session;
+		}
+		public Destination getDest() {
+			return dest;
 		}
 	}
 
@@ -169,7 +187,7 @@ public class JMSBroker {
 			throw new RuntimeException("can not find destination [" + destName + "]");
 		}
 		MessageConsumer consumer = session.createConsumer(dest);
-		SimMessageConsumer ret = new SimMessageConsumer(session, consumer);
+		SimMessageConsumer ret = new SimMessageConsumer(session, dest, consumer);
 		SimLogger.getLogger().info("Consumer created for [" + dest + "]");
 		return ret;
     }

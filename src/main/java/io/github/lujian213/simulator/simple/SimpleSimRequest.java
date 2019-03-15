@@ -1,5 +1,7 @@
 package io.github.lujian213.simulator.simple;
 
+import static io.github.lujian213.simulator.SimSimulatorConstants.HEADER_NAME_CONTENT_TYPE;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -45,9 +47,19 @@ public class SimpleSimRequest extends AbstractSimRequest {
 	}
 	
 	@Override
+	public String getRemoteAddress() {
+		if (this.httpExchange != null) {
+			return httpExchange.getRemoteAddress().getHostName() + ":" + httpExchange.getRemoteAddress().getPort();
+		} else {
+			return super.getRemoteAddress();
+		}
+	}
+
+	@Override
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
 	}
+	
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -117,17 +129,18 @@ public class SimpleSimRequest extends AbstractSimRequest {
 	protected void doFillResponse(SimResponse response) throws IOException {
 		Headers respHeaders = httpExchange.getResponseHeaders();
 
-		for (Map.Entry<String, Object> entry : response.getHeaders().entrySet()) {
+		for (Map.Entry<String, Object> entry : response.getAllInternalHeaders().entrySet()) {
+			if (HEADER_NAME_CONTENT_TYPE.equals(entry.getKey())) {
+				respHeaders.add("Content-Type", entry.getValue().toString());
+			}
+		}
+		for (Map.Entry<String, Object> entry : response.getAllPublicHeaders().entrySet()) {
 			respHeaders.add(entry.getKey(), entry.getValue().toString());
 		}
-		byte[] body = response.getBody();
-		long length = body.length;
 		List<String> values = respHeaders.get("Transfer-Encoding");
 		if (values != null && values.contains("chunked")) {
 			SimLogger.getLogger().info("set contentLength to 0 since TransferEncoding is chunked");
-			length = 0;
 		}
-		//httpExchange.sendResponseHeaders(response.getCode(), length);
 		convertor.fillRawResponse(httpExchange, response);
 	}
 

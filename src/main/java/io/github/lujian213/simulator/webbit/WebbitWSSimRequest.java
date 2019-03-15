@@ -1,6 +1,7 @@
 package io.github.lujian213.simulator.webbit;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,24 +10,26 @@ import java.util.Map;
 import org.webbitserver.WebSocketConnection;
 
 import io.github.lujian213.simulator.AbstractSimRequest;
-import io.github.lujian213.simulator.SimRequest;
 import io.github.lujian213.simulator.SimResponse;
+import io.github.lujian213.simulator.SimSimulator;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public class WebbitWSSimRequest extends AbstractSimRequest {
-	public static final String HEADER_NAME_CHANNEL = "_Channel";
 	public static final String HEADER_NAME_CHANNEL_ID = "_Channel_ID";
 
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private String topLine;
 	private String body;
+	private WebbitWSHandler handler;
 	private WebSocketConnection connection;
 	private Map<String, String> headers = new HashMap<>();
 	private ReqRespConvertor convertor;
 	
-	public WebbitWSSimRequest(WebSocketConnection connection, String channel, String type, byte[] message, ReqRespConvertor convertor) {
+	public WebbitWSSimRequest(WebbitWSHandler handler, WebSocketConnection connection, String channel, String type, byte[] message, ReqRespConvertor convertor) {
+		this.handler = handler;
 		this.connection = connection;
 		this.convertor = convertor;
 		String protocol = "HTTP/1.1";
@@ -90,15 +93,26 @@ public class WebbitWSSimRequest extends AbstractSimRequest {
 		if (channelID != null) {
 			headers.put(HEADER_NAME_CHANNEL_ID, channelID);
 		}
-		WebSocketConnection conn = connection;
 		if (actualChannel != null) {
-			conn = WebbitWSHandler.findConnection(actualChannel);
-		} 
-		convertor.fillRawResponse(conn, resp);
+			handler.sendResponse(actualChannel, resp);
+		} else {
+			convertor.fillRawResponse(connection, resp);
+		}
 	}
 
 	@Override
 	public List<String> getAllHeaderNames() {
 		return new ArrayList<>(headers.keySet());
+	}
+
+	@Override
+	public String getRemoteAddress() {
+		if (connection != null) {
+			String host = ((InetSocketAddress)connection.httpRequest().remoteAddress()).getAddress().getHostAddress();
+		    int port = ((InetSocketAddress)connection.httpRequest().remoteAddress()).getPort();
+			return host + ":" + port;
+		} else {
+			return super.getRemoteAddress();
+		}
 	}
 }

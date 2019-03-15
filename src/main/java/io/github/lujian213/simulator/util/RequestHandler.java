@@ -36,10 +36,9 @@ import groovy.lang.GroovyShell;
 import io.github.lujian213.simulator.SimRequest;
 import io.github.lujian213.simulator.SimTemplate;
 import net.minidev.json.JSONArray;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public interface RequestHandler {
-	public static final String HEADER_BODY_TYPE = "_Body-Type";
-
 	static RequestHandlerChain inst = new RequestHandlerChain (
 			new XPathRequestHandler(),
 			new JSonPathRequestHandler(),

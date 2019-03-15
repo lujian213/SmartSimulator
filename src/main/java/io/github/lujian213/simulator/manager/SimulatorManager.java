@@ -14,7 +14,7 @@ public class SimulatorManager {
 	private SimulatorRepository rep = SimulatorRepository.getInstance();
 
 	public List<SimSimulator> getAllSimulators() {
-		return rep.getAllSimulators();
+		return new ArrayList<> (rep.getAllSimulators());
 	}
 
 	public List<SimulatorStatus> getAllSimulatorStatus() {
@@ -23,6 +23,7 @@ public class SimulatorManager {
 		for (SimSimulator simulator : rep.getAllSimulators()) {
 			ret.add(new SimulatorStatus(simulator));
 		}
+		ret.sort((o1, o2)-> o1.getName().toUpperCase().compareTo(o2.getName().toUpperCase()));
 		return ret;
 	}
 

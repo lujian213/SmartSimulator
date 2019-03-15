@@ -1,6 +1,7 @@
 package io.github.lujian213.simulator.webbit;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -13,6 +14,7 @@ import io.github.lujian213.simulator.AbstractSimRequest;
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.http.HTTPSimulatorConstants.*;
 
 public class WebbitSimRequest extends AbstractSimRequest {
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
@@ -41,6 +43,17 @@ public class WebbitSimRequest extends AbstractSimRequest {
 		
 	}
 	
+	@Override
+	public String getRemoteAddress() {
+		if (request != null) {
+			String host = ((InetSocketAddress)request.remoteAddress()).getAddress().getHostAddress();
+		    int port = ((InetSocketAddress)request.remoteAddress()).getPort();
+			return host + ":" + port;
+		} else {
+			return super.getRemoteAddress();
+		}
+	}
+
 	@Override
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
@@ -109,9 +122,15 @@ public class WebbitSimRequest extends AbstractSimRequest {
 	
 	@Override
 	protected void doFillResponse(SimResponse resp) throws IOException {
-		for (Map.Entry<String, Object> entry : resp.getHeaders().entrySet()) {
+		for (Map.Entry<String, Object> entry : resp.getAllInternalHeaders().entrySet()) {
+			if (HEADER_NAME_CONTENT_TYPE.equals(entry.getKey())) {
+				response.header("Content-Type", entry.getValue().toString());
+			}
+		}
+		for (Map.Entry<String, Object> entry : resp.getAllPublicHeaders().entrySet()) {
 			response.header(entry.getKey(), entry.getValue().toString());
 		}
+
 		convertor.fillRawResponse(response, resp);
 		response.status(resp.getCode());
 		response.end();

@@ -19,14 +19,14 @@ import io.github.lujian213.simulator.AbstractSimRequest;
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.SimScript;
 import io.github.lujian213.simulator.jms.JMSBroker.SimMessageProducer;
+import io.github.lujian213.simulator.jms.JMSSimulator.ProducerFactory;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public class JMSSimRequest extends AbstractSimRequest {
 	public static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
-	public static final String CHANNEL_NAME_TEMP_QUEUE = "???";
-	public static final String CHANNEL_NAME_TEMP_TOPIC = "###";
 	
 	private static final String[] JMS_HEADER_NAMES = {"JMSCorrelationID", "JMSDeliveryMode", "JMSDeliveryTime", "JMSDestination", "JMSExpiration", "JMSMessageID", "JMSPriority", "JMSRedelivered", "JMSReplyTo", "JMSTimestamp", "JMSType"};
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
@@ -38,13 +38,15 @@ public class JMSSimRequest extends AbstractSimRequest {
 	private Session session;
 	private ReqRespConvertor convertor;
 	private SimScript script;
+	private ProducerFactory producerFactory;
 	
-	public JMSSimRequest(SimScript script, Message message, Session session, String unifiedDestName, ReqRespConvertor convertor) throws IOException {
+	public JMSSimRequest(SimScript script, Message message, Session session, ProducerFactory producerFactory, String unifiedDestName, ReqRespConvertor convertor) throws IOException {
 		this.script = script;
 		this.message = message;
 		this.unifiedDestName = unifiedDestName;
 		this.session = session;
 		this.convertor = convertor;
+		this.producerFactory = producerFactory;
 		if (message instanceof TextMessage) {
 			this.topLine = "TextMessage";
 		} else if (message instanceof BytesMessage) {
@@ -142,16 +144,21 @@ public class JMSSimRequest extends AbstractSimRequest {
 	protected void doFillResponse(SimResponse response) throws IOException {
 		try {
 			Map<String, Object> respHeaders = response.getHeaders();
-			String channel = (String) respHeaders.get(JMSSimulator.HEADER_NAME_CHANNEL);
+			String channel = (String) respHeaders.get(HEADER_NAME_CHANNEL);
 			if (channel == null) {
-				respHeaders.put(JMSSimulator.HEADER_NAME_CHANNEL, unifiedDestName);
+				respHeaders.put(HEADER_NAME_CHANNEL, unifiedDestName);
 			}
 			if (CHANNEL_NAME_JMSREPLYTO.equals(channel)) {
 				SimLogger.getLogger().info("use destination in JMSReplyTo header [" + message.getJMSReplyTo() + "]");
-				SimMessageProducer producer = new SimMessageProducer(session, session.createProducer(message.getJMSReplyTo()));
-				respHeaders.put(JMSSimulator.HEADER_NAME_PRODUCER, producer);
+				String unifiedReplyToName = SimUtils.createUnifiedName(message.getJMSReplyTo().toString(), SimUtils.getBrokerName(unifiedDestName));
+				SimMessageProducer producer = producerFactory.getProducer(unifiedReplyToName);
+				if (producer == null) {
+					producer = new SimMessageProducer(session, session.createProducer(message.getJMSReplyTo()));
+					producerFactory.addProducer(unifiedReplyToName, producer);
+				}
+				respHeaders.put(HEADER_NAME_CHANNEL, unifiedReplyToName);
 			}
-			respHeaders.put(SimResponse.PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
+			respHeaders.put(PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
 		} catch (JMSException e) {
 			throw new IOException(e);
 		}
@@ -160,5 +167,17 @@ public class JMSSimRequest extends AbstractSimRequest {
 	@Override
 	public List<String> getAllHeaderNames() {
 		return new ArrayList<>(headers.keySet());
+	}
+
+	@Override
+	public String getRemoteAddress() {
+		try {
+			if (this.message != null) {
+				return this.message.getJMSDestination().toString();
+			}
+			return super.getRemoteAddress();
+		} catch (JMSException e) {
+			return super.getRemoteAddress();
+		}
 	}
 }

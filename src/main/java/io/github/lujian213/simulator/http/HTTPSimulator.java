@@ -14,12 +14,9 @@ import io.github.lujian213.simulator.SimSimulator;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.http.HTTPSimulatorConstants.*;
 
 public abstract class HTTPSimulator extends SimSimulator {
-	public static final String PROP_NAME_PORT = "simulator.http.port";
-	public static final String PROP_NAME_USE_SSL = "simulator.http.useSSL";
-	public static final String PROP_NAME_KEYSTORE = "simulator.http.keystore";
-	public static final String PROP_NAME_KS_PASSWD = "simulator.http.keystore.password";
 	protected int port;
 	protected boolean useSSL;
 	protected String keystore;
@@ -53,7 +50,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 	protected void handleRequest(SimRequest request) {
 		List<SimResponse> respList = new ArrayList<>();
 		try {
-			SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
+			SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "] from [" + request.getRemoteAddress() + "]");
 			respList = script.genResponse(request);
 		} catch (Exception e) {
 			if (proxy) {
@@ -72,7 +69,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 		}
 		castToSimulatorListener().onHandleMessage(getName(), request, respList, !respList.isEmpty());
 	}
-
+	
 	protected void gen500Response(SimRequest request, String message) {
 		try {
 			SimResponse response = new SimResponse(500, new HashMap<String, Object>(), message.getBytes());

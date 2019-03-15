@@ -14,6 +14,8 @@ import java.util.zip.ZipFile;
 import org.junit.Test;
 
 import io.github.lujian213.simulator.SimScript;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
+
 
 public class SimScriptTest {
 
@@ -197,14 +199,14 @@ public class SimScriptTest {
 	public void test9() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/websocket"));
-			assertNotNull(script.getProperty(SimScript.PROP_NAME_SIMULATOR_URL));
-			String s= script.getProperty(SimScript.PROP_NAME_SIMULATOR_URL).toString() + "init.properties";
+			assertNotNull(script.getProperty(PROP_NAME_SIMULATOR_URL));
+			String s= script.getProperty(PROP_NAME_SIMULATOR_URL).toString() + "init.properties";
 			String content = readFromURL(new URL(s));
 			assertFalse(content.isEmpty());
 			SimScript subScript = script.getSubScripts().get("hellowebsocket.1");
-			assertNotNull(subScript.getProperty(SimScript.PROP_NAME_SIMULATOR_URL));
-			assertNotEquals(script.getProperty(SimScript.PROP_NAME_SIMULATOR_URL), subScript.getProperty(SimScript.PROP_NAME_SIMULATOR_URL));
-			assertFalse(readFromURL(new URL(subScript.getProperty(SimScript.PROP_NAME_SIMULATOR_URL) + "open.sim")).isEmpty());
+			assertNotNull(subScript.getProperty(PROP_NAME_SIMULATOR_URL));
+			assertNotEquals(script.getProperty(PROP_NAME_SIMULATOR_URL), subScript.getProperty(PROP_NAME_SIMULATOR_URL));
+			assertFalse(readFromURL(new URL(subScript.getProperty(PROP_NAME_SIMULATOR_URL) + "open.sim")).isEmpty());
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail("unexpected exception" + e);
@@ -215,14 +217,14 @@ public class SimScriptTest {
 	public void test10() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new ZipFile("scripts/websocket2.zip"), new File("scripts/websocket2.zip"));
-			assertNotNull(script.getProperty(SimScript.PROP_NAME_SIMULATOR_URL));
-			String s= script.getProperty(SimScript.PROP_NAME_SIMULATOR_URL).toString() + "init.properties";
+			assertNotNull(script.getProperty(PROP_NAME_SIMULATOR_URL));
+			String s= script.getProperty(PROP_NAME_SIMULATOR_URL).toString() + "init.properties";
 			String content = readFromURL(new URL(s));
 			assertFalse(content.isEmpty());
 			SimScript subScript = script.getSubScripts().get("hellowebsocket.1");
-			assertNotNull(subScript.getProperty(SimScript.PROP_NAME_SIMULATOR_URL));
-			assertNotEquals(script.getProperty(SimScript.PROP_NAME_SIMULATOR_URL), subScript.getProperty(SimScript.PROP_NAME_SIMULATOR_URL));
-			assertFalse(readFromURL(new URL(subScript.getProperty(SimScript.PROP_NAME_SIMULATOR_URL) + "open.sim")).isEmpty());
+			assertNotNull(subScript.getProperty(PROP_NAME_SIMULATOR_URL));
+			assertNotEquals(script.getProperty(PROP_NAME_SIMULATOR_URL), subScript.getProperty(PROP_NAME_SIMULATOR_URL));
+			assertFalse(readFromURL(new URL(subScript.getProperty(PROP_NAME_SIMULATOR_URL) + "open.sim")).isEmpty());
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail("unexpected exception" + e);

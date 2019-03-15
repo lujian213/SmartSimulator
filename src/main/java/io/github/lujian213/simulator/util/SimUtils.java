@@ -1,5 +1,7 @@
 package io.github.lujian213.simulator.util;
 
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -23,14 +25,11 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -44,10 +43,6 @@ import org.apache.velocity.app.VelocityEngine;
 import io.github.lujian213.simulator.SimRequest;
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.SimScript;
-import io.github.lujian213.simulator.SimSimulator;
-import io.github.lujian213.simulator.jms.JMSSimRequest;
-import io.github.lujian213.simulator.jms.JMSSimulator;
-import io.github.lujian213.simulator.kafka.KafkaSimRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -101,9 +96,6 @@ public class SimUtils {
     	ve.init();
     }
 
-    public static String genID2() {
-    	return "aaaaa";
-    }
     public static String genID(String name, String format, int extraLength) {
     	IDGenerator inst = IDGenerator.getInstance(name, format, extraLength);
     	synchronized(inst) {
@@ -285,43 +277,6 @@ public class SimUtils {
 		}
     }
     
-    public static SimResponse doJMSProxy(String proxyURL, JMSSimRequest request) throws IOException {
-    	SimLogger.getLogger().info("do proxy ...");
-		Map<String, Object> headers = new HashMap<>();
-		try {
-			TextMessage message = (TextMessage) request.getMessage();
-			Enumeration<String> it = message.getPropertyNames();
-			while (it.hasMoreElements()) {
-				String propName = it.nextElement();
-				headers.put(propName, message.getObjectProperty(propName));
-			}
-			headers.put(JMSSimulator.HEADER_NAME_CHANNEL, proxyURL);
-			return new SimResponse(200, headers, message.getText().getBytes());
-		} catch (JMSException e) {
-			SimLogger.getLogger().error(e);
-			throw new IOException(e);
-		}
-    }
-
-    public static SimResponse doKafkaProxy(String proxyURL, KafkaSimRequest request) throws IOException {
-//    	SimLogger.getLogger().info("do proxy ...");
-//		Map<String, Object> headers = new HashMap<>();
-//		try {
-//			TextMessage message = (TextMessage) request.getMessage();
-//			Enumeration<String> it = message.getPropertyNames();
-//			while (it.hasMoreElements()) {
-//				String propName = it.nextElement();
-//				headers.put(propName, message.getObjectProperty(propName));
-//			}
-//			headers.put(JMSSimulator.HEADER_NAME_CHANNEL, proxyURL);
-//			return new SimResponse(200, headers, message.getText().getBytes());
-//		} catch (JMSException e) {
-//			SimLogger.getLogger().error(e);
-//			throw new IOException(e);
-//		}
-    	return null;
-    }
-
     public static String encodeURL(String url) throws UnsupportedEncodingException {
     	int index = url.indexOf('?');
     	if (index < 0) {
@@ -379,7 +334,7 @@ public class SimUtils {
 	}
 	
 	public static ReqRespConvertor createMessageConvertor(SimScript script, ReqRespConvertor defaultConvertor) {
-		String convertorClassName = script.getProperty(SimSimulator.PROP_NAME_MESSAGE_CONVERTOR);
+		String convertorClassName = script.getProperty(PROP_NAME_MESSAGE_CONVERTOR);
 		if (convertorClassName != null) {
 			try {
 				ReqRespConvertor convertor = ReqRespConvertor.class.cast(Class.forName(convertorClassName, true, script.getClassLoader()).newInstance());

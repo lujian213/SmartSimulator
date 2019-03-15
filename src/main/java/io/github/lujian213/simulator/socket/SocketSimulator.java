@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import io.github.lujian213.simulator.SimRequest;
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.SimScript;
+import io.github.lujian213.simulator.SimSesseionLessSimulator;
 import io.github.lujian213.simulator.SimSimulator;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimLogger;
@@ -29,18 +31,28 @@ import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import static io.github.lujian213.simulator.socket.SocketSimulatorConstants.*;
 
-public class SocketSimulator extends SimSimulator {
+
+public class SocketSimulator extends SimSimulator implements SimSesseionLessSimulator {
 	public class SocketHandler extends ChannelInboundHandlerAdapter {
+		private ChannelHandlerContext ctx;
+		private String id;
+		
+		public SimScript getScript() {
+			return SocketSimulator.this.getScript();
+		}
+		
 	    @Override
 	    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 	    	SimUtils.setThreadContext(script);
-			SimRequest request = null;
+	    	SocketSimRequest request = null;
 			List<SimResponse> respList = new ArrayList<>();
 			try {
-				request = new SocketSimRequest(ctx, TYPE_MESSAGE, (ByteBuf)msg, convertor);
-				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
+				request = new SocketSimRequest(this, ctx, TYPE_MESSAGE, (ByteBuf)msg, convertor);
+				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "] from [" + request.getRemoteAddress() + "]");
 				respList = script.genResponse(request);
+				handleIDChange(request);
 	    	} catch (IOException e) {
 				if (proxy) {
 					SimLogger.getLogger().info("send to remote ...");
@@ -65,12 +77,13 @@ public class SocketSimulator extends SimSimulator {
 	    
 	    @Override
 	    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+	    	this.ctx = ctx;
 	    	SimUtils.setThreadContext(script);
-			SimRequest request = null;
+	    	SocketSimRequest request = null;
 			List<SimResponse> respList = new ArrayList<>();
 			try {
-				request = new SocketSimRequest(ctx, TYPE_OPEN, null, convertor);
-				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
+				request = new SocketSimRequest(this, ctx, TYPE_OPEN, null, convertor);
+				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "] from [" + request.getRemoteAddress() + "]");
 				respList = script.genResponse(request);
 	    	} catch (IOException e) {
 				if (proxy) {
@@ -89,11 +102,11 @@ public class SocketSimulator extends SimSimulator {
 	    @Override
 	    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 	    	SimUtils.setThreadContext(script);
-			SimRequest request = null;
+	    	SocketSimRequest request = null;
 			List<SimResponse> respList = new ArrayList<>();
 			try {
-				request = new SocketSimRequest(ctx, TYPE_CLOSE, null, convertor);
-				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "]");
+				request = new SocketSimRequest(this, ctx, TYPE_CLOSE, null, convertor);
+				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "] from [" + request.getRemoteAddress() + "]");
 				respList = script.genResponse(request);
 	    	} catch (IOException e) {
 				if (proxy) {
@@ -105,8 +118,32 @@ public class SocketSimulator extends SimSimulator {
 				}
 			} finally {
 //				ReferenceCountUtil.release(msg);
+				if (this.id != null) {
+					handlerMap.remove(id);
+				}
 				castToSimulatorListener().onHandleMessage(getName(), request, respList, !respList.isEmpty());
 	    	}
+	    }
+	    
+	    protected void handleIDChange(SocketSimRequest request) {
+	    	if (this.id == null) {
+		    	String headerLine = request.getHeaderLine(HEADER_NAME_CHANNEL_ID);
+		    	if (headerLine != null) {
+		    		Map.Entry<String, String> entry = SimUtils.parseHeaderLine(headerLine);
+		    		SimLogger.getLogger().info("ID change to " + entry.getValue());
+		    		this.id = entry.getValue();
+		    		handlerMap.put(this.id, this);
+		    	}
+	    	}
+	    }
+	    
+	    public void sendResponse(SimResponse response) throws IOException {
+			byte[] body = response.getBody();
+			long length = body.length;
+			ByteBuf buf = ctx.alloc().buffer((int)length);
+			convertor.fillRawResponse(buf, response);
+			ctx.writeAndFlush(buf);
+			
 	    }
 	}
 	
@@ -149,10 +186,6 @@ public class SocketSimulator extends SimSimulator {
 
 	}
 	
-	public static final String PROP_NAME_PORT = "simulator.socket.port";
-	public static final String PROP_NAME_FRAME_DELIMITERS = "simulator.socket.frame.delimiters";
-	public static final String PROP_NAME_FRAME_MAXLENGTH = "simulator.socket.frame.maxlength";
-	public static final String PROP_NAME_USE_SSL = "simulator.socket.useSSL";
 	private final static String TYPE_OPEN = "OPEN";
 	private final static String TYPE_CLOSE = "CLOSE";
 	private final static String TYPE_MESSAGE = "MESSAGE";
@@ -167,6 +200,7 @@ public class SocketSimulator extends SimSimulator {
 	private boolean useSSL;
 	private SslContext sslCtx;
 	private SocketClient sClient;
+	private Map<String, SocketHandler> handlerMap = new HashMap<>();
 
 	public SocketSimulator(SimScript script) throws IOException {
 		super(script);
@@ -246,5 +280,18 @@ public class SocketSimulator extends SimSimulator {
 		SimLogger.getLogger().info("stopped");
 		this.running = false;
 		this.runningURL = null;
+	}
+
+	@Override
+	public void fillResponse(SimResponse response) throws IOException {
+		Map<String, Object> headers = response.getHeaders();
+		String channel = (String) headers.remove(HEADER_NAME_CHANNEL);
+		SocketHandler handler = handlerMap.get(channel);
+		if (handler == null) {
+			throw new IOException("no such ws channel [" + handler + "] exists");	
+		}
+		handler.sendResponse(response);
+		SimLogger.getLogger().info("Use channel [" + channel + "] to send out message");
+
 	}
 }

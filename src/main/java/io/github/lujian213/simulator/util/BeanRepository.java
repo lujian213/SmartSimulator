@@ -1,5 +1,7 @@
 package io.github.lujian213.simulator.util;
 
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,10 +11,10 @@ import java.util.Map;
 
 import org.apache.velocity.VelocityContext;
 
-import io.github.lujian213.simulator.SimScript;
 import io.github.lujian213.simulator.util.function.FunctionBeanListener;
 import io.github.lujian213.simulator.util.function.SimConstructor;
 import io.github.lujian213.simulator.util.function.SimParam;
+
 
 public class BeanRepository {
 	private static BeanRepository repository = new BeanRepository();
@@ -47,7 +49,7 @@ public class BeanRepository {
 	}
 	
 	public FunctionBean addBean(Class<?> clazz, VelocityContext vc) {
-		String simulatorName = (String) vc.get(SimScript.PROP_NAME_SIMULATOR_NAME);
+		String simulatorName = (String) vc.get(PROP_NAME_SIMULATOR_NAME);
 		FunctionBean bean = null;
 		synchronized (beanMap) {
 			Map<String, FunctionBean> simMap = beanMap.get(simulatorName);

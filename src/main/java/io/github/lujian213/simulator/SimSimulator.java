@@ -7,13 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import io.github.lujian213.simulator.util.BeanRepository;
 import io.github.lujian213.simulator.util.ListenerHub;
 import io.github.lujian213.simulator.util.SimLogger;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
-	public static final String PROP_NAME_PROXY = "simulator.proxy";
-	public static final String PROP_NAME_PROXY_URL = "simulator.proxy.url";
-	public static final String PROP_NAME_MESSAGE_CONVERTOR = "simulator.messageconvertor";
-	public static final String PROP_NAME_LISTENER = "simulator.listener";
-
 	protected ListenerHub<SimulatorListener> listenerHub = ListenerHub.createListenerHub(SimulatorListener.class);
 	protected SimScript script;
 	protected boolean running = false;

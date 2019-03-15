@@ -17,33 +17,30 @@ import io.github.lujian213.simulator.kafka.KafkaBroker.KafkaSubscriber;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
+import static io.github.lujian213.simulator.kafka.KafkaSimulatorConstants.*;
 
 public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimulator {
-	public static final String PROP_NAME_ENDPOINT_BROKER = "simulator.kafka.endpoint.broker";
-	public static final String PROP_NAME_ENDPOINT_NAME = "simulator.kafka.endpoint.name";
-	public static final String PROP_NAME_ENDPOINT_TYPE = "simulator.kafka.endpoint.type";
-
-	public static final String HEADER_NAME_CHANNEL = "_Channel";
-	public static final String HEADER_NAME_MESSGAE_KEY = "_Message.key";
-	public static final String HEADER_NAME_MESSGAE_TOPIC = "_Message.topic";
-
-	
 	public static final String ENDPOINT_TYPE_PUB = "Pub";
 	public static final String ENDPOINT_TYPE_SUB = "Sub";
 
 	private Map<String, KafkaBroker> brokerMap = new HashMap<>();
-	private boolean proxy;
-	private String proxyURL;
 	private ReqRespConvertor convertor;
 
 	
 	public class SimMessageListener implements KafkaMessageListener {
 		private String unifiedEndpointName;
 		private SimScript script;
+		private boolean proxy;
+		private String proxyChannel;
 		
 		public SimMessageListener(SimScript script, String unifiedEndpointName) {
 			this.script = script;
 			this.unifiedEndpointName = unifiedEndpointName;
+			this.proxy = script.getConfig().getBoolean(PROP_NAME_ENDPOINT_PROXY, false);
+			if (proxy) {
+				proxyChannel = script.getMandatoryProperty(PROP_NAME_ENDPOINT_PROXY_CHANNEL, "no proxy channel defined");
+			}
+
 		}
 		
 		public void onMessage(ConsumerRecord<?, ?> record) {
@@ -51,7 +48,7 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 			KafkaSimRequest request = null;
 			try {
 				request = new KafkaSimRequest(script, record, unifiedEndpointName, convertor);
-				SimLogger.getLogger().info("incoming request from [" + unifiedEndpointName + "]: [" + request.getTopLine() + "]\n" + request.getBody());
+				SimLogger.getLogger().info("incoming request from [" + unifiedEndpointName + "]@" + KafkaSimulator.this.getName() + ": [" + request.getTopLine() + "]\n" + request.getBody());
 			} catch (Exception e) {
 				SimLogger.getLogger().error("error when create SimRequest", e);
 			}
@@ -62,9 +59,13 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 				} catch (Exception e) {
 					if (proxy) {
 						try {
-							SimResponse resp = SimUtils.doKafkaProxy(proxyURL, request);
-							request.fillResponse(resp);
-							respList.add(resp);
+							String brokerName = SimUtils.getBrokerName(proxyChannel);
+							KafkaBroker broker = brokerMap.get(brokerName);
+							if (broker == null) {
+								throw new IOException("no such broker [" + brokerName + "] exists");	
+							}
+							broker.sendMessage(proxyChannel, record);
+							respList.add(new SimResponse("Unknown due to proxy mechanism"));
 						} catch (IOException e1) {
 							SimLogger.getLogger().error("proxy error", e1);
 						}
@@ -100,7 +101,7 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 			} else if (subScript.getProperty(PROP_NAME_ENDPOINT_NAME) != null) {
 				endPointScripts.add(subScript);
 			} else {
-				SimLogger.getLogger().info("skip .. folder [" + entry.getKey() + "]");
+				SimLogger.getLogger().info("skip folder [" + entry.getKey() + "]");
 			}
 		}
 		
