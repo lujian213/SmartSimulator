@@ -2,6 +2,8 @@ package io.github.lujian213.simulator;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -35,7 +37,15 @@ public class SimulatorService {
 	
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException {
-		SimulatorService inst = new SimulatorService(new File(args[0]));
+		SimulatorService inst;
+		if(args.length==0){
+			URL resource = SimulatorService.class.getClassLoader().getResource("scripts");
+			System.setProperty("Script_Home", resource.getPath());
+			inst = new SimulatorService(new File(resource.getPath()));
+		}else{
+			System.setProperty("Script_Home", args[0]);
+			inst = new SimulatorService(new File(args[0]));
+		}
 		inst.start();
 	}
 }

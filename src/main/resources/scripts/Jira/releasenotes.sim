@@ -1,0 +1,68 @@
+GET {$url}/jira/api/releasenote?version={$version} HTTP/1.1
+
+HTTP/1.1 200 OK
+
+{
+    "version": "$version",
+    "date": "27 Jul 2018",
+    "ticket": "CHG0002768621",
+    "content": [
+        {
+            "title": "TPS Deriv Release Items",
+            "type": "table",
+            "cols": [ 
+                {"header": "Key", "field": "key", "group": false, "width": 50},
+                {"header": "Summary", "field": "summary", "group": false, "width": 150},
+                {"header": "EpicName", "field": "epicName", "group": false, "width": 50},
+                {"header": "Business", "field": "business", "group": false, "width": 50}
+            ],
+            "datas": [
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "TPS Exotics Release Items",
+            "type": "table",
+            "cols": [ 
+                {"header": "Key", "field": "key", "group": false, "width": 50},
+                {"header": "Summary", "field": "summary", "group": false, "width": 150},
+                {"header": "EpicName", "field": "epicName", "group": false, "width": 50},
+                {"header": "Business", "field": "business", "group": false, "width": 50}
+            ],
+            "datas": [
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"}
+            ],
+            "note": ""
+        },
+        {
+            "title": "TPS Cash Release Items",
+            "type": "table",
+            "cols": [ 
+                {"header": "Key", "field": "key", "group": false, "width": 50},
+                {"header": "Summary", "field": "summary", "group": false, "width": 150},
+                {"header": "EpicName", "field": "epicName", "group": false, "width": 50},
+                {"header": "Business", "field": "business", "group": false, "width": 50}
+            ],
+            "datas": [
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"},
+                {"key": "C150699-25018", "summary": "populate CITIML_TRADE.ACTIVE_UNTIL for FX Swap near legs", "epicName": "MIFID2 Derivatives", "business": "Rates Common"}
+            ],
+            "note": "",
+            "linkIndex": 0
+        }
+    ]
+}
+
+------------------------------------------------------------------

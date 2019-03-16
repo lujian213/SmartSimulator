@@ -1,0 +1,31 @@
+GET {$url}/hello/{$name} HTTP/1.1
+
+HTTP/1.1 200 OK
+
+Hello! $name
+
+------------------------------------------------------------------
+
+GET {$url}/hi/{$name} HTTP/1.1
+
+HTTP/1.1 200 OK
+
+Good evening! $name
+
+------------------------------------------------------------------
+
+GET {$url}/error HTTP/1.1
+
+HTTP/1.1 301 Moved Permanently
+Location: http://www.baidu.com
+
+------------------------------------------------------------------
+
+GET {$url}/groovy/{$name} HTTP/1.1
+
+HTTP/1.1 200 OK
+_Bridge: ${simulator_url}sample.groovy
+_Bridge.Type: Groovy
+Content-Type: text/html
+
+------------------------------------------------------------------

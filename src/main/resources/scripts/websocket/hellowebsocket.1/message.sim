@@ -1,0 +1,23 @@
+MESSAGE /hellowebsocket/1 HTTP/1.1
+
+id:{$id}
+HTTP/1.1 200 OK
+_Channel_ID: $id
+
+hello $id
+HTTP/1.1 200 OK
+_Channel_ID: $id
+
+hi $id
+
+------------------------------------------------------------------
+
+MESSAGE /hellowebsocket/1 HTTP/1.1
+
+{$id}:{$msg}
+HTTP/1.1 200 OK
+_Channel: $id@/hellowebsocket/1
+
+message: $msg
+
+------------------------------------------------------------------

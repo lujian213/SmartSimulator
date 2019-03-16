@@ -1,0 +1,23 @@
+<html>
+  <body>
+
+    <!-- Send text to websocket -->
+    <input id="userInput" type="text">
+    <button onclick="ws.send(document.getElementById('userInput').value)">Send</button>
+
+    <!-- Results -->
+    <div id="message"></div>
+
+    <script>
+      function showMessage(text) {
+        document.getElementById('message').innerHTML = text;
+      }
+
+      var ws = new WebSocket('wss://' + document.location.host + '/hellowebsocket/1');
+      showMessage('Connecting...');
+      ws.onopen = function() { showMessage('Connected!'); };
+      ws.onclose = function() { showMessage('Lost connection'); };
+      ws.onmessage = function(msg) { showMessage(msg.data); };
+    </script>
+  </body>
+</html>
