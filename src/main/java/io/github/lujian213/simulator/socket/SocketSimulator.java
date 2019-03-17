@@ -50,7 +50,7 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
 			List<SimResponse> respList = new ArrayList<>();
 			try {
 				request = new SocketSimRequest(this, ctx, TYPE_MESSAGE, (ByteBuf)msg, convertor);
-				SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "] from [" + request.getRemoteAddress() + "]");
+				SimUtils.logIncomingMessage(request.getRemoteAddress(), SocketSimulator.this.getName(), request);
 				respList = script.genResponse(request);
 				handleIDChange(request);
 	    	} catch (IOException e) {

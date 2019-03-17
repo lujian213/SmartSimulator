@@ -48,7 +48,7 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 			KafkaSimRequest request = null;
 			try {
 				request = new KafkaSimRequest(script, record, unifiedEndpointName, convertor);
-				SimLogger.getLogger().info("incoming request from [" + unifiedEndpointName + "]@" + KafkaSimulator.this.getName() + ": [" + request.getTopLine() + "]\n" + request.getBody());
+				SimUtils.logIncomingMessage(unifiedEndpointName, KafkaSimulator.this.getName(), request);
 			} catch (Exception e) {
 				SimLogger.getLogger().error("error when create SimRequest", e);
 			}

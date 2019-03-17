@@ -72,9 +72,9 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 			List<SimResponse> respList = new ArrayList<>();
 			try {
 				SimUtils.setThreadContext(script);
-				SimLogger.getLogger().info("incoming message from [" + src + "] in" + JMSSimulator.this.getName());
 				String brokerName = script.getMandatoryProperty(PROP_NAME_DESTINATION_BROKER, "no destination broker defined");
 				request = new JMSSimRequest(script, message, session, producerFactory, SimUtils.createUnifiedName(src.toString(), brokerName), convertor);
+				SimUtils.logIncomingMessage(SimUtils.createUnifiedName(src.toString(), brokerName), JMSSimulator.this.getName(), request);
 				String unifiedDestName = SimUtils.createUnifiedName(dest.toString(), brokerName);
 				SimMessageProducer producer = producerFactory.getProducer(unifiedDestName);
 				if (producer == null) {
@@ -116,7 +116,7 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 			JMSSimRequest request = null;
 			try {
 				request = new JMSSimRequest(script, message, session, producerFactory, unifiedDestName, convertor);
-				SimLogger.getLogger().info("incoming message from [" + unifiedDestName + "] in " + JMSSimulator.this.getName() + ": [" + request.getTopLine() + "]\n" + request.getBody());
+				SimUtils.logIncomingMessage(unifiedDestName, JMSSimulator.this.getName(), request);
 			} catch (Exception e) {
 				SimLogger.getLogger().error("error when create SimRequest", e);
 			}
@@ -279,7 +279,7 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 				respMsg.setObjectProperty(entry.getKey(), entry.getValue());
 			}
 			convertor.fillRawResponse(respMsg, response);
-			SimLogger.getLogger().info("Use producer [" + producer + "] to send out message");
+			SimLogger.getLogger().info("Use channel [" + channel + "] to send out message");
 			producer.send(respMsg);
 		} catch (JMSException e) {
 			throw new IOException(e);

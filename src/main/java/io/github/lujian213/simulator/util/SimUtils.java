@@ -416,4 +416,7 @@ public class SimUtils {
 		return parts[1];
 	}
 
+	public static void logIncomingMessage(String from, String simulatorName, SimRequest request) {
+		SimLogger.getLogger().info("incoming message from [" + from + "] in " + simulatorName + ": [" + request.getTopLine() + "]\n" + request.getBody());
+	}
 }

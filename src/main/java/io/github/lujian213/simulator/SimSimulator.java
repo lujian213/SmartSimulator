@@ -1,5 +1,9 @@
 package io.github.lujian213.simulator;
 
+import static io.github.lujian213.simulator.SimSimulatorConstants.PROP_NAME_LISTENER;
+import static io.github.lujian213.simulator.SimSimulatorConstants.PROP_NAME_PROXY;
+import static io.github.lujian213.simulator.SimSimulatorConstants.PROP_NAME_PROXY_URL;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -7,7 +11,6 @@ import java.lang.reflect.InvocationTargetException;
 import io.github.lujian213.simulator.util.BeanRepository;
 import io.github.lujian213.simulator.util.ListenerHub;
 import io.github.lujian213.simulator.util.SimLogger;
-import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	protected ListenerHub<SimulatorListener> listenerHub = ListenerHub.createListenerHub(SimulatorListener.class);
@@ -113,5 +116,4 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	protected SimulatorListener castToSimulatorListener() {
 		return SimulatorListener.class.cast(listenerHub);
 	}
-
 }

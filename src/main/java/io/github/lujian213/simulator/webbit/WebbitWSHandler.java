@@ -14,14 +14,12 @@ import org.webbitserver.WebSocketConnection;
 
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.SimScript;
-import io.github.lujian213.simulator.SimSimulator;
 import io.github.lujian213.simulator.SimulatorListener;
-import io.github.lujian213.simulator.http.HTTPSimulator;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
 import io.github.lujian213.simulator.webbit.WebbitWSHandler.ConnectionBundle.ConnectionWithDelegator;
-import static io.github.lujian213.simulator.SimSimulatorConstants.*;
+import static io.github.lujian213.simulator.webbit.WebbitSimulatorConstants.*;
 
 public class WebbitWSHandler extends BaseWebSocketHandler {
 	static class ConnectionBundle {
@@ -178,6 +176,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		List<SimResponse> respList = new ArrayList<>();
     	try {
     		respList = script.genResponse(request);
+    		SimUtils.logIncomingMessage(request.getRemoteAddress(), simulator.getName(), request);
 	    	bundle.addConnection(bundle.new ConnectionWithDelegator(connection));
     	} catch (Exception e) {
 			if (proxy) {
@@ -208,6 +207,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		List<SimResponse> respList = new ArrayList<>();
 		ConnectionWithDelegator conn = bundle.findConnection(connection);
     	try {
+    		SimUtils.logIncomingMessage(request.getRemoteAddress(), simulator.getName(), request);
 	    	respList = script.genResponse(request);
     	} catch (IOException e) {
 			if (proxy) {
@@ -237,6 +237,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		List<SimResponse> respList = new ArrayList<>();
 		ConnectionWithDelegator conn = bundle.findConnection(connection);
     	try {
+    		SimUtils.logIncomingMessage(request.getRemoteAddress(), simulator.getName(), request);
 	    	respList = script.genResponse(request);
     	} catch (Exception e) {
 			if (proxy) {
@@ -253,7 +254,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
     }
 
     protected void handleIDChange(WebbitWSSimRequest request) {
-    	String headerLine = request.getHeaderLine(WebbitWSSimRequest.HEADER_NAME_CHANNEL_ID);
+    	String headerLine = request.getHeaderLine(HEADER_NAME_CHANNEL_ID);
     	if (headerLine != null) {
     		Map.Entry<String, String> entry = SimUtils.parseHeaderLine(headerLine);
     		SimLogger.getLogger().info("ID change to " + entry.getValue());

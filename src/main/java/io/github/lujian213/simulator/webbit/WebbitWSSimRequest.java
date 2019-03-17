@@ -11,14 +11,11 @@ import org.webbitserver.WebSocketConnection;
 
 import io.github.lujian213.simulator.AbstractSimRequest;
 import io.github.lujian213.simulator.SimResponse;
-import io.github.lujian213.simulator.SimSimulator;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimUtils;
-import static io.github.lujian213.simulator.SimSimulatorConstants.*;
+import static io.github.lujian213.simulator.webbit.WebbitSimulatorConstants.*;
 
 public class WebbitWSSimRequest extends AbstractSimRequest {
-	public static final String HEADER_NAME_CHANNEL_ID = "_Channel_ID";
-
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private String topLine;

@@ -1,5 +1,7 @@
 package io.github.lujian213.simulator.http;
 
+import static io.github.lujian213.simulator.http.HTTPSimulatorConstants.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +16,6 @@ import io.github.lujian213.simulator.SimSimulator;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
-import static io.github.lujian213.simulator.http.HTTPSimulatorConstants.*;
 
 public abstract class HTTPSimulator extends SimSimulator {
 	protected int port;
@@ -50,7 +51,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 	protected void handleRequest(SimRequest request) {
 		List<SimResponse> respList = new ArrayList<>();
 		try {
-			SimLogger.getLogger().info("incoming request: [" + request.getTopLine() + "] from [" + request.getRemoteAddress() + "]");
+			SimUtils.logIncomingMessage(request.getRemoteAddress(), getName(), request);
 			respList = script.genResponse(request);
 		} catch (Exception e) {
 			if (proxy) {
