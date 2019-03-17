@@ -1,5 +1,5 @@
 # SmartSimulator
-Build status: [![build_status](https://api.travis-ci.org/lujian213/smartsimulator.svg?branch=master)](https://travis-ci.org/lujian213/smartsimulator)
+Build status: [![build_status](https://travis-ci.org/lujian213/SmartSimulator.svg?branch=master)](https://travis-ci.org/lujian213/SmartSimulator)
 
 *SmartSimulator* is a generic simulator framework which can be used to simulate the behavior of specific service. It can be used in development or QA stage to reduce dependency and improve productivity.
 
