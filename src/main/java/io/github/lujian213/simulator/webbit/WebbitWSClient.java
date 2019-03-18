@@ -32,7 +32,7 @@ public class WebbitWSClient extends BaseWebSocketHandler {
 		this.uri = uri;
 		this.delegation = delegation;
 		this.script = script;
-		useSSL = script.getConfig().getBoolean(PROP_NAME_USE_SSL, false);
+		useSSL = script.getBooleanProperty(PROP_NAME_USE_SSL, false);
 		if (useSSL) {
 			keystore = script.getMandatoryProperty(PROP_NAME_KEYSTORE, "no keystore defined");
 			passwd = script.getMandatoryProperty(PROP_NAME_KS_PASSWD, "no keystore passwd defined");

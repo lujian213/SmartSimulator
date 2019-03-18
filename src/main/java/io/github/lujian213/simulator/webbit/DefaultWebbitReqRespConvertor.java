@@ -17,6 +17,13 @@ public class DefaultWebbitReqRespConvertor implements ReqRespConvertor {
 
 	@Override
 	public void fillRawResponse(Object rawResponse, SimResponse simResponse) throws IOException {
-		((HttpResponse)rawResponse).content(simResponse.getBody());
+		HttpResponse response = (HttpResponse)rawResponse;
+		String value = (String) simResponse.getAllPublicHeaders().get("Transfer-Encoding");
+		if (value != null && value.equals("chunked")) {
+			response.chunked();
+			response.write(simResponse.getBodyAsString());
+		} else {
+			((HttpResponse)rawResponse).content(simResponse.getBody());
+		}
 	}
 }

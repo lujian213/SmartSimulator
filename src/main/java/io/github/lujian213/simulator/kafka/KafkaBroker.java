@@ -119,8 +119,8 @@ public class KafkaBroker {
 					topics.add(str);
 				}
 			});
-			this.poolInterval = script.getConfig().getLong(PROP_NAME_SUBSCRIBER_POLLINTERVAL, 100);
-			this.autoCommit = script.getConfig().getBoolean(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+			this.poolInterval = script.getLongProperty(PROP_NAME_SUBSCRIBER_POLLINTERVAL, 100);
+			this.autoCommit = script.getBooleanProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 		}
 
 		public String getName() {

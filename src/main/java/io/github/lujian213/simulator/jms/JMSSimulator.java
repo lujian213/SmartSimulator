@@ -104,7 +104,7 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 			this.unifiedDestName = unifiedDestName;
 			this.session = session;
 			this.convertor = convertor;
-			this.proxy = script.getConfig().getBoolean(PROP_NAME_DESTINATION_PROXY, false);
+			this.proxy = script.getBooleanProperty(PROP_NAME_DESTINATION_PROXY, false);
 			if (proxy) {
 				proxyChannel = script.getMandatoryProperty(PROP_NAME_DESTINATION_PROXY_CHANNEL, "no proxy channel defined");
 			}

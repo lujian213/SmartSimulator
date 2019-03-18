@@ -73,7 +73,8 @@ public class SimRequestTemplate {
 	
 	public Map<String, Object> match(SimRequest request) throws IOException {
 		Map<String, Object> ret = new HashMap<>();
-		Map<String, Object> res = topLineTemplate.parse(request.getTopLine());
+		String topLine = request.getTopLine() == null ? null : request.getTopLine().replaceAll("\\r\\n|\\r|\\n", " ");
+		Map<String, Object> res = topLineTemplate.parse(topLine);
 		if (res == null)
 			return null;
 		ret.putAll(res);

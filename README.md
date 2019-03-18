@@ -65,7 +65,7 @@ Request template by default is a reverse template. Below are some key points of 
 
 For example, String `GET https://www.abc.com/hello/world HTTP/1.1` matched the template `GET {$url}/hello/{$name} HTTP/1.1`. After the match, variable `url = https://www.abc.com`, and `name = world`.
 
-Another example, String `We have {$name[]} and {$name[]} in the team` matched the template `We have Alice and Bruce in the team`. After the match, variable `name[0] = Alice`, and `name[2] = Bruce`.
+Another example, String `We have {$name[]} and {$name[]} in the team` matched the template `We have Alice and Bruce in the team`. After the match, variable `name[0] = Alice`, and `name[1] = Bruce`.
 
 Request template has 3 parts: topline, headers, and payload.
 

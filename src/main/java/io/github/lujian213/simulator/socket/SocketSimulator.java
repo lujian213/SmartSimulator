@@ -211,9 +211,9 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
 		super.init();
 		port = script.getMandatoryIntProperty(PROP_NAME_PORT, "no socket port defined");
 		convertor = SimUtils.createMessageConvertor(script, new DefualtSocketReqRespConvertor());
-		frameMaxLength = script.getConfig().getInt(PROP_NAME_FRAME_MAXLENGTH, 8192);
-		delimiters = SimUtils.parseDelimiters(script.getConfig().getString(PROP_NAME_FRAME_DELIMITERS, "0x0D0x0A,0x0A"));
-		useSSL = script.getConfig().getBoolean(PROP_NAME_USE_SSL, false); 
+		frameMaxLength = script.getIntProperty(PROP_NAME_FRAME_MAXLENGTH, 8192);
+		delimiters = SimUtils.parseDelimiters(script.getProperty(PROP_NAME_FRAME_DELIMITERS, "0x0D0x0A,0x0A"));
+		useSSL = script.getBooleanProperty(PROP_NAME_USE_SSL, false); 
 	}
   
 	@Override

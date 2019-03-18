@@ -20,7 +20,6 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -33,6 +32,7 @@ import io.github.lujian213.simulator.util.SimUtils;
 import io.github.lujian213.simulator.util.ZipFileVisitor;
 import io.github.lujian213.simulator.util.ZipFileVisitor.EntryWrapper;
 import io.github.lujian213.simulator.util.ZipFileVisitor.ZipFileVisitorHandler;
+
 import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public class SimScript {
@@ -70,6 +70,7 @@ public class SimScript {
 	private List<TemplatePair> templatePairs = new ArrayList<>();
 	private Map<String, SimScript> subScripts = new HashMap<>();
 	private PropertiesConfiguration config = new PropertiesConfiguration();
+	private PropertiesConfiguration localConfig = new PropertiesConfiguration();
 	private boolean ignored = false;
 	private File myself = null;
 	private File libFile = null;
@@ -79,18 +80,17 @@ public class SimScript {
 	public SimScript(SimScript parent, File file) throws IOException {
 		this.myself = file;
 		this.parent = parent;
-		config.copy(parent.getConfig());
-		config.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
-		templatePairs.addAll(parent.getTemplatePairs());
+		config.copy(parent.config);
+		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		loadFolder(file, true); 
+		config.copy(localConfig);
 	}
 	
 	public SimScript(SimScript parent, final ZipFile zf, File file) throws IOException {
 		this.myself = file;
 		this.parent = parent;
-		config.copy(parent.getConfig());
-		config.setProperty(PROP_NAME_SIMULATOR_URL, "jar:" + file.toURI() + "!/");
-		templatePairs.addAll(parent.getTemplatePairs());
+		config.copy(parent.config);
+		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, "jar:" + file.toURI() + "!/");
 		ZipFileVisitorHandler<SimScript> handler = new ZipFileVisitorHandler<SimScript>() {
 
 			private EntryWrapper<SimScript> parent;
@@ -126,7 +126,8 @@ public class SimScript {
 						try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {
 							PropertiesConfiguration propConfig = new PropertiesConfiguration();
 							propConfig.read(reader);
-							script.config.copy(propConfig);
+							script.localConfig.copy(propConfig);
+							script.config.copy(script.localConfig);
 						} catch (ConfigurationException e) {
 							throw new IOException(e);
 						} 
@@ -134,7 +135,7 @@ public class SimScript {
 						SimLogger.getLogger().info("loading script file [" + name + "] in [" + parent.getTarget().getProperty(PROP_NAME_SIMULATOR_URL) + "]");
 						try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry), "utf-8"))) {
 							List<TemplatePair> pairList = load(reader); 
-							script.templatePairs.addAll(0, pairList);
+							script.templatePairs.addAll(pairList);
 						}
 					} else if (name.endsWith(IGNORE_EXT)) {
 						SimLogger.getLogger().info("find ignore file, [" + parent.getTarget().getProperty(PROP_NAME_SIMULATOR_URL) + "] will be ignored");
@@ -153,19 +154,21 @@ public class SimScript {
 		};
 		ZipFileVisitor<SimScript> visitor = new ZipFileVisitor<SimScript>(zf, this, handler);
 		visitor.visit();
+		config.copy(localConfig);
 	}
 
 	public SimScript(File file) throws IOException {
 		this.myself = file;
-		config.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
+		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		loadFolder(file, false); 
+		config.copy(localConfig);
 	}
 	
 	SimScript(SimScript parent, ZipEntry entry) {
 		this.parent = parent;
-		config.copy(parent.getConfig());
-		templatePairs.addAll(parent.getTemplatePairs());
-		config.setProperty(PROP_NAME_SIMULATOR_URL, parent.getProperty(PROP_NAME_SIMULATOR_URL) + new File(entry.getName()).getName() + "/");
+		config.copy(parent.config);
+		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, parent.getProperty(PROP_NAME_SIMULATOR_URL) + new File(entry.getName()).getName() + "/");
+		config.copy(localConfig);
 	}
 	
 	protected SimScript() {
@@ -258,7 +261,7 @@ public class SimScript {
 				if (INIT_FILE.equals(file.getName())) {
 					SimLogger.getLogger().info("loadint init file [" + file.getName() + "] in [" + folder + "]");
 					try {
-						config.copy(new Configurations().properties(file));
+						localConfig.copy(new Configurations().properties(file));
 					} catch (ConfigurationException e) {
 						throw new IOException(e);
 					}
@@ -266,7 +269,7 @@ public class SimScript {
 					SimLogger.getLogger().info("loading script file [" + file + "] in [" + folder + "]");
 					try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 						List<TemplatePair> pairList = load(reader); 
-						templatePairs.addAll(0, pairList);
+						templatePairs.addAll(pairList);
 						total += pairList.size();
 					}
 				} else if (file.getName().endsWith(IGNORE_EXT)) {
@@ -281,6 +284,7 @@ public class SimScript {
 					SimScript subScript = new SimScript(this, file);
 					if (!subScript.isIgnored()) {
 						subScripts.put(file.getName(), subScript);
+						total += subScript.templatePairs.size();
 					}
 				}
 			}
@@ -298,25 +302,37 @@ public class SimScript {
 		return props;
 	}
 	
-	public Properties getConfigAsRawProperties() {
+	public Properties getLocalConfigAsRawProperties() {
 		Properties props = new Properties();
-		Iterator<String> keyIt = config.getKeys();
+		Iterator<String> keyIt = localConfig.getKeys();
 		while (keyIt.hasNext()) {
 			String key = keyIt.next();
-			Object value = config.getProperty(key);
+			Object value = localConfig.getProperty(key);
 			if (value instanceof String) {
-				props.setProperty(key, (String) config.getProperty(key));
+				props.setProperty(key, (String) localConfig.getProperty(key));
 			}
 		}
 		return props;
 	}
 
-	public Configuration getConfig() {
-		return this.config;
-	}
-	
 	public String getProperty(String propName) {
 		return this.config.getString(propName);
+	}
+
+	public String getProperty(String propName, String defaultValue) {
+		return this.config.getString(propName, defaultValue);
+	}
+
+	public boolean getBooleanProperty(String propName, boolean defaultValue) {
+		return this.config.getBoolean(propName, defaultValue);
+	}
+
+	public long getLongProperty(String propName, long defaultValue) {
+		return this.config.getLong(propName, defaultValue);
+	}
+
+	public int getIntProperty(String propName, int defaultValue) {
+		return this.config.getInt(propName, defaultValue);
 	}
 
 	public String getMandatoryProperty(String propName, String errMsg) {
@@ -367,6 +383,16 @@ public class SimScript {
 		return this.templatePairs;
 	}
 	
+	public List<TemplatePair> getEffectiveTemplatePairs() {
+		List<TemplatePair> ret = new ArrayList<>(templatePairs);
+		SimScript script = this.parent;
+		while (script != null) {
+			ret.addAll(script.getTemplatePairs());
+			script = script.getParent();
+		}
+		return ret;
+	}
+
 	public Logger getLogger() {
 		return this.scriptLogger;
 	}
@@ -427,7 +453,7 @@ public class SimScript {
 	}
 	
 	public List<SimResponse> genResponse(SimRequest request) throws IOException {
-		for (TemplatePair pair: templatePairs) {
+		for (TemplatePair pair: getEffectiveTemplatePairs()) {
 			Map<String, Object> context = pair.getReq().match(request);
 			if (context != null) {
 				SimLogger.getLogger().info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");

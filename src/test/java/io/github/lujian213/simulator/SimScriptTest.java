@@ -174,9 +174,9 @@ public class SimScriptTest {
 	public void test7() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/websocket"));
-			assertEquals(2, script.getTemplatePairs().size());
+			assertEquals(2, script.getEffectiveTemplatePairs().size());
 			assertEquals(2, script.getSubScripts().size());
-			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getTemplatePairs().size());
+			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getEffectiveTemplatePairs().size());
 		} catch (IOException e) {
 			fail("unexpected exception" + e);
 		}
@@ -187,9 +187,9 @@ public class SimScriptTest {
 	public void test8() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new ZipFile("scripts/websocket2.zip"), new File("scripts/websocket2.zip"));
-			assertEquals(2, script.getTemplatePairs().size());
+			assertEquals(2, script.getEffectiveTemplatePairs().size());
 			assertEquals(2, script.getSubScripts().size());
-			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getTemplatePairs().size());
+			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getEffectiveTemplatePairs().size());
 		} catch (IOException e) {
 			fail("unexpected exception" + e);
 		}

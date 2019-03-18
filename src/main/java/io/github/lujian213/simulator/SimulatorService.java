@@ -23,7 +23,7 @@ public class SimulatorService {
 	
 	public void start() throws IOException {
 		sr.getAllSimulators().stream().
-		filter((sim) -> sim.getScript().getConfig().getBoolean(PROP_NAME_SIMULATOR_AUTOSTART, false))
+		filter((sim) -> sim.getScript().getBooleanProperty(PROP_NAME_SIMULATOR_AUTOSTART, false))
 		.forEach((sim) -> {
 			try {
 				sr.startSimulator(sim.getScript().getSimulatorName());

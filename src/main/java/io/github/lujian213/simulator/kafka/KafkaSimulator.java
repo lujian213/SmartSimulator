@@ -36,7 +36,7 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 		public SimMessageListener(SimScript script, String unifiedEndpointName) {
 			this.script = script;
 			this.unifiedEndpointName = unifiedEndpointName;
-			this.proxy = script.getConfig().getBoolean(PROP_NAME_ENDPOINT_PROXY, false);
+			this.proxy = script.getBooleanProperty(PROP_NAME_ENDPOINT_PROXY, false);
 			if (proxy) {
 				proxyChannel = script.getMandatoryProperty(PROP_NAME_ENDPOINT_PROXY_CHANNEL, "no proxy channel defined");
 			}

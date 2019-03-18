@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.List;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
 import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
+import io.github.lujian213.simulator.util.SimLogger;
 
 public class DefaultSimpleReqRespConvertor implements ReqRespConvertor {
 
@@ -28,7 +31,15 @@ public class DefaultSimpleReqRespConvertor implements ReqRespConvertor {
 
 	@Override
 	public void fillRawResponse(Object rawResponse, SimResponse simResponse) throws IOException {
-		((HttpExchange)rawResponse).sendResponseHeaders(simResponse.getCode(), simResponse.getBody().length);
+		HttpExchange exchange = (HttpExchange)rawResponse;
+		Headers respHeaders = exchange.getResponseHeaders();
+		List<String> values = respHeaders.get("Transfer-Encoding");
+		if (values != null && values.contains("chunked")) {
+			SimLogger.getLogger().info("set contentLength to 0 since TransferEncoding is chunked");
+			exchange.sendResponseHeaders(simResponse.getCode(), 0);
+		} else {
+			exchange.sendResponseHeaders(simResponse.getCode(), simResponse.getBody().length);
+		}
 		try (OutputStream os = ((HttpExchange) rawResponse).getResponseBody()) {
 			os.write(simResponse.getBody());
 		}

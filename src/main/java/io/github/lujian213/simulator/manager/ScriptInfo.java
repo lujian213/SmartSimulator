@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Properties;
 
 import io.github.lujian213.simulator.SimScript;
+import io.github.lujian213.simulator.SimScript.TemplatePair;
 
 public class ScriptInfo {
 	String name;
@@ -18,9 +19,10 @@ public class ScriptInfo {
 
 	public ScriptInfo(String name, SimScript script, boolean raw) {
 		this.name = name;
-		this.props = raw ? script.getConfigAsRawProperties() : script.getConfigAsProperties();
+		this.props = raw ? script.getLocalConfigAsRawProperties() : script.getConfigAsProperties();
 		script.getSubScripts().forEach((key, value)->subScripts.add(new ScriptInfo(key, value, raw)));
-		script.getTemplatePairs().forEach((pair) ->this.templatePairs.add(new TemplatePairInfo(pair)));
+		List<TemplatePair> templatePairs = raw ? script.getTemplatePairs() : script.getEffectiveTemplatePairs();
+		templatePairs.forEach((pair) ->this.templatePairs.add(new TemplatePairInfo(pair)));
 	}
 
 	public List<TemplatePairInfo> getTemplatePairs() {

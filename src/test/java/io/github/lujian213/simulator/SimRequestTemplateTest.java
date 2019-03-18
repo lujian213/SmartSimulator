@@ -1,8 +1,6 @@
 package io.github.lujian213.simulator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -115,4 +113,94 @@ public class SimRequestTemplateTest {
     	}
 	}
 
+	@Test
+	public void test4() {
+    	String temp = "GET /test/query?queryStr={$queryStr} HTTP/1.1\r\n" + 
+    			"\r\n"; 
+
+    	String topLine = "GET /test/query?queryStr=Select table where fileA=\"A\" and filedB=\"B\" HTTP/1.1"; 
+    	Map<String, String> headers = new HashMap<>();
+    	headers.put("Host",  "Host: www.baidu.com"); 
+    	headers.put("Content-Length", "Content-Length: 373");
+    	headers.put("Expect", "Expect: 100-continue"); 
+    	headers.put("Accept-Encoding", "Accept-Encoding: gzip, deflate"); 
+    	String authenticationLine = "Authentication: dummy,pwd"; 
+    	String bodyLine = null;
+    			
+    	
+    	try {
+    		SimRequestTemplate srt = new SimRequestTemplate(temp);
+    		SimRequest request = new WebbitSimRequest() {
+    			public String getTopLine() {
+    				return topLine;
+    			}
+    			
+    			public String getHeaderLine(String header) {
+    				return headers.get(header);
+    			}
+    			
+    			public String getAutnenticationLine() {
+    				return authenticationLine;
+    			}
+    			
+    			public String getBody() {
+    				return bodyLine;
+    			}
+
+    		};
+    		Map<String, Object> result = srt.match(request);
+    		assertNotNull(result);
+    		assertEquals(1, result.size());
+    		assertEquals("Select table where fileA=\"A\" and filedB=\"B\"", result.get("queryStr"));
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail ("unexpected exception:" + e);
+    	}
+	}
+
+	@Test
+	public void test5() {
+    	String temp = "GET /test/query?queryStr={$queryStr} HTTP/1.1\r\n" + 
+    			"\r\n"; 
+
+    	String topLine = "GET /test/query?queryStr=Select table where fileA=\"A\" and\r\n"
+    			+ " filedB=\"B\" HTTP/1.1"; 
+    	Map<String, String> headers = new HashMap<>();
+    	headers.put("Host",  "Host: www.baidu.com"); 
+    	headers.put("Content-Length", "Content-Length: 373");
+    	headers.put("Expect", "Expect: 100-continue"); 
+    	headers.put("Accept-Encoding", "Accept-Encoding: gzip, deflate"); 
+    	String authenticationLine = "Authentication: dummy,pwd"; 
+    	String bodyLine = null;
+    			
+    	
+    	try {
+    		SimRequestTemplate srt = new SimRequestTemplate(temp);
+    		SimRequest request = new WebbitSimRequest() {
+    			public String getTopLine() {
+    				return topLine;
+    			}
+    			
+    			public String getHeaderLine(String header) {
+    				return headers.get(header);
+    			}
+    			
+    			public String getAutnenticationLine() {
+    				return authenticationLine;
+    			}
+    			
+    			public String getBody() {
+    				return bodyLine;
+    			}
+
+    		};
+    		Map<String, Object> result = srt.match(request);
+    		assertNotNull(result);
+    		assertEquals(1, result.size());
+    		assertEquals("Select table where fileA=\"A\" and  filedB=\"B\"", result.get("queryStr"));
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		fail ("unexpected exception:" + e);
+    	}
+	}
 }

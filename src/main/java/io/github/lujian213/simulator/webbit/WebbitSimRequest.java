@@ -127,8 +127,19 @@ public class WebbitSimRequest extends AbstractSimRequest {
 				response.header("Content-Type", entry.getValue().toString());
 			}
 		}
+		boolean chunked = "chunked".equals(resp.getAllPublicHeaders().get("Transfer-Encoding"));
 		for (Map.Entry<String, Object> entry : resp.getAllPublicHeaders().entrySet()) {
-			response.header(entry.getKey(), entry.getValue().toString());
+			if (entry.getKey().equals("Transfer-Encoding")) {
+				if (!chunked) {
+					response.header(entry.getKey(), entry.getValue().toString());
+				}
+			} else if (entry.getKey().equals(SimResponse.HEADER_CONTENT_ENCODING1) ||
+					   entry.getKey().equals(SimResponse.HEADER_CONTENT_ENCODING2) || 
+					   entry.getKey().equals(SimResponse.HEADER_CONTENT_ENCODING3)) {
+				if (!chunked) {
+					response.header(entry.getKey(), entry.getValue().toString());
+				}
+			}
 		}
 
 		convertor.fillRawResponse(response, resp);

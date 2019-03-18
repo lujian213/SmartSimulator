@@ -38,7 +38,8 @@ public class SimulatorRepository {
 
 			@Override
 			public boolean accept(File file) {
-				if (file.isDirectory() || file.getName().endsWith(SimScript.ZIP_EXT)) {
+				if ((file.isDirectory() && !SimScript.LIB_DIR.equals(file.getName())) || 
+					(file.isFile() && file.getName().endsWith(SimScript.ZIP_EXT))) {
 					return true;
 				}
 				return false;
