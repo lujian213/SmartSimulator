@@ -14,6 +14,8 @@ import java.util.zip.ZipFile;
 import org.junit.Test;
 
 import io.github.lujian213.simulator.SimScript;
+import io.github.lujian213.simulator.manager.SimulatorFolder;
+
 import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 
@@ -246,6 +248,31 @@ public class SimScriptTest {
 	public void test11() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/dummy"));
+			assertTrue(script.isIgnored());
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("unexpected exception" + e);
+		}
+	}
+	
+	@Test
+	public void test12() {
+		try {
+			SimScript script = new SimScript(new SimScript(new File("scripts")), new SimulatorFolder(new File("scripts/websocket")));
+			assertEquals(4, script.getLocalConfigAsRawProperties().size());
+			assertEquals(10, script.getConfigAsProperties().size());
+			assertEquals(2, script.getEffectiveTemplatePairs().size());
+			assertEquals(2, script.getSubScripts().size());
+			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getEffectiveTemplatePairs().size());
+		} catch (IOException e) {
+			fail("unexpected exception" + e);
+		}
+	}
+
+	@Test
+	public void test13() {
+		try {
+			SimScript script = new SimScript(new SimScript(new File("scripts")), new SimulatorFolder(new File("scripts/dummy")));
 			assertTrue(script.isIgnored());
 		} catch (IOException e) {
 			e.printStackTrace();

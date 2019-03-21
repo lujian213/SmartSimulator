@@ -249,8 +249,6 @@ public interface RequestHandler {
 
 	static class JSonObjectRequestHandler implements RequestHandler {
 		public static final String BODY_TYPE_JSONOBJECT = "JSonObject";
-		public static final String HEADER_JSON_CLASS_NAME = "_JSonObject.classname";
-		public static final String HEADER_JSON_VAR_NAME = "_JSonObject.varname";
 
 		@Override
 		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {

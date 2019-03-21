@@ -15,6 +15,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import io.github.lujian213.simulator.SimScript;
+import io.github.lujian213.simulator.util.ZipFileVisitor;
+import io.github.lujian213.simulator.util.ZipFileVisitor.EntryWrapper;
+import io.github.lujian213.simulator.util.ZipFileVisitor.ZipFileVisitorHandler;
 
 public class SimulatorFolder {
 	public static class SimulatorFile {
@@ -29,12 +32,13 @@ public class SimulatorFolder {
 			loadContent(file);
 		}
 		
-		protected void loadContent(File file) throws IOException {
-			InputStream is = new FileInputStream(file);
-			loadContent(is);
+		public void loadContent(File file) throws IOException {
+			try (InputStream is = new FileInputStream(file)) {
+				loadContent(is);
+			}
 		}
 
-		protected void loadContent(InputStream is) throws IOException {
+		public void loadContent(InputStream is) throws IOException {
 			StringBuffer sb = new StringBuffer();
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
 				String line = null;
@@ -69,26 +73,29 @@ public class SimulatorFolder {
 	public SimulatorFolder() {
 	}
 	
-	public SimulatorFolder(SimScript script) {
-		this.name = script.getMyself().getName();
-		Arrays.asList(script.getMyself().listFiles(file -> file.isFile() && (file.getName().endsWith(".sim") || file.getName().equals("init.properties")) || file.isDirectory() && script.getSubScripts().containsKey(file.getName())))
-		.stream().forEach(theFile -> {
-			if (theFile.isDirectory()) {
-				subFolders.add(new SimulatorFolder(script.getSubScripts().get(theFile.getName())));
-			} else {
-				try {
-					files.add(new SimulatorFile(theFile));
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		});
-	}
-
-	public SimulatorFolder(SimScript script, ZipFile zipFile) throws IOException {
+	public SimulatorFolder(SimScript script) throws IOException {
 		String fileName = script.getMyself().getName();
-		this.name = fileName.substring(0, fileName.length() - 4);
-		prepareSimulatorFolder(this, script, zipFile, "");
+		if (script.getMyself().isFile() && fileName.endsWith(SimScript.ZIP_EXT)) {
+			this.name = fileName.substring(0, fileName.length() - SimScript.ZIP_EXT.length());
+			prepareSimulatorFolder(this, script, new ZipFile(script.getMyself()), "");
+		} else {
+			this.name = script.getMyself().getName();
+			Arrays.asList(script.getMyself().listFiles(file -> file.isFile() && (file.getName().endsWith(SimScript.SCRIPT_EXT) || file.getName().equals(SimScript.INIT_FILE)) || file.isDirectory() && script.getSubScripts().containsKey(file.getName())))
+			.stream().forEach(theFile -> {
+				if (theFile.isDirectory()) {
+					try {
+						subFolders.add(new SimulatorFolder(script.getSubScripts().get(theFile.getName())));
+					} catch (IOException e) {
+					}
+				} else {
+					try {
+						files.add(new SimulatorFile(theFile));
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		}
 	}
 
 	protected void prepareSimulatorFolder(SimulatorFolder folder, SimScript script, ZipFile zipFile, String path) throws IOException {
@@ -96,7 +103,7 @@ public class SimulatorFolder {
 		while (it.hasMoreElements()) {
 			ZipEntry entry = it.nextElement();
 			String name = entry.getName();
-			if (name.equals(path + "init.properties") || name.startsWith(path) && name.endsWith(".sim") && !name.substring(path.length()).contains("/")) {
+			if (name.equals(path + SimScript.INIT_FILE) || name.startsWith(path) && name.endsWith(SimScript.SCRIPT_EXT) && !name.substring(path.length()).contains("/")) {
 				SimulatorFile file = new SimulatorFile();
 				file.setName(new File(name).getName());
 				file.loadContent(zipFile.getInputStream(entry));
@@ -111,22 +118,63 @@ public class SimulatorFolder {
 		}
 	}
 	
-//	public SimulatorFolder(File dir) {
-//		this.name = dir.getName();
-//		Arrays.asList(dir.listFiles(file -> file.isDirectory() || file.getName().endsWith(".sim") || file.getName().equals("init.properties")))
-//		.stream().forEach(theFile -> {
-//			if (theFile.isDirectory()) {
-//				subFolders.add(new SimulatorFolder(theFile));
-//			} else {
-//				try {
-//					files.add(new SimulatorFile(theFile));
-//				} catch (IOException e) {
-//					throw new RuntimeException(e);
-//				}
-//			}
-//		});
-//	}
+	public SimulatorFolder(File afile) throws IOException {
+		if (afile.isDirectory()) {
+			this.name = afile.getName();
+			Arrays.asList(afile.listFiles(file -> file.isDirectory() || file.getName().endsWith(SimScript.SCRIPT_EXT) || file.getName().equals(SimScript.INIT_FILE) || file.getName().endsWith(SimScript.IGNORE_EXT)))
+			.stream().forEach(theFile -> {
+				if (theFile.isDirectory()) {
+					try {
+						subFolders.add(new SimulatorFolder(theFile));
+					} catch (IOException e) {
+					}
+				} else {
+					try {
+						files.add(new SimulatorFile(theFile));
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		} else if(afile.isFile() && afile.getName().endsWith(SimScript.ZIP_EXT)){
+			ZipFile zf = new ZipFile(afile);
+			ZipFileVisitorHandler<SimulatorFolder> handler = new ZipFileVisitorHandler<SimulatorFolder>() {
 
+				private EntryWrapper<SimulatorFolder> parent;
+				@Override
+				public void setParent(EntryWrapper<SimulatorFolder> parent) {
+					this.parent = parent;
+				}
+
+				@Override
+				public EntryWrapper<SimulatorFolder> handleDir(ZipEntry entry) {
+					SimulatorFolder folder = new SimulatorFolder();
+					folder.setName(new File(entry.getName()).getName());
+					parent.getTarget().getSubFolders().add(folder);
+					return new EntryWrapper<SimulatorFolder>(entry, folder);
+				}
+
+				@Override
+				public void handleFile(ZipEntry entry) throws IOException {
+					SimulatorFolder folder = parent.getTarget();
+					String name = new File(entry.getName()).getName();
+					if (name.equals(SimScript.INIT_FILE) || name.endsWith(SimScript.SCRIPT_EXT) || name.endsWith(SimScript.IGNORE_EXT)) {
+						SimulatorFile file = new SimulatorFile();
+						file.setName(name);
+						try (InputStream is = zf.getInputStream(entry)) {
+							file.loadContent(is);
+						}
+						folder.getFiles().add(file);
+					}
+				}
+			};
+			ZipFileVisitor<SimulatorFolder> visitor = new ZipFileVisitor<SimulatorFolder>(zf, this, handler);
+			visitor.visit();
+		} else {
+			throw new IOException(afile + " is not a valid folder or zip file");
+		}
+	}
+	
 	public String getName() {
 		return name;
 	}

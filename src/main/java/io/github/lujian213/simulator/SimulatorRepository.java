@@ -162,19 +162,19 @@ public class SimulatorRepository {
 		}
 	}
 
-	public SimScript getSimulatorScript(String simulatorFolder) throws IOException {
+	public SimScript getSimulatorScript(String simulatorName) throws IOException {
 		SimScript root = new SimScript(this.folder);
-		if (simulatorFolder == null) {
+		if (simulatorName == null) {
 			return root;
 		} else {
-			File[] files = this.folder.listFiles(file -> file.isDirectory() && file.getName().equals(simulatorFolder) || file.isFile() && file.getName().equals(simulatorFolder + ".zip"));
-			if (files != null && files.length > 0) {
-				if (files[0].isDirectory())
-					return new SimScript(root, files[0]);
-				else
-					return new SimScript(root, new ZipFile(files[0]), files[0]);
+			SimSimulator simulator = null;
+			synchronized (simulatorMap) {
+				simulator = simulatorMap.get(simulatorName);
 			}
+			if (simulator == null) {
+				throw new RuntimeException("no such simulator [" + simulatorName + "]");
+			}
+			return simulator.getScript();
 		}
-		throw new RuntimeException("no such simulator folder [" + simulatorFolder + "]");
 	}
 }

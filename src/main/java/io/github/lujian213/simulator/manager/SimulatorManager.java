@@ -3,7 +3,6 @@ package io.github.lujian213.simulator.manager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipFile;
 
 import io.github.lujian213.simulator.SimScript;
 import io.github.lujian213.simulator.SimSimulator;
@@ -51,13 +50,14 @@ public class SimulatorManager {
 		return "Simulator [" + name + "] is running at " + sim.getRunningURL();
 	}
 
-	public SimulatorFolder getSimulatorScript(@SimParam("simulatorFolder") String folder) throws IOException {
-		SimScript simScript = rep.getSimulatorScript(folder);
-		if (simScript.getMyself().isDirectory()) {
-			return new SimulatorFolder(simScript);
-		} else {
-			return new SimulatorFolder(simScript, new ZipFile(simScript.getMyself()));
-		}
+	public SimulatorDetail evaluateSimulator(@SimParam("simulatorFolder") SimulatorFolder folder, @SimParam("_raw") boolean raw) throws IOException {
+		SimScript simScript = new SimScript(rep.getSimulatorScript(null), folder);
+		return new SimulatorDetail(simScript, raw);
+	}
+	
+	public SimulatorFolder getSimulatorStructure(@SimParam("simulatorName") String name) throws IOException {
+		SimScript simScript = rep.getSimulatorScript(name);
+		return new SimulatorFolder(simScript);
 	}
 
 	public void createSimulatorScript(@SimParam("simulatorFolder") SimulatorFolder folder) throws IOException {

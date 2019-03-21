@@ -11,6 +11,7 @@ Access-Control-Allow-Origin: *
 GET {$url}/{$simulatorName}/info HTTP/1.1
 
 HTTP/1.1 200 OK
+_raw: false
 _Class.Name: $className
 _Method.Name: getSimulatorInfo
 _Content-Type: application/json
@@ -18,6 +19,16 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
+GET {$url}/{$simulatorName}/rawinfo HTTP/1.1
+
+HTTP/1.1 200 OK
+_raw: true
+_Class.Name: $className
+_Method.Name: getSimulatorInfo
+_Content-Type: application/json
+Access-Control-Allow-Origin: *
+
+------------------------------------------------------------------
 GET {$url}/{$simulatorName}/start HTTP/1.1
 
 HTTP/1.1 200 OK
@@ -53,6 +64,16 @@ GET {$url}/{$simulatorName}/restart HTTP/1.1
 HTTP/1.1 200 OK
 _Class.Name: $className
 _Method.Name: restartSimulator
+_Content-Type: application/json
+Access-Control-Allow-Origin: *
+
+------------------------------------------------------------------
+
+GET {$url}/{$simulatorName}/structure HTTP/1.1
+
+HTTP/1.1 200 OK
+_Class.Name: $className
+_Method.Name: getSimulatorStructure
 _Content-Type: application/json
 Access-Control-Allow-Origin: *
 

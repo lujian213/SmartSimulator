@@ -6,6 +6,7 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -16,10 +17,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -27,6 +30,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 
+import io.github.lujian213.simulator.manager.SimulatorFolder;
+import io.github.lujian213.simulator.manager.SimulatorFolder.SimulatorFile;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
 import io.github.lujian213.simulator.util.ZipFileVisitor;
@@ -164,6 +169,16 @@ public class SimScript {
 		config.copy(localConfig);
 	}
 	
+	public SimScript(SimScript parent, SimulatorFolder folder) throws IOException {
+		this.myself = new File(parent + folder.getName());
+		this.parent = parent;
+		config.copy(parent.config);
+		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, myself.toURI());
+		loadFolder(folder); 
+		config.copy(localConfig);
+	}
+
+	
 	SimScript(SimScript parent, ZipEntry entry) {
 		this.parent = parent;
 		config.copy(parent.config);
@@ -292,6 +307,42 @@ public class SimScript {
 		SimLogger.getLogger().info("Total " + total + " req/resp pairs loaded in [" + folder + "]");
 	}
 	
+	protected void loadFolder(SimulatorFolder folder) throws IOException {
+		int total = 0;
+		for (SimulatorFile file: folder.getFiles()) {
+			if (INIT_FILE.equals(file.getName())) {
+				SimLogger.getLogger().info("loadint init file [" + file.getName() + "] in [" + folder.getName() + "]");
+				Properties props = new Properties();
+				props.load(new StringReader(file.getContent()));
+				Configuration conf = new PropertiesConfiguration();
+				for (Entry<Object, Object> entry : props.entrySet()) {
+					conf.addProperty((String) entry.getKey(), entry.getValue());
+				}
+				localConfig.copy(conf);
+			} else if (file.getName().endsWith(SCRIPT_EXT)){
+				SimLogger.getLogger().info("loading script file [" + file.getName() + "] in [" + folder.getName() + "]");
+				try (BufferedReader reader = new BufferedReader(new StringReader(file.getContent()))) {
+					List<TemplatePair> pairList = load(reader); 
+					templatePairs.addAll(pairList);
+					total += pairList.size();
+				}
+			} else if (file.getName().endsWith(IGNORE_EXT)) {
+				SimLogger.getLogger().info("find ignore file, folder [" + folder.getName() + "] is not a script folder, ignore ...");
+				this.ignored = true;
+				break;
+			}
+		}
+		
+		for (SimulatorFolder subFolder: folder.getSubFolders()) {
+			SimScript subScript = new SimScript(this, subFolder);
+			if (!subScript.isIgnored()) {
+				subScripts.put(subFolder.getName(), subScript);
+				total += subScript.templatePairs.size();
+			}
+		}
+		SimLogger.getLogger().info("Total " + total + " req/resp pairs loaded in [" + folder.getName() + "]");
+	}
+
 	public Properties getConfigAsProperties() {
 		Properties props = new Properties();
 		Iterator<String> keyIt = config.getKeys();
