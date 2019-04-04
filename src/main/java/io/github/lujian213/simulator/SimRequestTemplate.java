@@ -45,7 +45,10 @@ public class SimRequestTemplate {
 						body = new StringBuffer();
 					}
 				} else {
-					body.append(line).append("\n");
+					if (body.length() != 0) {
+						body.append("\n");
+					} 
+					body.append(line);				
 				}
 				lineNum++;
 			}

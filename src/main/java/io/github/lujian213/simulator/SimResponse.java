@@ -143,9 +143,10 @@ public class SimResponse {
 			vc.put(contextEntry.getKey().replace('.', '_'), contextEntry.getValue());
 		}
 		for (Map.Entry<String, String> entry : resp.getHeaders().entrySet()) {
-			headers.put(entry.getKey(), SimUtils.mergeResult(vc, entry.getKey(), entry.getValue()));
-			vc.put(entry.getKey(), entry.getValue());
-			vc.put(entry.getKey().replace('.', '_'), entry.getValue());
+			String headerValue = SimUtils.mergeResult(vc, entry.getKey(), entry.getValue());
+			headers.put(entry.getKey(), headerValue);
+			vc.put(entry.getKey(), headerValue);
+			vc.put(entry.getKey().replace('.', '_'), headerValue);
 		}
 		body = ResponseHandler.getHandlerChain().handle(headers, vc, resp);
 		code = resp.getCode();
