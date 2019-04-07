@@ -61,6 +61,13 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
 					respList.add(new SimResponse("Unknown due to proxy mechanism"));
 				} else {
 					SimLogger.getLogger().error("match and fill error", e);
+					SimResponse response = new SimResponse("match and fill error" + delimiterStrs[0]);
+					try {
+						this.sendResponse(response);
+					} catch (IOException e1) {
+						SimLogger.getLogger().error("send to remote ...");
+					}
+					respList.add(response);
 				}
 			} finally {
 //				ReferenceCountUtil.release(msg);
@@ -197,6 +204,7 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
 	private ReqRespConvertor convertor;
 	private int frameMaxLength;
 	private ByteBuf[] delimiters;
+	private String[] delimiterStrs;
 	private boolean useSSL;
 	private SslContext sslCtx;
 	private SocketClient sClient;
@@ -210,58 +218,50 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
 	protected void init() throws IOException {
 		super.init();
 		port = script.getMandatoryIntProperty(PROP_NAME_PORT, "no socket port defined");
-		convertor = SimUtils.createMessageConvertor(script, new DefualtSocketReqRespConvertor());
+		convertor = SimUtils.createMessageConvertor(script, new DefaultSocketReqRespConvertor());
 		frameMaxLength = script.getIntProperty(PROP_NAME_FRAME_MAXLENGTH, 8192);
-		delimiters = SimUtils.parseDelimiters(script.getProperty(PROP_NAME_FRAME_DELIMITERS, "0x0D0x0A,0x0A"));
+		String delimStr = script.getProperty(PROP_NAME_FRAME_DELIMITERS, "0x0D0x0A,0x0A");
+		delimiters = SimUtils.parseDelimiters(delimStr);
+		delimiterStrs = SimUtils.parseDelimitersAsString(delimStr);
 		useSSL = script.getBooleanProperty(PROP_NAME_USE_SSL, false); 
 	}
   
 	@Override
 	protected void doStart() throws IOException {
-		if (!running) {
-			if (useSSL) {
-				try {
-					SelfSignedCertificate ssc = new SelfSignedCertificate();
-					sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-				} catch (CertificateException e) {
-					throw new IOException(e);
-				}
-			} else {
-				sslCtx = null;
+		if (useSSL) {
+			try {
+				SelfSignedCertificate ssc = new SelfSignedCertificate();
+				sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+			} catch (CertificateException e) {
+				throw new IOException(e);
 			}
-			bossGroup = new NioEventLoopGroup();
-		    workerGroup = new NioEventLoopGroup();
-	        try {
-	            ServerBootstrap b = new ServerBootstrap();
-	            b.group(bossGroup, workerGroup)
-	             .channel(NioServerSocketChannel.class)
-	             .childHandler(new ChannelInitializer<SocketChannel>() {
-	                 @Override
-	                 public void initChannel(SocketChannel ch) throws Exception {
-	                	 if (sslCtx != null) {
-	                		 ch.pipeline().addLast(sslCtx.newHandler(ch.alloc(), InetAddress.getLocalHost().getHostName(), port));
-	                	 }
-	                	 ch.pipeline().addLast(new DelimiterBasedFrameDecoder(frameMaxLength, delimiters));
-	                     ch.pipeline().addLast(new SocketHandler());
-	                 }
-	             })
-	             .option(ChannelOption.SO_BACKLOG, 128)          
-	             .childOption(ChannelOption.SO_KEEPALIVE, true);
-	            cf = b.bind(port);
-
-				runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
-	        } catch (IOException | RuntimeException e) {
-	        	workerGroup.shutdownGracefully();
-	        	bossGroup.shutdownGracefully();
-	        	throw e;
-	        }
+		} else {
+			sslCtx = null;
 		}
+		bossGroup = new NioEventLoopGroup();
+	    workerGroup = new NioEventLoopGroup();
+        ServerBootstrap b = new ServerBootstrap();
+        b.group(bossGroup, workerGroup)
+         .channel(NioServerSocketChannel.class)
+         .childHandler(new ChannelInitializer<SocketChannel>() {
+             @Override
+             public void initChannel(SocketChannel ch) throws Exception {
+            	 if (sslCtx != null) {
+            		 ch.pipeline().addLast(sslCtx.newHandler(ch.alloc(), InetAddress.getLocalHost().getHostName(), port));
+            	 }
+            	 ch.pipeline().addLast(new DelimiterBasedFrameDecoder(frameMaxLength, delimiters));
+                 ch.pipeline().addLast(new SocketHandler());
+             }
+         })
+         .option(ChannelOption.SO_BACKLOG, 128)          
+         .childOption(ChannelOption.SO_KEEPALIVE, true);
+        cf = b.bind(port);
+
+		runningURL = "tcp://" + InetAddress.getLocalHost().getHostName() + ":" + port;
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-		SimLogger.getLogger().info("about to stop ...");
+	protected void doStop() {
         try {
         	if (cf != null) {
         		cf.channel().closeFuture();
@@ -277,9 +277,6 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
         if (sClient != null) {
         	sClient.stop();
         }
-		SimLogger.getLogger().info("stopped");
-		this.running = false;
-		this.runningURL = null;
 	}
 
 	@Override

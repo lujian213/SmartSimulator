@@ -7,7 +7,7 @@ import io.github.lujian213.simulator.SimResponse;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 import io.netty.buffer.ByteBuf;
 
-public class DefualtSocketReqRespConvertor implements ReqRespConvertor {
+public class DefaultSocketReqRespConvertor implements ReqRespConvertor {
 
 	@Override
 	public String rawRequestToBody(Object rawRequest) throws IOException {

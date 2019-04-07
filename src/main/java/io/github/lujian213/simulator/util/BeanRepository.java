@@ -61,7 +61,7 @@ public class BeanRepository {
 			if (bean == null) {
 				Object obj = createInstance(clazz, vc);
 				if (obj instanceof SimContextAwareness) {
-					SimContextAwareness.class.cast(obj).init(SimUtils.context2Properties(vc));
+					SimContextAwareness.class.cast(obj).init(simulatorName, SimUtils.context2Properties(vc));
 				}
 				bean = new FunctionBean(obj);
 				if (obj instanceof FunctionBeanListener) {

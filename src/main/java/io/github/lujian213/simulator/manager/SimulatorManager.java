@@ -50,7 +50,7 @@ public class SimulatorManager {
 		return "Simulator [" + name + "] is running at " + sim.getRunningURL();
 	}
 
-	public SimulatorDetail evaluateSimulator(@SimParam("simulatorFolder") SimulatorFolder folder, @SimParam("_raw") boolean raw) throws IOException {
+	public SimulatorDetail evaluateSimulatorStructure(@SimParam("simulatorFolder") SimulatorFolder folder, @SimParam("_raw") boolean raw) throws IOException {
 		SimScript simScript = new SimScript(rep.getSimulatorScript(null), folder);
 		return new SimulatorDetail(simScript, raw);
 	}
@@ -60,13 +60,8 @@ public class SimulatorManager {
 		return new SimulatorFolder(simScript);
 	}
 
-	public void createSimulatorScript(@SimParam("simulatorFolder") SimulatorFolder folder) throws IOException {
-		System.out.println(folder);
-//		SimScript simScript = rep.getSimulatorScript(folder);
-//		if (simScript.getMyself().isDirectory()) {
-//			return new SimulatorFolder(simScript);
-//		} else {
-//			return new SimulatorFolder(simScript, new ZipFile(simScript.getMyself()));
-//		}
-	}
+//	public void uploadSimulatorStructure(@SimParam("simulatorFolder") SimulatorFolder folder) throws IOException {
+//		SimScript simScript = new SimScript(rep.getSimulatorScript(null), folder);
+//		rep.
+//	}
 }

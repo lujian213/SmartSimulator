@@ -142,31 +142,18 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 
 	@Override
 	protected void doStart() throws IOException {
-		boolean success = false;
-		try {
-			List<String> subDestNameList = prepare();
-			for (KafkaBroker broker: brokerMap.values()) {
-				broker.start();
-			}
-			this.runningURL = SimUtils.concatContent(subDestNameList, ",");
-			success = true;
-		} finally {
-			if (!success) {
-				stop();
-			}
+		List<String> subDestNameList = prepare();
+		for (KafkaBroker broker: brokerMap.values()) {
+			broker.start();
 		}
+		this.runningURL = SimUtils.concatContent(subDestNameList, ",");
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-		SimLogger.getLogger().info("about to stop ...");
+	protected void doStop() {
 		for (KafkaBroker broker: brokerMap.values()) {
 			broker.stop();
 		}
-		SimLogger.getLogger().info("stopped");
-		this.running = false;
-		this.runningURL = null;
 	}
 
 	@Override

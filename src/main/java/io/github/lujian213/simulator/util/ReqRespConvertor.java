@@ -13,6 +13,6 @@ public interface ReqRespConvertor extends SimContextAwareness {
 		return new HashMap<>();
 	}
 	public void fillRawResponse(Object rawResponse, SimResponse simResponse) throws IOException;
-	default public void init(Properties props) {
+	default public void init(String simulatorName, Properties props) {
 	}
 }

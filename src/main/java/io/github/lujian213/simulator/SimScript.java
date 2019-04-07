@@ -86,16 +86,15 @@ public class SimScript {
 		this.myself = file;
 		this.parent = parent;
 		config.copy(parent.config);
-		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
+		setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		loadFolder(file, true); 
-		config.copy(localConfig);
 	}
 	
 	public SimScript(SimScript parent, final ZipFile zf, File file) throws IOException {
 		this.myself = file;
 		this.parent = parent;
 		config.copy(parent.config);
-		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, "jar:" + file.toURI() + "!/");
+		setProperty(PROP_NAME_SIMULATOR_URL, "jar:" + file.toURI() + "!/");
 		ZipFileVisitorHandler<SimScript> handler = new ZipFileVisitorHandler<SimScript>() {
 
 			private EntryWrapper<SimScript> parent;
@@ -131,8 +130,7 @@ public class SimScript {
 						try (BufferedReader reader = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {
 							PropertiesConfiguration propConfig = new PropertiesConfiguration();
 							propConfig.read(reader);
-							script.localConfig.copy(propConfig);
-							script.config.copy(script.localConfig);
+							script.copyProperty(propConfig);
 						} catch (ConfigurationException e) {
 							throw new IOException(e);
 						} 
@@ -159,37 +157,43 @@ public class SimScript {
 		};
 		ZipFileVisitor<SimScript> visitor = new ZipFileVisitor<SimScript>(zf, this, handler);
 		visitor.visit();
-		config.copy(localConfig);
 	}
 
 	public SimScript(File file) throws IOException {
 		this.myself = file;
-		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
+		setProperty(PROP_NAME_SIMULATOR_URL, file.toURI());
 		loadFolder(file, false); 
-		config.copy(localConfig);
 	}
 	
 	public SimScript(SimScript parent, SimulatorFolder folder) throws IOException {
 		this.myself = new File(parent + folder.getName());
 		this.parent = parent;
 		config.copy(parent.config);
-		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, myself.toURI());
+		setProperty(PROP_NAME_SIMULATOR_URL, myself.toURI());
 		loadFolder(folder); 
-		config.copy(localConfig);
 	}
 
 	
 	SimScript(SimScript parent, ZipEntry entry) {
 		this.parent = parent;
 		config.copy(parent.config);
-		localConfig.setProperty(PROP_NAME_SIMULATOR_URL, parent.getProperty(PROP_NAME_SIMULATOR_URL) + new File(entry.getName()).getName() + "/");
-		config.copy(localConfig);
+		setProperty(PROP_NAME_SIMULATOR_URL, parent.getProperty(PROP_NAME_SIMULATOR_URL) + new File(entry.getName()).getName() + "/");
 	}
 	
 	protected SimScript() {
 		
 	}
 
+	protected void setProperty(String propName, Object value) {
+		this.localConfig.setProperty(propName, value);
+		this.config.setProperty(propName, value);
+	}
+	
+	protected void copyProperty(Configuration props) {
+		this.localConfig.copy(props);
+		this.config.copy(props);
+	}
+	
 	public boolean isValid() {
 		if (getSimulatorName() == null) {
 			return false;
@@ -276,7 +280,7 @@ public class SimScript {
 				if (INIT_FILE.equals(file.getName())) {
 					SimLogger.getLogger().info("loadint init file [" + file.getName() + "] in [" + folder + "]");
 					try {
-						localConfig.copy(new Configurations().properties(file));
+						copyProperty(new Configurations().properties(file));
 					} catch (ConfigurationException e) {
 						throw new IOException(e);
 					}
@@ -318,7 +322,7 @@ public class SimScript {
 				for (Entry<Object, Object> entry : props.entrySet()) {
 					conf.addProperty((String) entry.getKey(), entry.getValue());
 				}
-				localConfig.copy(conf);
+				copyProperty(conf);
 			} else if (file.getName().endsWith(SCRIPT_EXT)){
 				SimLogger.getLogger().info("loading script file [" + file.getName() + "] in [" + folder.getName() + "]");
 				try (BufferedReader reader = new BufferedReader(new StringReader(file.getContent()))) {
@@ -400,6 +404,15 @@ public class SimScript {
 		} catch (Exception e) {
 			throw new RuntimeException(errMsg, e);
 		}
+	}
+
+	public File getMandatoryFileProperty(String propName, String errMsg) {
+		String str = config.getString(propName);
+		File ret = SimUtils.str2File(str);
+		if (ret == null) {
+			throw new RuntimeException(errMsg);
+		}
+		return ret;
 	}
 
 	@SuppressWarnings("unchecked")

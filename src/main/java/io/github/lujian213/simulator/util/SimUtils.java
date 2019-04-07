@@ -6,6 +6,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyStore;
@@ -338,7 +340,7 @@ public class SimUtils {
 		if (convertorClassName != null) {
 			try {
 				ReqRespConvertor convertor = ReqRespConvertor.class.cast(Class.forName(convertorClassName, true, script.getClassLoader()).newInstance());
-				convertor.init(script.getConfigAsProperties());
+				convertor.init(script.getSimulatorName(), script.getConfigAsProperties());
 				return convertor;
 			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
 				throw new RuntimeException("error to create convertor instance [" + convertorClassName + "]", e);
@@ -365,6 +367,23 @@ public class SimUtils {
 		return bb;
 	}
 	
+	public static String[] parseDelimitersAsString(String delimitersStr) {
+		String parts[] = delimitersStr.split(",");
+		byte[][] ret = new byte[parts.length][];
+		for (int i = 1; i <= ret.length; i++) {
+			String[] dels = parts[i - 1].trim().split("0x");
+			ret[i - 1] = new byte[dels.length - 1];
+			for (int t = 1; t <= dels.length - 1; t++) {
+				ret[i - 1][t - 1] = new BigInteger(dels[t], 16).byteValue();
+			}
+		}
+		String[] stringArray = new String[ret.length];
+		for (int i = 1; i <= ret.length; i++) {
+			stringArray[i - 1] = new String(ret[i - 1]);
+		}
+		return stringArray;
+	}
+
 	public static String getCurrentTime(String format) {
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
 		return sdf.format(new Date());
@@ -418,5 +437,18 @@ public class SimUtils {
 
 	public static void logIncomingMessage(String from, String simulatorName, SimRequest request) {
 		SimLogger.getLogger().info("incoming message from [" + from + "] in " + simulatorName + ": [" + request.getTopLine() + "]\n" + request.getBody());
+	}
+	
+	public static File str2File(String str) {
+		if (str == null) {
+			return null;
+		}
+		
+		try {
+			URL url = new URL(str);
+			return new File(url.getPath());
+		} catch (MalformedURLException e) {
+			return new File(str);
+		}
 	}
 }

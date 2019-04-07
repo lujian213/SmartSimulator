@@ -74,12 +74,7 @@ public class SimpleSimulator extends HTTPSimulator {
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-		SimLogger.getLogger().info("about to stop ...");
+	protected void doStop() {
 		server.stop(0);
-		SimLogger.getLogger().info("stopped");
-		this.running = false;
-		this.runningURL = null;
 	}
 }

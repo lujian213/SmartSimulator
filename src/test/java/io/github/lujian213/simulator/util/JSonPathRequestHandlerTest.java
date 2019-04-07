@@ -132,4 +132,19 @@ public class JSonPathRequestHandlerTest extends JSonPathRequestHandler {
 			fail("unexpected exception:" + e);
 		}
 	}
+
+	@Test
+	public void test4() {
+		JSonPathRequestHandler handler = new JSonPathRequestHandler();
+		String requestBody = "[{\"Id\":\"12345\",\"role\":\"Sales\",\"name\":\"N9\"}]";
+		Map<String, XPathExp> pathMap = new HashMap<>();
+		pathMap.put("name", new XPathExp("$[0].name", XPathConstants.NODE));
+		Map<String, Object> ret;
+		try {
+			ret = handler.retrievePathValue(requestBody, pathMap);
+			assertEquals("N9", ret.get("name"));
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
 }

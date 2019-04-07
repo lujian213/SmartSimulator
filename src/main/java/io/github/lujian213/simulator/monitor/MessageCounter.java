@@ -1,6 +1,7 @@
 package io.github.lujian213.simulator.monitor;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.lujian213.simulator.SimRequest;
@@ -60,10 +61,13 @@ public class MessageCounter implements SimulatorListener {
 		return instance;
 	}
 	
-	@Override
-	public void onStart(String simulatorName) {
+	public void init(String simulatorName, Properties props) {
 		Counter counter = new Counter(simulatorName);
 		counterMap.put(simulatorName, counter);
+	}
+
+	@Override
+	public void onStart(String simulatorName) {
 	}
 
 	@Override
@@ -75,11 +79,14 @@ public class MessageCounter implements SimulatorListener {
 	public void onHandleMessage(String simulatorName, SimRequest request, List<SimResponse> responseList,
 			boolean status) {
 		Counter counter = counterMap.get(simulatorName);
-		if (status) {
-			counter.addSuccessfullMessage();
-		} else {
-			counter.addFailedMessage();
+		if (counter != null) {
+			if (status) {
+				counter.addSuccessfullMessage();
+			} else {
+				counter.addFailedMessage();
+			}
 		}
+
 	}
 	
 	public Counter getCounter(String simulatorName) {

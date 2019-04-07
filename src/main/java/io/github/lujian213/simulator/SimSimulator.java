@@ -1,13 +1,10 @@
 package io.github.lujian213.simulator;
 
-import static io.github.lujian213.simulator.SimSimulatorConstants.PROP_NAME_LISTENER;
-import static io.github.lujian213.simulator.SimSimulatorConstants.PROP_NAME_PROXY;
-import static io.github.lujian213.simulator.SimSimulatorConstants.PROP_NAME_PROXY_URL;
+import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 import io.github.lujian213.simulator.util.BeanRepository;
 import io.github.lujian213.simulator.util.ListenerHub;
 import io.github.lujian213.simulator.util.SimLogger;
@@ -42,23 +39,34 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	}
 
 	public void start() throws IOException {
-		String listenerStr = script.getProperty(PROP_NAME_LISTENER);
-		if (listenerStr != null) {
-			for (String listenerClass: listenerStr.split(",")) {
+		synchronized (this) {
+			if (!this.running) {
 				try {
-					SimulatorListener listener = SimulatorListener.class.cast(Class.forName(listenerClass.trim(), true, script.getClassLoader()).newInstance());
-					listener.init(script.getConfigAsProperties());
-					this.addListener(listener);
-				} catch (Exception e) {
-					throw new IOException("error when create simpulator listener", e);
+					String listenerStr = script.getProperty(PROP_NAME_LISTENER);
+					if (listenerStr != null) {
+						for (String listenerClass: listenerStr.split(",")) {
+							try {
+								SimulatorListener listener = SimulatorListener.class.cast(Class.forName(listenerClass.trim(), true, script.getClassLoader()).newInstance());
+								listener.init(getName(), script.getConfigAsProperties());
+								this.addListener(listener);
+							} catch (Exception e) {
+								throw new IOException("error when create simpulator listener", e);
+							}
+						}
+					}
+					doStart();
+					postStart();
+				} catch (RuntimeException|IOException e) {
+					SimLogger.getLogger().error("error when start simulator [" + getName() + "]", e);
+					try {
+						doStop();
+					} catch (Exception e1) {
+					}
+					this.listenerHub.removeAllListeners();
+					throw e;
 				}
 			}
 		}
-		try {
-			doStart();
-		} finally {
-		}
-		postStart();
 	}
 	
 	protected abstract void doStart() throws IOException;
@@ -66,14 +74,32 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 	protected void postStart() {
 		SimLogger.getLogger().info("Simulator [" + this.getName() + "] running at " + runningURL);
 		this.running = true;
-		castToSimulatorListener().onStart(getName());
+		try {
+			castToSimulatorListener().onStart(getName());
+		} catch (Exception e) {
+			SimLogger.getLogger().error("error when call listener", e);
+		}
 	}
 
 	public void stop() {
-		BeanRepository.getInstance().removeSimulatorBeans(getName());
-		castToSimulatorListener().onStop(getName());
-		this.script.close();
+		synchronized (this) {
+			if (running) {
+				SimLogger.getLogger().info("about to stop ...");
+				try {
+					doStop();
+				} finally {
+					SimLogger.getLogger().info("stopped");
+					BeanRepository.getInstance().removeSimulatorBeans(getName());
+					castToSimulatorListener().onStop(getName());
+					this.script.close();
+					this.running = false;
+					this.runningURL = null;
+				}
+			}
+		}
 	}
+
+	protected abstract void doStop();
 
 	public boolean isRunning() {
 		return running;
@@ -113,6 +139,16 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 		listenerHub.removeListener(listener);
 	}
 	
+	@Override
+	public void addFixedListener(SimulatorListener listener) {
+		listenerHub.addFixedListener(listener);
+	}
+
+	@Override
+	public void removeAllListeners() {
+		listenerHub.removeAllListeners();
+	}
+
 	protected SimulatorListener castToSimulatorListener() {
 		return SimulatorListener.class.cast(listenerHub);
 	}

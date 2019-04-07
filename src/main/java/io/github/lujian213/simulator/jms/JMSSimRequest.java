@@ -72,21 +72,6 @@ public class JMSSimRequest extends AbstractSimRequest {
 	public Message getMessage() {
 		return this.message;
 	}
-	
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(this.topLine).append("\n");
-		for (Map.Entry<String, Object> entry: headers.entrySet()) {
-			sb.append(this.getHeaderLine(entry.getKey())).append("\n");
-		}
-		sb.append("\n");
-		if (body != null) {
-			sb.append(body);
-		}
-		sb.append("\n");
-		return sb.toString();
-	}
 
 	protected void genHeaders() throws IOException {
 		try {

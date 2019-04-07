@@ -127,7 +127,9 @@ public class SimulatorRepository {
 				SimSimulator simulator = simulatorMap.get(script.getSimulatorName());
 				if (simulator == null) {
 					simulator = SimSimulator.createSimulator(script);
-					simulator.addListener(MessageCounter.getInstance());
+					SimulatorListener listener = MessageCounter.getInstance();
+					listener.init(simulator.getName(), script.getConfigAsProperties());
+					simulator.addFixedListener(listener);
 					simulatorMap.put(simulator.getName(), simulator);
 					SimLogger.getLogger().info("Simulator [" + simulator.getName() + "] loaded");
 				}

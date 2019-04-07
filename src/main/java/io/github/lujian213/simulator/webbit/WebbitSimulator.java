@@ -79,14 +79,9 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler, SimSe
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-		SimLogger.getLogger().info("about to stop");
+	protected void doStop() {
 		webServer.stop();
 		wsHandlerMap.values().stream().forEach((handler)-> handler.close());
-		SimLogger.getLogger().info("stopped");
-		this.running = false;
-		this.runningURL = null;
 	}
 
 	@Override

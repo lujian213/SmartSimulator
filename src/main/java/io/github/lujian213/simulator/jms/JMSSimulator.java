@@ -28,6 +28,7 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 	public static final String MESSAGE_TYPE_TEXT = "Text";
 	public static final String MESSAGE_TYPE_BYTES = "Bytes";
 	public static final String MESSAGE_TYPE_OBJECT = "Object";
+	public static final String MESSAGE_TYPE_MAP = "Map";
 	
 	public static final String CLIENT_TYPE_PUB = "Pub";
 	public static final String CLIENT_TYPE_SUB = "Sub";
@@ -230,28 +231,15 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 
 	@Override
 	protected void doStart() throws IOException {
-		boolean success = false;
-		try {
-			List<String> subDestNameList = prepare();
-			this.runningURL = SimUtils.concatContent(subDestNameList, ",");
-			success = true;
-		} finally {
-			if (!success) {
-				stop();
-			}
-		}
+		List<String> subDestNameList = prepare();
+		this.runningURL = SimUtils.concatContent(subDestNameList, ",");
 	}
 
 	@Override
-	public void stop() {
-		super.stop();
-		SimLogger.getLogger().info("about to stop ...");
+	protected void doStop() {
 		for (JMSBroker broker: brokerMap.values()) {
 			broker.stop();
 		}
-		SimLogger.getLogger().info("stopped");
-		this.running = false;
-		this.runningURL = null;
 	}
 
 	@Override
@@ -293,6 +281,8 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 			return session.createBytesMessage();
 		} else if (MESSAGE_TYPE_OBJECT.equals(type)) {
 			return session.createObjectMessage();
+		} else if (MESSAGE_TYPE_MAP.equals(type)) {
+			return session.createMapMessage();
 		} else {
 			throw new JMSException("can't support message type [" + type + "]");
 		}

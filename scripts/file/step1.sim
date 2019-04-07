@@ -1,0 +1,8 @@
+{$path}/req-{$id}.txt
+
+req:{$line}
+HTTP/1.1 200 OK
+_output.file: ${simulator_url}out/resp-${id}.txt
+
+resp:$line
+------------------------------------------------------------------

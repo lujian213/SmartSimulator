@@ -279,4 +279,14 @@ public class SimScriptTest {
 			fail("unexpected exception" + e);
 		}
 	}
+
+	@Test
+	public void test14() {
+		try {
+			SimScript script = new SimScript(new SimScript(new File("scripts")), new SimulatorFolder(new File("scripts/kafka")));
+			assertEquals(10, script.getSubScripts().get("broker").getConfigAsProperties().size());
+		} catch (IOException e) {
+			fail("unexpected exception" + e);
+		}
+	}
 }

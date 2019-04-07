@@ -46,7 +46,7 @@ public class MessageTracer implements SimulatorListener {
 	}
 
 	@Override
-	public void init(Properties props) {
+	public void init(String simulatorName, Properties props) {
 		try {
 			url = new URL(props.getProperty(PROP_NAME_TRACE_FILE));
 			logger.info("trace file url = " + url);

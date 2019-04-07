@@ -25,4 +25,19 @@ public abstract class AbstractSimRequest implements SimRequest {
 	}
 
 	protected abstract void doFillResponse(SimResponse response) throws IOException;			
+	
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(this.getTopLine()).append("\n");
+		for (String headerName: this.getAllHeaderNames()) {
+			sb.append(this.getHeaderLine(headerName)).append("\n");
+		}
+		sb.append("\n");
+		if (this.getBody() != null) {
+			sb.append(this.getBody());
+		}
+		sb.append("\n");
+		return sb.toString();
+	}
 }

@@ -78,3 +78,16 @@ _Content-Type: application/json
 Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
+
+POST {$url}/evaluate HTTP/1.1
+_JSonObject.classname: io.github.lujian213.simulator.manager.SimulatorFolder
+_JSonObject.varname: simulatorFolder
+
+HTTP/1.1 200 OK
+_Class.Name: $className
+_Method.Name: evaluateSimulatorStructure
+
+_Content-Type: application/json
+Access-Control-Allow-Origin: *
+
+------------------------------------------------------------------

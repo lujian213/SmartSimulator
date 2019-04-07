@@ -60,21 +60,6 @@ public class SimpleSimRequest extends AbstractSimRequest {
 		return this.convertor;
 	}
 	
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(this.topLine).append("\n");
-		for (String key: headers.keySet()) {
-			sb.append(this.getHeaderLine(key)).append("\n");
-		}
-		sb.append("\n");
-		if (body != null) {
-			sb.append(body);
-		}
-		sb.append("\n");
-		return sb.toString();
-	}
-	
 	protected void genHeaders(HttpExchange exchange) {
 		this.headers = exchange.getRequestHeaders();
 	}

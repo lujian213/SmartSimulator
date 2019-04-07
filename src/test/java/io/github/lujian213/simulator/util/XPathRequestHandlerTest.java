@@ -100,24 +100,24 @@ public class XPathRequestHandlerTest extends XPathRequestHandler {
 	@Test
 	public void test3() {
 		XPathRequestHandler handler = new XPathRequestHandler();
-		String requestBody="<ns9:citimlResponseException xmlns=\"http://www.w3.org/2000/09/xmldsig#\" xmlns:ns14=\"http://tradecapturesys.cmb.citigroup.net/citiml-eqd-extended-2-0\" xmlns:ns9=\"http://tradecapturesys.cmb.citigroup.net/citiml-2-0\" xmlns:ns5=\"http://www.dtcc.com/ext\" xmlns:ns12=\"http://tradecapturesys.cmb.citigroup.net/citiml-bond-option-extended-2-0\" xmlns:ns6=\"http://tradecapturesys.cmb.citigroup.net/citiml-common-2-0\" xmlns:ns13=\"http://tradecapturesys.cmb.citigroup.net/citiml-cds-extended-2-0\" xmlns:ns7=\"http://tradecapturesys.cmb.citigroup.net/citiml-eq-shared-extended-2-0\" xmlns:ns10=\"http://tradecapturesys.cmb.citigroup.net/citiml-payload-2-0\" xmlns:ns8=\"http://tradecapturesys.cmb.citigroup.net/citiml-return-swaps-extended-2-0\" xmlns:ns11=\"http://www.citi.com/citisdrre-fpml/recordkeeping\" xmlns:ns2=\"http://tradecapturesys.cmb.citigroup.net/citiml-com-extended-2-0\" xmlns:ns4=\"http://tradecapturesys.cmb.citigroup.net/citiml-ird-extended-2-0\" xmlns:ns3=\"http://www.fpml.org/FpML-5/recordkeeping\">\r\n" + 
-				"<ns9:citimlResponseMessageHeader>\r\n" + 
-				"<ns9:citimlMessageId messageIdScheme=\"Oasys\">Msg21551463280409107194118747912017</ns9:citimlMessageId>\r\n" + 
-				"<ns9:citimlInReplyTo messageIdScheme=\"TPS\">QA-Msg5664948213286586007707799515560287</ns9:citimlInReplyTo>\r\n" + 
-				"<ns9:citimlSentBy messageAddressScheme=\"Oasys\">OasysTradeCapture</ns9:citimlSentBy>\r\n" + 
-				"<ns9:citimlSendTo>RIO</ns9:citimlSendTo>\r\n" + 
-				"<ns9:citimlCreationTimestamp>2018-09-18T06:20:12-04:00</ns9:citimlCreationTimestamp>\r\n" + 
-				"<ns9:citimlMessageFilter citimlMessageFilterScheme=\"http://www.citigroup.com/coding-scheme/front-office-filter\">TPS</ns9:citimlMessageFilter>\r\n" + 
-				"</ns9:citimlResponseMessageHeader>\r\n" + 
-				"<ns9:citimlReason>\r\n" + 
-				"<ns6:citimlDescription>\r\n" + 
-				"90774109|1: Transaction is of ProductClass:34. It should have minimum 2 Corpuses, but it has 1 corpus.\r\n" + 
-				"</ns6:citimlDescription>\r\n" + 
-				"</ns9:citimlReason>\r\n" + 
-				"</ns9:citimlResponseException>";
+		String requestBody="<ns9:citymlResponseException xmlns=\"http://www.w3.org/2000/09/xmldsig#\" xmlns:ns14=\"http://tradecapturesys.cmb.citygroup.net/cityml-eqd-extended-2-0\" xmlns:ns9=\"http://tradecapturesys.cmb.citygroup.net/cityml-2-0\" xmlns:ns5=\"http://www.dtcc.com/ext\" xmlns:ns12=\"http://tradecapturesys.cmb.citygroup.net/cityml-bond-option-extended-2-0\" xmlns:ns6=\"http://tradecapturesys.cmb.citygroup.net/cityml-common-2-0\" xmlns:ns13=\"http://tradecapturesys.cmb.citygroup.net/cityml-cds-extended-2-0\" xmlns:ns7=\"http://tradecapturesys.cmb.citygroup.net/cityml-eq-shared-extended-2-0\" xmlns:ns10=\"http://tradecapturesys.cmb.citygroup.net/cityml-payload-2-0\" xmlns:ns8=\"http://tradecapturesys.cmb.citygroup.net/cityml-return-swaps-extended-2-0\" xmlns:ns11=\"http://www.city.com/citysdrre-fpml/recordkeeping\" xmlns:ns2=\"http://tradecapturesys.cmb.citygroup.net/cityml-com-extended-2-0\" xmlns:ns4=\"http://tradecapturesys.cmb.citygroup.net/cityml-ird-extended-2-0\" xmlns:ns3=\"http://www.fpml.org/FpML-5/recordkeeping\">\r\n" + 
+				"<ns9:citymlResponseMessageHeader>\r\n" + 
+				"<ns9:citymlMessageId messageIdScheme=\"OBsys\">XXXXXXXXXX</ns9:citymlMessageId>\r\n" + 
+				"<ns9:citymlInReplyTo messageIdScheme=\"TQS\">XXXXXXX</ns9:citymlInReplyTo>\r\n" + 
+				"<ns9:citymlSentBy messageAddressScheme=\"Oasys\">OBysTradeCapture</ns9:citymlSentBy>\r\n" + 
+				"<ns9:citymlSendTo>RIO</ns9:citymlSendTo>\r\n" + 
+				"<ns9:citymlCreationTimestamp>2018-09-18T06:20:12-04:00</ns9:citymlCreationTimestamp>\r\n" + 
+				"<ns9:citymlMessageFilter citymlMessageFilterScheme=\"http://www.citygroup.com/coding-scheme/front-office-filter\">TQS</ns9:citymlMessageFilter>\r\n" + 
+				"</ns9:citymlResponseMessageHeader>\r\n" + 
+				"<ns9:citymlReason>\r\n" + 
+				"<ns6:citymlDescription>\r\n" + 
+				"TTTTTTT.\r\n" + 
+				"</ns6:citymlDescription>\r\n" + 
+				"</ns9:citymlReason>\r\n" + 
+				"</ns9:citymlResponseException>";
 	
 		Map<String, XPathExp> xPathMap = new HashMap<>();
-		xPathMap.put("sendTo", new XPathExp("//ns9:citimlSendTo/text()", XPathConstants.STRING));
+		xPathMap.put("sendTo", new XPathExp("//ns9:citymlSendTo/text()", XPathConstants.STRING));
 		try {
 			Map<String, Object> ret = handler.retrieveXPathValue(requestBody, xPathMap);
 			assertEquals(1, ret.size());
@@ -127,7 +127,7 @@ public class XPathRequestHandlerTest extends XPathRequestHandler {
 		}
 
 		xPathMap = new HashMap<>();
-		xPathMap.put("sendTo", new XPathExp("//ns9:citimlSendTo/text()", XPathConstants.NODESET));
+		xPathMap.put("sendTo", new XPathExp("//ns9:citymlSendTo/text()", XPathConstants.NODESET));
 		try {
 			Map<String, Object> ret = handler.retrieveXPathValue(requestBody, xPathMap);
 			assertEquals(1, ret.size());
@@ -135,5 +135,45 @@ public class XPathRequestHandlerTest extends XPathRequestHandler {
 		} catch (IOException e) {
 			fail("unexpected exception:" + e);
 		}
-}
+	}
+	
+	@Test
+	public void test4() {
+		XPathRequestHandler handler = new XPathRequestHandler();
+		String requestBody="<cityml>\n" + 
+				"	<transaction>\n" + 
+				"		<transactionType>New</transactionType>\n" + 
+				"	</transaction>\n" + 
+				"	<productDetails>\n" + 
+				"		<fpml>\n" + 
+				"			<FpML xmlns=\"http://www.fpml.org/2010/FpML-4-9\" xmlns:fpml=\"http://www.fpml.org/2010/FpML-4-9\"\n" + 
+				"				xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"4-9\"\n" + 
+				"				xsi:type=\"DataDocument\"\n" + 
+				"				xsi:schemaLocation=\"http://www.fpml.org/2010/FpML-4-9 ../fpml-main-4-9.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd\">\n" + 
+				"				<trade>\n" + 
+				"						<feeLeg>\n" + 
+				"							<singlePayment>\n" + 
+				"								<adjustablePaymentDate>2019-03-12</adjustablePaymentDate>\n" + 
+				"								<fee id='abc'>19.0</fee>\n" + 
+				"								<fee id='xyz'>18.0</fee>\n" + 
+				"							</singlePayment>\n" + 
+				"						</feeLeg>\n" + 
+				"				</trade>\n" + 
+				"			</FpML>\n" + 
+				"		</fpml>\n" + 
+				"	</productDetails>\n" + 
+				"</cityml>";
+	
+		Map<String, XPathExp> xPathMap = new HashMap<>();
+		xPathMap.put("date", new XPathExp("//*[local-name()='singlePayment']/*[local-name()='adjustablePaymentDate']/text()", XPathConstants.STRING));
+		xPathMap.put("feeXYZ", new XPathExp("//*[local-name()='singlePayment']/*[local-name()='fee'][@id='xyz']/text()", XPathConstants.STRING));
+		try {
+			Map<String, Object> ret = handler.retrieveXPathValue(requestBody, xPathMap);
+			assertEquals(2, ret.size());
+			assertEquals("2019-03-12", ret.get("date"));
+			assertEquals("18.0", ret.get("feeXYZ"));
+		} catch (IOException e) {
+			fail("unexpected exception:" + e);
+		}
+	}
 }

@@ -2,6 +2,7 @@ package io.github.lujian213.simulator.util;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
@@ -64,6 +65,15 @@ public class SimUtilsTest {
 	}
 
 	@Test
+	public void testParseDelimitersAsString() {
+		String s= "0x0D0x0A, 0x0A";
+		String[] ret = SimUtils.parseDelimitersAsString(s);
+		assertEquals(2, ret.length);
+		assertEquals("\r\n", ret[0]);
+		assertEquals("\n", ret[1]);
+	}
+
+	@Test
 	public void testTransformTime() {
 		String s= "20180823";
 		assertEquals("2018-08-23T00:00:00", SimUtils.transformTime("yyyyMMdd", s, "yyyy-MM-dd'T'HH:mm:ss"));
@@ -91,5 +101,12 @@ public class SimUtilsTest {
 		Properties props = SimUtils.context2Properties(context);
 		assertEquals("value1", props.getProperty("key1"));
 		assertEquals(100, props.get("key2"));
+	}
+	
+	@Test
+	public void testStr2File() {
+		assertNull(SimUtils.str2File(null));
+		assertEquals(new File("/c:/temp"), SimUtils.str2File("file:/c:/temp"));
+		assertEquals(new File("c:/temp"), SimUtils.str2File("c:/temp"));
 	}
 }

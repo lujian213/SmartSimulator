@@ -12,6 +12,6 @@ public interface SimulatorListener extends SimContextAwareness {
 	}
 	default public void onHandleMessage(String simulatorName, SimRequest request, List<SimResponse> responseList, boolean status) {
 	}
-	default public void init(Properties props) {
+	default public void init(String simulatorName, Properties props) {
 	}
 }

@@ -94,7 +94,7 @@ public class SimRequestTemplate {
 		if (authenticationsTemplate != null) {
 			res = authenticationsTemplate.parse(request.getAutnenticationLine());
 			if (res == null) {
-				SimUtils.printMismatchInfo("authentication template", authenticationsTemplate.toString(), request.getAutnenticationLine());
+				SimUtils.printMismatchInfo("authentication does not match", authenticationsTemplate.toString(), request.getAutnenticationLine());
 				return null; 
 			} else {
 				ret.putAll(res);
@@ -102,7 +102,7 @@ public class SimRequestTemplate {
 		}
 		res = RequestHandler.getHandlerChain().handle(extraHeader, bodyContent, request);
 		if (res == null) {
-			SimUtils.printMismatchInfo("body template", bodyContent, request.getBody());
+			SimUtils.printMismatchInfo("body does not match", bodyContent, request.getBody());
 			return null; 
 		} else {
 			ret.putAll(res);
