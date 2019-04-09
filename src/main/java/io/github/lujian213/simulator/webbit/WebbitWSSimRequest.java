@@ -29,8 +29,7 @@ public class WebbitWSSimRequest extends AbstractSimRequest {
 		this.handler = handler;
 		this.connection = connection;
 		this.convertor = convertor;
-		String protocol = "HTTP/1.1";
-		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, type, channel, protocol);
+		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, type, channel, HTTP1_1);
 		try {
 			this.body = convertor.rawRequestToBody(message);
 		} catch (IOException e) {

@@ -23,10 +23,11 @@ import io.github.lujian213.simulator.SimSesseionLessSimulator;
 import io.github.lujian213.simulator.http.HTTPSimulator;
 import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
-import static io.github.lujian213.simulator.SimSimulatorConstants.*;
+import static io.github.lujian213.simulator.webbit.WebbitSimulatorConstants.*;
 
 public class WebbitSimulator extends HTTPSimulator implements HttpHandler, SimSesseionLessSimulator {
 	private WebServer webServer;
+	private long timeout;
 	private Map<String, WebbitWSHandler> wsHandlerMap = new HashMap<>();
 	
 	public WebbitSimulator(SimScript script) throws IOException {
@@ -35,6 +36,17 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler, SimSe
 	}
 	
 	protected WebbitSimulator() {
+	}
+
+	@Override
+	protected void init() throws IOException {
+		super.init();
+		timeout = script.getLongProperty(PROP_NAME_CONNECTION_TIMEOUT, 5000L);
+		useSSL = script.getBooleanProperty(PROP_NAME_USE_SSL, false); 
+		if (useSSL) {
+			keystore = script.getMandatoryProperty(PROP_NAME_KEYSTORE, "no keystore defined");
+			ksPwd = script.getMandatoryProperty(PROP_NAME_KS_PASSWD, "no keystore passwd defined");
+		}
 	}
 
 	@Override
@@ -62,6 +74,7 @@ public class WebbitSimulator extends HTTPSimulator implements HttpHandler, SimSe
 			webServer.add(channelName, wsHandler);
 		}
 		webServer.add(this);
+		webServer.staleConnectionTimeout(timeout);
 		
 		if (useSSL) {
 			HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());

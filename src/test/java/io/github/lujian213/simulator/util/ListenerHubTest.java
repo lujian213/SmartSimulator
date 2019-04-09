@@ -1,6 +1,6 @@
 package io.github.lujian213.simulator.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 

@@ -33,8 +33,7 @@ public class WebbitSimRequest extends AbstractSimRequest {
 		this.convertor = convertor;
 		String method = request.method();
 		String uri = request.uri();
-		String protocol = "HTTP/1.1";
-		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, method, SimUtils.decodeURL(uri), protocol);
+		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, method, SimUtils.decodeURL(uri), HTTP1_1);
 		genAuthentications();
 		genBody();
 	}

@@ -153,7 +153,7 @@ public class SimResponse {
 	}
 	
 	public void print(PrintWriter pw) {
-		pw.println("HTTP/1.1 " + getCode());
+		pw.println(SimRequest.HTTP1_1 + " " + getCode());
 		for (Map.Entry<String, Object> entry: headers.entrySet()) {
 			pw.println(entry.getKey() + ": " + entry.getValue());
 		}

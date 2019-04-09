@@ -241,10 +241,11 @@ public class SimUtils {
     	String method = topLine.substring(0,  firstIndex).trim();
     	String urlStr = proxyURL + topLine.substring(firstIndex + 1, lastIndex).trim();
     	SimLogger.getLogger().info("url=" + urlStr);
+    	HttpURLConnection conn = null;
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			SimLogger.getLogger().info("encoded url=" + encodeURL(urlStr));
 			URL url = new URL(encodeURL(urlStr));
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn = (HttpURLConnection) url.openConnection();
 			for (String headerName: request.getAllHeaderNames()) {
 				String headerLine = request.getHeaderLine(headerName);
 				String[] headerParts = headerLine.split(":");
@@ -276,6 +277,10 @@ public class SimUtils {
 			}
 			baos.flush();
 			return new SimResponse(conn.getResponseCode(), headers, baos.toByteArray());
+		} finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
 		}
     }
     

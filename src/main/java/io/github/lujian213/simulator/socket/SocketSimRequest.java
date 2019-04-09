@@ -32,8 +32,7 @@ public class SocketSimRequest extends AbstractSimRequest {
 		this.convertor = convertor;
 		this.ctx = ctx;
 		this.body = convertor.rawRequestToBody(buf);
-		String protocol = "HTTP/1.1";
-		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, type, protocol);
+		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, type, HTTP1_1);
 
 	}
 	

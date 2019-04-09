@@ -7,6 +7,8 @@ import java.util.List;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 
 public interface SimRequest {
+	public static final String HTTP1_1 = "HTTP/1.1";
+	
 	public List<String> getAllHeaderNames();
 
 	public String getHeaderLine(String header);
