@@ -2,6 +2,7 @@ package io.github.lujian213.simulator;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -203,4 +204,14 @@ public class SimRequestTemplateTest {
     		fail ("unexpected exception:" + e);
     	}
 	}
+	
+	@Test
+	public void test6() throws IOException {
+    	String temp = "/GET .*\\/mirror\\/(?<type>[^\\/]+)\\/(?<id>[^\\/]+)/\r\n"; 
+    			
+		SimRequestTemplate srt = new SimRequestTemplate(temp);
+		SimTemplate template = srt.getTopLineTemplate();
+		assertEquals(SimRegexTemplate.class, template.getClass());
+	}
+
 }

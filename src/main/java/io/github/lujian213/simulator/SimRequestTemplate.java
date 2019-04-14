@@ -29,7 +29,12 @@ public class SimRequestTemplate {
 			StringBuffer body = null;
 			while ((line = reader.readLine()) != null) {
 				if (lineNum == 1) {
-					topLineTemplate = new SimTemplate(line);
+					line = line.trim();
+					if (!line.isEmpty() && '/' == line.charAt(0) && '/' == line.charAt(line.charAt(line.length() - 1))) {
+						topLineTemplate = new SimRegexTemplate(line);
+					} else {
+						topLineTemplate = new SimTemplate(line);
+					}
 				} else if (body == null) {
 					String[] prop = SimUtils.parseProperty(line);
 					if (prop != null) {

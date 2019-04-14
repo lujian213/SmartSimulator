@@ -142,7 +142,7 @@ public class SimTemplate {
 
 	static final String PATTERN_STR = "\\{\\$([a-zA-Z0-9_.\\-\\[\\]]+)(:([0-9]*)(,([0-9]*))?)?\\}";
 	static final Pattern PATTERN = Pattern.compile(PATTERN_STR);
-	private String templateContent;
+	protected String templateContent;
 	private List<List<Token>> allTokens = new ArrayList<>();
 	
 	public SimTemplate(String templateContent) throws IOException {
@@ -183,7 +183,6 @@ public class SimTemplate {
 			if (tokenList != null) {
 				Map<String, Object> lineResult = parseLine(contentLine, tokenList, 0);
 				if (lineResult != null) {
-//					ret.putAll(lineResult);
 					merge(ret, lineResult);
 				} else {
 					ret = null;
@@ -300,7 +299,7 @@ public class SimTemplate {
 		}
 	}
 	
-	public List<List<Token>> getAllTokens() {
+	protected List<List<Token>> getAllTokens() {
 		return this.allTokens;
 	}
 }

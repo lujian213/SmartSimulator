@@ -250,15 +250,18 @@ public class SimUtils {
 				String headerLine = request.getHeaderLine(headerName);
 				String[] headerParts = headerLine.split(":");
 				conn.setRequestProperty(headerParts[0].trim(), headerParts[1].trim());
+				SimLogger.getLogger().info(headerParts[0].trim() + ":" +  headerParts[1].trim());
 			}
 			conn.setRequestMethod(method);
-			conn.connect();
 			String body = request.getBody();
 			if (body != null && !body.isEmpty()) {
 				conn.setDoOutput(true);
+				conn.connect();
 				try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(conn.getOutputStream()))) {
 						pw.print(request.getBody());
 				}
+			} else {
+				conn.connect();
 			}
 			SimLogger.getLogger().info("response ...");
 			int code = conn.getResponseCode();
