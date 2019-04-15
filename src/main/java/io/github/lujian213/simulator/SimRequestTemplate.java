@@ -30,7 +30,7 @@ public class SimRequestTemplate {
 			while ((line = reader.readLine()) != null) {
 				if (lineNum == 1) {
 					line = line.trim();
-					if (!line.isEmpty() && '/' == line.charAt(0) && '/' == line.charAt(line.charAt(line.length() - 1))) {
+					if (!line.isEmpty() && '/' == line.charAt(0) && '/' == line.charAt(line.length() - 1)) {
 						topLineTemplate = new SimRegexTemplate(line);
 					} else {
 						topLineTemplate = new SimTemplate(line);

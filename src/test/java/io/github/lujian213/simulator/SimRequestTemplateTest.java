@@ -214,4 +214,12 @@ public class SimRequestTemplateTest {
 		assertEquals(SimRegexTemplate.class, template.getClass());
 	}
 
+	@Test
+	public void test7() throws IOException {
+    	String temp = "/GET .*\\/profile\\/?<id>([^\\/]+)(\\/.*)? HTTP/1.1/\r\n"; 
+    			
+		SimRequestTemplate srt = new SimRequestTemplate(temp);
+		SimTemplate template = srt.getTopLineTemplate();
+		assertEquals(SimRegexTemplate.class, template.getClass());
+	}
 }
