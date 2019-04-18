@@ -126,15 +126,20 @@ public class SimulatorRepository {
 			for (SimScript script : scripts) {
 				SimSimulator simulator = simulatorMap.get(script.getSimulatorName());
 				if (simulator == null) {
-					simulator = SimSimulator.createSimulator(script);
-					SimulatorListener listener = MessageCounter.getInstance();
-					listener.init(simulator.getName(), script.getConfigAsProperties());
-					simulator.addFixedListener(listener);
+					simulator = createSimulator(script);
 					simulatorMap.put(simulator.getName(), simulator);
 					SimLogger.getLogger().info("Simulator [" + simulator.getName() + "] loaded");
 				}
 			}
 		}
+	}
+
+	protected SimSimulator createSimulator(SimScript script) {
+		SimSimulator simulator = SimSimulator.createSimulator(script);
+		SimulatorListener listener = MessageCounter.getInstance();
+		listener.init(simulator.getName(), script.getConfigAsProperties());
+		simulator.addFixedListener(listener);
+		return simulator;
 	}
 
 	public SimSimulator restartSimulator(String name) throws IOException {
@@ -155,8 +160,7 @@ public class SimulatorRepository {
 			if (!opSc.isPresent()) {
 				throw new RuntimeException("no such simulator [" + name + "]");
 			}
-			sim = SimSimulator.createSimulator(opSc.get());
-			sim.addListener(MessageCounter.getInstance());
+			sim = createSimulator(opSc.get());
 			simulatorMap.put(sim.getName(), sim);
 			sim.start();
 			SimLogger.getLogger().info("Simulator [" + name + "] is running at " + sim.getRunningURL());

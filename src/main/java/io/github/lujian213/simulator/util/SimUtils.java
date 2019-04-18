@@ -459,4 +459,12 @@ public class SimUtils {
 			return new File(str);
 		}
 	}
+	
+	public static Class<?> load(String className) {
+		try {
+			return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
