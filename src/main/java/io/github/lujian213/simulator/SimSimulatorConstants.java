@@ -17,8 +17,9 @@ public class SimSimulatorConstants {
 	public static final String HEADER_NAME_BRIDGE_TYPE = "_Bridge.Type";
 	public static final String HEADER_NAME_CLASS = "_Class.Name";
 	public static final String HEADER_NAME_METHOD = "_Method.Name";
-	public static final String HEADER_BODY_TYPE = "_Body-Type";
-	public static final String HEADER_JSON_CLASS_NAME = "_JSonObject.classname";
-	public static final String HEADER_JSON_VAR_NAME = "_JSonObject.varname";
+	public static final String HEADER_NAME_BODY_TYPE = "_Body-Type";
+	public static final String HEADER_NAME_JSON_CLASS_NAME = "_JSonObject.classname";
+	public static final String HEADER_NAME_JSON_VAR_NAME = "_JSonObject.varname";
+	public static final String HEADER_NAME_WAIT = "_Wait.Time";
 
 }

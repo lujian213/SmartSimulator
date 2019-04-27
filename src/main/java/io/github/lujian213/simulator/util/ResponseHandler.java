@@ -26,6 +26,7 @@ public interface ResponseHandler {
 	static ResponseHandlerChain inst = new ResponseHandlerChain(
 			new BridgeResponseHandler(),
 			new FunctionResponseHandler(),
+			new WaitResponseHandler(),
 			new DefaultResponseHandler()
 			);
 			
@@ -165,5 +166,21 @@ public interface ResponseHandler {
 		}
 	}
 
+	static class WaitResponseHandler implements ResponseHandler {
+		@Override
+		public byte[] handle(Map<String, Object> headers, VelocityContext vc, SimResponseTemplate resp) throws IOException {
+			String waitTime = (String) headers.remove(HEADER_NAME_WAIT);
+			if (waitTime != null) {
+				long time2Wait = Long.parseLong(waitTime);
+				try {
+					Thread.sleep(time2Wait);
+				} catch (InterruptedException e) {
+				}
+				return new byte[0];
+			} else {
+				return null;
+			}
+		}
+	}
 }
 

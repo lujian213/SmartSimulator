@@ -212,13 +212,13 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
 
 	public SocketSimulator(SimScript script) throws IOException {
 		super(script);
+		convertor = SimUtils.createMessageConvertor(script, new DefaultSocketReqRespConvertor());
 	}
 	
 	@Override
 	protected void init() throws IOException {
 		super.init();
 		port = script.getMandatoryIntProperty(PROP_NAME_PORT, "no socket port defined");
-		convertor = SimUtils.createMessageConvertor(script, new DefaultSocketReqRespConvertor());
 		frameMaxLength = script.getIntProperty(PROP_NAME_FRAME_MAXLENGTH, 8192);
 		String delimStr = script.getProperty(PROP_NAME_FRAME_DELIMITERS, "0x0D0x0A,0x0A");
 		delimiters = SimUtils.parseDelimiters(delimStr);

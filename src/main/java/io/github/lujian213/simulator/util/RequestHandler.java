@@ -144,7 +144,7 @@ public interface RequestHandler {
 		
 		@Override
 		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_BODY_TYPE);
+			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
 			if (BODY_TYPE_XPATH.equals(bodyType)) {
 				return retrieveXPathValue(request.getBody(), parse(templateBody));
 			}
@@ -209,7 +209,7 @@ public interface RequestHandler {
 
 		@Override
 		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_BODY_TYPE);
+			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
 			if (BODY_TYPE_JSONPATH.equals(bodyType)) {
 				return retrievePathValue(request.getBody(), parse(templateBody));
 			}
@@ -252,7 +252,7 @@ public interface RequestHandler {
 
 		@Override
 		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_BODY_TYPE);
+			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
 			if (BODY_TYPE_JSONOBJECT.equals(bodyType)) {
 				return retrieveJSonObject(request.getBody(), headers);
 			}
@@ -264,11 +264,11 @@ public interface RequestHandler {
 			ObjectMapper mapper = new ObjectMapper();
 			Object obj;
 			try {
-				obj = mapper.readValue(requestBody, Class.forName(headers.get(HEADER_JSON_CLASS_NAME), true, Thread.currentThread().getContextClassLoader()));
+				obj = mapper.readValue(requestBody, Class.forName(headers.get(HEADER_NAME_JSON_CLASS_NAME), true, Thread.currentThread().getContextClassLoader()));
 			} catch (ClassNotFoundException e) {
 				throw new IOException(e);
 			}
-			ret.put(headers.get(HEADER_JSON_VAR_NAME), obj);
+			ret.put(headers.get(HEADER_NAME_JSON_VAR_NAME), obj);
 			return ret;
 		}
 	}
@@ -278,7 +278,7 @@ public interface RequestHandler {
 
 		@Override
 		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_BODY_TYPE);
+			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
 			if (BODY_TYPE_GROOVY.equals(bodyType)) {
 				Object value = executeGrovvy(templateBody, request);
 				if (value instanceof Map) {

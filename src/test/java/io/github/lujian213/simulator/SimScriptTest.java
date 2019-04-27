@@ -247,7 +247,7 @@ public class SimScriptTest {
 	@Test
 	public void test11() {
 		try {
-			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/dummy"));
+			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/dummy2"));
 			assertTrue(script.isIgnored());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -272,7 +272,7 @@ public class SimScriptTest {
 	@Test
 	public void test13() {
 		try {
-			SimScript script = new SimScript(new SimScript(new File("scripts")), new SimulatorFolder(new File("scripts/dummy")));
+			SimScript script = new SimScript(new SimScript(new File("scripts")), new SimulatorFolder(new File("scripts/dummy2")));
 			assertTrue(script.isIgnored());
 		} catch (IOException e) {
 			e.printStackTrace();

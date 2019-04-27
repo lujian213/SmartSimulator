@@ -39,7 +39,6 @@ public class FileSimulator extends SimSimulator {
 		super.init();
 		inputDir = script.getMandatoryFileProperty(PROP_NAME_INPUT_DIR, "no input defined");
 		pollInterval = script.getLongProperty(PROP_NAME_POLL_INTERVAL, 3000);
-		convertor = SimUtils.createMessageConvertor(script, new DefaultFileReqRespConvertor());
 	}
 
 	@Override

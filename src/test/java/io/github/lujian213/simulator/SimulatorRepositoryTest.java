@@ -20,7 +20,7 @@ public class SimulatorRepositoryTest {
 			fail("unexpected exception:" + e1);
 		}
 		try {
-			rep.getSimulator("dummy");
+			rep.getSimulator("dummy2");
 			fail("RuntimeException expected");
 		} catch (RuntimeException e) {
 		}
