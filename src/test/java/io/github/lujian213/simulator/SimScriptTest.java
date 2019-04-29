@@ -176,9 +176,9 @@ public class SimScriptTest {
 	public void test7() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new File("scripts/websocket"));
-			assertEquals(2, script.getEffectiveTemplatePairs().size());
-			assertEquals(2, script.getSubScripts().size());
-			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getEffectiveTemplatePairs().size());
+			assertEquals(3, script.getEffectiveTemplatePairs().size());
+			assertEquals(3, script.getSubScripts().size());
+			assertEquals(7, script.getSubScripts().get("hellowebsocket.1").getEffectiveTemplatePairs().size());
 		} catch (IOException e) {
 			fail("unexpected exception" + e);
 		}
@@ -259,11 +259,11 @@ public class SimScriptTest {
 	public void test12() {
 		try {
 			SimScript script = new SimScript(new SimScript(new File("scripts")), new SimulatorFolder(new File("scripts/websocket")));
-			assertEquals(4, script.getLocalConfigAsRawProperties().size());
-			assertEquals(10, script.getConfigAsProperties().size());
-			assertEquals(2, script.getEffectiveTemplatePairs().size());
-			assertEquals(2, script.getSubScripts().size());
-			assertEquals(6, script.getSubScripts().get("hellowebsocket.1").getEffectiveTemplatePairs().size());
+			assertEquals(5, script.getLocalConfigAsRawProperties().size());
+			assertEquals(11, script.getConfigAsProperties().size());
+			assertEquals(3, script.getEffectiveTemplatePairs().size());
+			assertEquals(3, script.getSubScripts().size());
+			assertEquals(7, script.getSubScripts().get("hellowebsocket.1").getEffectiveTemplatePairs().size());
 		} catch (IOException e) {
 			fail("unexpected exception" + e);
 		}

@@ -54,6 +54,7 @@ public abstract class HTTPSimulator extends SimSimulator {
 			SimUtils.logIncomingMessage(request.getRemoteAddress(), getName(), request);
 			respList = script.genResponse(request);
 		} catch (Exception e) {
+			SimLogger.getLogger().info(e.toString() + "try proxy if proxy is setup");
 			if (proxy) {
 				try {
 					SimResponse resp = SimUtils.doHttpProxy(proxyURL, request);

@@ -74,6 +74,7 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		}
 		
 		private final static Object UNKNOWN = new Object();
+		private final static String ALL = "_ALL_";
 		private Map<Object, List<ConnectionWithDelegator>> connectionMap = new HashMap<>();
 		private List<ConnectionWithDelegator> unknownConnectionList = new ArrayList<>();
 		
@@ -120,11 +121,21 @@ public class WebbitWSHandler extends BaseWebSocketHandler {
 		}
 		
 		public List<ConnectionWithDelegator> findConnections(String id) {
-			synchronized (connectionMap) {
-				List<ConnectionWithDelegator> list = connectionMap.get(id);
-				if (list == null)
-					return null;
-				return new ArrayList<>(list);
+			if (id.startsWith(ALL)) {
+				List<ConnectionWithDelegator> list = new ArrayList<>();
+				synchronized (connectionMap) {
+					for (List<ConnectionWithDelegator> item : connectionMap.values()) {
+						list.addAll(item);
+					}
+				}
+				return list;
+			} else {
+				synchronized (connectionMap) {
+					List<ConnectionWithDelegator> list = connectionMap.get(id);
+					if (list == null)
+						return null;
+					return new ArrayList<>(list);
+				}
 			}
 		}
 

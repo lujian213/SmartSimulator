@@ -21,7 +21,7 @@ public class SimulatorFolderTest {
 			assertEquals(2, folder.getFiles().size());
 			String name = folder.getFiles().get(0).getName();
 			assertTrue("init.properties".equals(name) || "step1.sim".equals(name));
-			assertEquals(2, folder.getSubFolders().size());
+			assertEquals(3, folder.getSubFolders().size());
 			name = folder.getSubFolders().get(0).getName();
 			assertTrue("hellowebsocket.1".equals(name) || "control".equals(name));
 			assertEquals(3, folder.getSubFolders().get(0).getFiles().size());
@@ -69,7 +69,7 @@ public class SimulatorFolderTest {
 			assertEquals(2, folder.getFiles().size());
 			String name = folder.getFiles().get(0).getName();
 			assertTrue("init.properties".equals(name) || "step1.sim".equals(name));
-			assertEquals(2, folder.getSubFolders().size());
+			assertEquals(3, folder.getSubFolders().size());
 			name = folder.getSubFolders().get(0).getName();
 			assertTrue("hellowebsocket.1".equals(name) || "control".equals(name));
 			assertEquals(3, folder.getSubFolders().get(0).getFiles().size());

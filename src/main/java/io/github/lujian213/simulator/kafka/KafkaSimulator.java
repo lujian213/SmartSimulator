@@ -57,6 +57,7 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 				try {
 					respList = script.genResponse(request);
 				} catch (Exception e) {
+					SimLogger.getLogger().info(e.toString() + "try proxy if proxy is setup");
 					if (proxy) {
 						try {
 							String brokerName = SimUtils.getBrokerName(proxyChannel);

@@ -18,6 +18,10 @@
       ws.onopen = function() { showMessage('Connected!'); };
       ws.onclose = function() { showMessage('Lost connection'); };
       ws.onmessage = function(msg) { showMessage(msg.data); };
+      var ws2 = new WebSocket('wss://' + document.location.host + '/hellowebsocket/2');
+      ws2.onopen = function() { showMessage('Connected2!'); };
+      ws2.onclose = function() { showMessage('Lost connection2'); };
+      ws2.onmessage = function(msg) { showMessage(msg.data); };
     </script>
   </body>
 </html>

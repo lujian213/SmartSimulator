@@ -6,3 +6,17 @@ Content-Type: text/html
 
 ------------------------------------------------------------------
 
+GET {$url}/broadcast?msg={$msg} HTTP/1.1
+
+HTTP/1.1 200 OK
+Content-Type: text/html
+
+$msg
+HTTP/1.1 200 OK
+_response.targetSimulator: WebSocket
+_Channel: _ALL_@/hellowebsocket/2
+Content-Type: text/html
+
+msg: $msg
+------------------------------------------------------------------
+

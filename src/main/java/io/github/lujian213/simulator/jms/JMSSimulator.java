@@ -126,6 +126,7 @@ public class JMSSimulator extends SimSimulator implements SimSesseionLessSimulat
 				try {
 					respList = script.genResponse(request);
 				} catch (Exception e) {
+					SimLogger.getLogger().info(e.toString() + "try proxy if proxy is setup");
 					if (proxy) {
 						try {
 							SimMessageProducer producer = producerFactory.getProducer(proxyChannel);
