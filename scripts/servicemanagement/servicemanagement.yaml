@@ -1,0 +1,323 @@
+openapi: 3.0.0
+# Added by API Auto Mocking Plugin
+servers:
+  - description: Smart Simulator Service Manager
+    url: http://apaccnshlzw0328:8200/servicemanagement/v1
+info:
+  description: |
+    Smart Simulator Service Management API.  You can find
+    out more about Smart Simulator
+    [https://github.com/lujian213/SmartSimulator](https://github.com/lujian213/SmartSimulator).
+  version: "1.0.1"
+  title: Smart Simulator Service Manager
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: lujian213@msn.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: service
+    description: Everything about service
+paths:
+  /simulators:
+    get:
+      tags:
+        - service
+      summary: Get all simulators
+      operationId: getAllSimulatorStatus
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimulatorStatus'
+  /{simulatorName}/info:
+    get:
+      tags:
+        - service
+      summary: get simulator information
+      description: get simulator detailed information by its name
+      operationId: getSimulatorInfo
+      parameters:
+        - name: simulatorName
+          in: path
+          description: simulator name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulatorDetail'
+        '500':
+          description: operation failure
+          content:
+            application/json:
+              schema:
+                type: string
+  '/{simulatorName}/rawinfo':
+    get:
+      tags:
+        - service
+      summary: get simulator raw information
+      description: get simulator detailed raw information by its name
+      operationId: getSimulatorRawInfo
+      parameters:
+        - name: simulatorName
+          in: path
+          description: simulator name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulatorDetail'
+        '500':
+          description: operation failure
+          content:
+            application/json:
+              schema:
+                type: string
+  '/{simulatorName}/start':
+    get:
+      tags:
+        - service
+      summary: start simulator
+      description: start simulator by its name
+      operationId: startSimulator
+      parameters:
+        - name: simulatorName
+          in: path
+          description: simulator name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: operation failure
+          content:
+            application/json:
+              schema:
+                type: string
+  '/{simulatorName}/stop':
+    get:
+      tags:
+        - service
+      summary: stop simulator
+      description: stop simulator by its name
+      operationId: stopSimulator
+      parameters:
+        - name: simulatorName
+          in: path
+          description: simulator name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: operation failure
+          content:
+            application/json:
+              schema:
+                type: string
+  /refresh:
+    get:
+      tags:
+        - service
+      summary: refresh all non-started simulator configuration
+      operationId: refresh
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+  '/{simulatorName}/restart':
+    get:
+      tags:
+        - service
+      summary: restart simulator
+      description: restart simulator by its name
+      operationId: restartSimulator
+      parameters:
+        - name: simulatorName
+          in: path
+          description: simulator name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: operation failure
+          content:
+            application/json:
+              schema:
+                type: string
+  '/{simulatorName}/structure':
+    get:
+      tags:
+        - service
+      summary: get simulator folder structure
+      description: get simulator folder structure by its name
+      operationId: getSimulatorStructure
+      parameters:
+        - name: simulatorName
+          in: path
+          description: simulator name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulatorFolder'
+        '500':
+          description: operation failure
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    SimulatorStatus:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          example: SimpleEcho
+        type:
+          type: string
+          example: http/https
+        runningURL:
+          type: string
+        status:
+          type: string
+          description: simulator status
+          enum:
+            - running
+            - stopped
+        startTime:
+          type: string
+          format: yyyy-MM-dd HH:mm:ss
+          example: 2019-05-09 01:26:46
+        duration:
+          type: integer
+          format: int32
+    SimulatorDetail:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: SimpleEcho
+        type:
+          type: string
+          example: http/https
+        scriptInfo:
+          $ref: '#/components/schemas/ScriptInfo'
+    ScriptInfo:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: root
+        templatePairs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplatePairInfo'
+        scriptInfo:
+          $ref: '#/components/schemas/ScriptInfo'
+    TemplatePairInfo:
+      type: object
+      properties:
+        requestTemplate:
+          $ref: '#/components/schemas/RequestTemplateInfo'
+        responseTemplates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseTemplateInfo'
+    RequestTemplateInfo:
+      type: object
+      properties:
+        topLine:
+          type: string
+        headers:
+          type: array
+          items: 
+            type: integer
+        body:
+          type: string
+    ResponseTemplateInfo:
+      type: object
+      properties:
+        code:
+          type: integer
+        headers:
+          type: array
+          items: 
+            type: integer
+        body:
+          type: string
+    SimulatorFolder:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        subFolders:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimulatorFolder'    
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimulatorFile'
+    SimulatorFile:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        content:
+          type: string

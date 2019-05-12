@@ -91,6 +91,7 @@ public abstract class SimSimulator implements ListenerHub<SimulatorListener> {
 					SimLogger.getLogger().info("stopped");
 					BeanRepository.getInstance().removeSimulatorBeans(getName());
 					castToSimulatorListener().onStop(getName());
+					this.listenerHub.removeAllListeners();
 					this.script.close();
 					this.running = false;
 					this.runningURL = null;

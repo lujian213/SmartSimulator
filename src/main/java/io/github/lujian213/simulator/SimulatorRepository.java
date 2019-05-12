@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.zip.ZipFile;
 
 import io.github.lujian213.simulator.monitor.MessageCounter;
+import io.github.lujian213.simulator.monitor.SimulatorListenerProxy;
 import io.github.lujian213.simulator.util.SimLogger;
 
 public class SimulatorRepository {
@@ -136,9 +137,11 @@ public class SimulatorRepository {
 
 	protected SimSimulator createSimulator(SimScript script) {
 		SimSimulator simulator = SimSimulator.createSimulator(script);
+		SimulatorListenerProxy listenerProxy = SimulatorListenerProxy.getInstance();
+		simulator.addFixedListener(listenerProxy);
 		SimulatorListener listener = MessageCounter.getInstance();
 		listener.init(simulator.getName(), script.getConfigAsProperties());
-		simulator.addFixedListener(listener);
+		listenerProxy.addListener(listener);
 		return simulator;
 	}
 

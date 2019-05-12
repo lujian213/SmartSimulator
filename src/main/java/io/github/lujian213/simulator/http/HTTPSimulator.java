@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
@@ -74,7 +75,9 @@ public abstract class HTTPSimulator extends SimSimulator {
 	
 	protected void gen500Response(SimRequest request, String message) {
 		try {
-			SimResponse response = new SimResponse(500, new HashMap<String, Object>(), message.getBytes());
+			Map<String, Object> headers = new HashMap<>();
+			headers.put("Access-Control-Allow-Origin", "*");
+			SimResponse response = new SimResponse(500, headers, message.getBytes());
 			request.fillResponse(response);
 		} catch (Exception e) {
 			SimLogger.getLogger().error("error when generate 500 response", e);

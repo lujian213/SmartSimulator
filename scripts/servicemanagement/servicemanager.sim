@@ -1,4 +1,4 @@
-GET {$url}/simulators HTTP/1.1
+GET {$url}/servicemanagement/v1/simulators HTTP/1.1
 
 HTTP/1.1 200 OK
 _Class.Name: $className
@@ -8,7 +8,7 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
-GET {$url}/{$simulatorName}/info HTTP/1.1
+GET {$url}/servicemanagement/v1/{$simulatorName}/info HTTP/1.1
 
 HTTP/1.1 200 OK
 _raw: false
@@ -19,7 +19,7 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
-GET {$url}/{$simulatorName}/rawinfo HTTP/1.1
+GET {$url}/servicemanagement/v1/{$simulatorName}/rawinfo HTTP/1.1
 
 HTTP/1.1 200 OK
 _raw: true
@@ -29,7 +29,7 @@ _Content-Type: application/json
 Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
-GET {$url}/{$simulatorName}/start HTTP/1.1
+GET {$url}/servicemanagement/v1/{$simulatorName}/start HTTP/1.1
 
 HTTP/1.1 200 OK
 _Class.Name: $className
@@ -39,7 +39,7 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
-GET {$url}/{$simulatorName}/stop HTTP/1.1
+GET {$url}/servicemanagement/v1/{$simulatorName}/stop HTTP/1.1
 
 HTTP/1.1 200 OK
 _Class.Name: $className
@@ -49,7 +49,7 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
-GET {$url}/refresh HTTP/1.1
+GET {$url}/servicemanagement/v1/refresh HTTP/1.1
 
 HTTP/1.1 200 OK
 _Class.Name: $className
@@ -59,7 +59,7 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
-GET {$url}/{$simulatorName}/restart HTTP/1.1
+GET {$url}/servicemanagement/v1/{$simulatorName}/restart HTTP/1.1
 
 HTTP/1.1 200 OK
 _Class.Name: $className
@@ -69,7 +69,7 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
-GET {$url}/{$simulatorName}/structure HTTP/1.1
+GET {$url}/servicemanagement/v1/{$simulatorName}/structure HTTP/1.1
 
 HTTP/1.1 200 OK
 _Class.Name: $className
@@ -79,7 +79,7 @@ Access-Control-Allow-Origin: *
 
 ------------------------------------------------------------------
 
-POST {$url}/evaluate HTTP/1.1
+POST {$url}/servicemanagement/v1/evaluate HTTP/1.1
 _JSonObject.classname: io.github.lujian213.simulator.manager.SimulatorFolder
 _JSonObject.varname: simulatorFolder
 
@@ -87,6 +87,15 @@ HTTP/1.1 200 OK
 _Class.Name: $className
 _Method.Name: evaluateSimulatorStructure
 
+_Content-Type: application/json
+Access-Control-Allow-Origin: *
+
+------------------------------------------------------------------
+
+GET {$url}/servicemanagement/v1/servicemanagement.yaml HTTP/1.1
+
+HTTP/1.1 200 OK
+_Bridge: ${simulator_url}servicemanagement.yaml
 _Content-Type: application/json
 Access-Control-Allow-Origin: *
 

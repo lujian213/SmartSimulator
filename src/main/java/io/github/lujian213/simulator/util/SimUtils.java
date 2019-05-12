@@ -18,6 +18,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.Inet4Address;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
@@ -465,6 +466,14 @@ public class SimUtils {
 			return Class.forName(className, true, Thread.currentThread().getContextClassLoader());
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	public static String getHostName() {
+		try {
+			return Inet4Address.getLocalHost().getHostName();
+		} catch (Exception e) {
+			return "localhost";
 		}
 	}
 }

@@ -78,7 +78,6 @@ public interface ResponseHandler {
 	static class BridgeResponseHandler implements ResponseHandler {
 		public static final String BRIDGE_TYPE_VM = "VM";
 		public static final String BRIDGE_TYPE_GROOVY = "Groovy";
-		public static final String CONTEXT_NAME_SIMUTILS = "SimUtils";
 		private MimetypesFileTypeMap map;
 
 		public BridgeResponseHandler() {
@@ -95,11 +94,9 @@ public interface ResponseHandler {
 				byte[] bodyBytes = handleBridgeRequest(bridge);
 				headers.put(HEADER_NAME_CONTENT_TYPE, map.getContentType(bridge));
 				if (BRIDGE_TYPE_VM.equals(bridgeType)) {
-					vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
 					return SimUtils.mergeResult(vc, "body", bodyBytes).getBytes();
 				} else if (BRIDGE_TYPE_GROOVY.equals(bridgeType)) {
 					Binding binding = new Binding();
-					vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
 					binding.setVariable("context", vc);
 					GroovyShell shell = new GroovyShell(binding);
 					try {

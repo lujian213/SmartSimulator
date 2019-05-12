@@ -18,6 +18,8 @@ public class SimResponse {
 	public static final String HEADER_CONTENT_ENCODING1 = "content-encoding";
 	public static final String HEADER_CONTENT_ENCODING2 = "Content-encoding";
 	public static final String HEADER_CONTENT_ENCODING3 = "Content-Encoding";
+	public static final String CONTEXT_NAME_SIMUTILS = "SimUtils";
+
 	private int code;
 	private Map<String, Object> headers = new HashMap<>();
 	private byte[] body;
@@ -138,6 +140,7 @@ public class SimResponse {
 
 	protected void generate(Map<String, Object> context, SimResponseTemplate resp) throws IOException {
 		VelocityContext vc = new VelocityContext();
+		vc.put(CONTEXT_NAME_SIMUTILS, SimUtils.class);
 		for (Map.Entry<String, Object> contextEntry : context.entrySet()) {
 			vc.put(contextEntry.getKey(), contextEntry.getValue());
 			vc.put(contextEntry.getKey().replace('.', '_'), contextEntry.getValue());

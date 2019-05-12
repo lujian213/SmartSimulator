@@ -1,0 +1,15 @@
+GET {$url}/swagger-ui/index.html HTTP/1.1
+
+HTTP/1.1 200 OK
+_Bridge: ${simulator_url}index.html
+_yaml_url: http://${SimUtils.getHostName()}:8200/servicemanagement/v1/servicemanagement.yaml
+_Bridge.Type: VM
+
+------------------------------------------------------------------
+
+GET {$url}/swagger-ui/{$resource} HTTP/1.1
+
+HTTP/1.1 200 OK
+_Bridge: ${simulator_url}$resource
+
+------------------------------------------------------------------
