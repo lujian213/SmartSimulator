@@ -2,6 +2,8 @@ package io.github.lujian213.simulator.simple;
 
 import static io.github.lujian213.simulator.SimSimulatorConstants.HEADER_NAME_CONTENT_TYPE;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ public class SimpleSimRequest extends AbstractSimRequest {
 	private Map<String, List<String>> headers;
 	private String[] authentications = new String[] {"", ""};
 	private String body;
+	private byte[] rawBody;
 	private ReqRespConvertor convertor;
 	
 	public SimpleSimRequest(HttpExchange exchange, ReqRespConvertor convertor) throws IOException {
@@ -82,6 +85,10 @@ public class SimpleSimRequest extends AbstractSimRequest {
 	}
 	
 	protected void genBody(HttpExchange exchange) throws IOException {
+		try (BufferedInputStream bis = new BufferedInputStream(exchange.getRequestBody())) {
+			this.rawBody = SimUtils.readStream2Array(bis);
+		}
+		exchange.setStreams(new ByteArrayInputStream(this.rawBody), null);
 		this.body = convertor.rawRequestToBody(exchange);
 	}
 	
@@ -110,6 +117,11 @@ public class SimpleSimRequest extends AbstractSimRequest {
 		return this.body;
 	}
 	
+	@Override
+	public byte[] getRawBodyAsBytes() {
+		return this.rawBody;
+	}
+
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
 		Headers respHeaders = httpExchange.getResponseHeaders();

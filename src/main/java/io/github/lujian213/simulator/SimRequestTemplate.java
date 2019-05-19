@@ -11,12 +11,55 @@ import io.github.lujian213.simulator.util.SimLogger;
 import io.github.lujian213.simulator.util.SimUtils;
 
 public class SimRequestTemplate {
+	public static class HeaderItem {
+		private String name;
+		private String value;
+		private boolean optional = false;
+		private SimTemplate template;
+		
+		public HeaderItem(String name, String value) throws IOException {
+			this(name, value, false);
+		}
+
+		public HeaderItem(String name, String value, boolean optional) throws IOException {
+			this.name = name;
+			this.value = value;
+			this.optional = optional;
+			this.template = new SimTemplate(name + ": " + value);
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public boolean isOptional() {
+			return optional;
+		}
+		
+		public SimTemplate getTemplate() {
+			return this.template;
+		}
+
+		public Map<String, Object> parse(String line) throws IOException {
+			return this.template.parse(line);
+		}
+
+		@Override
+		public String toString() {
+			return (optional ? "*" : "") + name + ": " + value;
+		}
+	}
+	
 	public static final String HEADER_AUTHENTICATION = "Authentication";
 	private SimTemplate topLineTemplate;
-	private Map<String, SimTemplate> headerTemplates = new HashMap<>();
-	private SimTemplate authenticationsTemplate = null;
+	private Map<String, HeaderItem> headerTemplates = new HashMap<>();
+	private HeaderItem authenticationsTemplate = null;
 	private String bodyContent;
-	private Map<String, String> extraHeader = new HashMap<>();
+	private Map<String, HeaderItem> extraHeader = new HashMap<>();
 
 	public SimRequestTemplate(String content) throws IOException {
 		init(content);
@@ -38,13 +81,18 @@ public class SimRequestTemplate {
 				} else if (body == null) {
 					String[] prop = SimUtils.parseProperty(line);
 					if (prop != null) {
+						boolean optionalHeader = false;
+						if (prop[0].startsWith("*")) {
+							optionalHeader = true;
+							prop[0] = prop[0].substring(1);
+						}
 						if (HEADER_AUTHENTICATION.equals(prop[0])) {
-							this.authenticationsTemplate = new SimTemplate(line);
+							this.authenticationsTemplate = new HeaderItem(prop[0], prop[1], optionalHeader);
 						} else if (prop[0].startsWith("_")) {
-							extraHeader.put(prop[0], prop[1]);
+							extraHeader.put(prop[0], new HeaderItem(prop[0], prop[1], optionalHeader));
 						} else {
-							this.headerTemplates.put(prop[0], new SimTemplate(line));
-						} 
+							this.headerTemplates.put(prop[0], new HeaderItem(prop[0], prop[1], optionalHeader));
+						}
 					}
 					if (line.isEmpty()) {
 						body = new StringBuffer();
@@ -67,11 +115,11 @@ public class SimRequestTemplate {
 		return this.topLineTemplate;
 	}
 	
-	public Map<String, SimTemplate> getHeaderTemplate() {
+	public Map<String, HeaderItem> getHeaderTemplate() {
 		return this.headerTemplates;
 	}
 	
-	public SimTemplate getAuthenticationsTemplate() {
+	public HeaderItem getAuthenticationsTemplate() {
 		return this.authenticationsTemplate;
 	}
 	
@@ -87,11 +135,14 @@ public class SimRequestTemplate {
 			return null;
 		ret.putAll(res);
 		SimLogger.getLogger().info("topline template [" + topLineTemplate + "] match with [" + request.getTopLine() + "]");
-		for (Map.Entry<String, SimTemplate> entry: headerTemplates.entrySet()) {
-			res = entry.getValue().parse(request.getHeaderLine(entry.getKey()));
+		for (Map.Entry<String, HeaderItem> entry: headerTemplates.entrySet()) {
+			HeaderItem headerItem = entry.getValue();
+			res = headerItem.parse(request.getHeaderLine(entry.getKey()));
 			if (res == null) {
-				SimUtils.printMismatchInfo("header does not match", entry.getValue().toString(), request.getHeaderLine(entry.getKey()));
-				return null; 
+				if (!headerItem.isOptional()) {
+					SimUtils.printMismatchInfo("header does not match", entry.getValue().toString(), request.getHeaderLine(entry.getKey()));
+					return null; 
+				}
 			} else {
 				ret.putAll(res);
 			}
@@ -99,8 +150,10 @@ public class SimRequestTemplate {
 		if (authenticationsTemplate != null) {
 			res = authenticationsTemplate.parse(request.getAutnenticationLine());
 			if (res == null) {
-				SimUtils.printMismatchInfo("authentication does not match", authenticationsTemplate.toString(), request.getAutnenticationLine());
-				return null; 
+				if (!authenticationsTemplate.isOptional()) {
+					SimUtils.printMismatchInfo("authentication does not match", authenticationsTemplate.toString(), request.getAutnenticationLine());
+					return null;
+				}
 			} else {
 				ret.putAll(res);
 			}
@@ -115,7 +168,7 @@ public class SimRequestTemplate {
 		return ret;
 	}
 
-	public Map<String, String> getExtraHeader() {
+	public Map<String, HeaderItem> getExtraHeader() {
 		return extraHeader;
 	}
 }

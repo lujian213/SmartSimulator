@@ -34,6 +34,7 @@ import com.jayway.jsonpath.JsonPath;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import io.github.lujian213.simulator.SimRequest;
+import io.github.lujian213.simulator.SimRequestTemplate.HeaderItem;
 import io.github.lujian213.simulator.SimTemplate;
 import net.minidev.json.JSONArray;
 import static io.github.lujian213.simulator.SimSimulatorConstants.*;
@@ -47,7 +48,7 @@ public interface RequestHandler {
 			new DefaultRequestHandler()
 	);
 			
-	public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException;
+	public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException;
 	
 	public static RequestHandler getHandlerChain() {
 		return inst;
@@ -71,7 +72,7 @@ public interface RequestHandler {
 		}
 		
 		@Override
-		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			for (RequestHandler handler: handlerList) {
 				Map<String, Object> ret = handler.handle(headers, templateBody, request);
 				if (ret != null) {
@@ -84,7 +85,7 @@ public interface RequestHandler {
 	
 	static class DefaultRequestHandler implements RequestHandler {
 		@Override
-		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			if (templateBody != null) {
 				Map<String, Object> ret = new SimTemplate(templateBody).parse(request.getBody());
 				if (ret == null) {
@@ -128,11 +129,16 @@ public interface RequestHandler {
 		
 		static class XPathExp {
 			private String xpath;
+			private boolean optional = false;
 			private QName type;
 			
 			public XPathExp(String xpath, QName type) {
+				this(xpath, type, false);
+			}
+			public XPathExp(String xpath, QName type, boolean optional) {
 				this.xpath = xpath;
 				this.type = type;
+				this.optional = optional;
 			}
 			public String getXpath() {
 				return xpath;
@@ -140,12 +146,15 @@ public interface RequestHandler {
 			public QName getType() {
 				return type;
 			}
+			public boolean isOptional() {
+				return optional;
+			}
 		}
 		
 		@Override
-		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
-			if (BODY_TYPE_XPATH.equals(bodyType)) {
+		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
+			if (bodyType != null && BODY_TYPE_XPATH.equals(bodyType.getValue())) {
 				return retrieveXPathValue(request.getBody(), parse(templateBody));
 			}
 			return null;
@@ -158,10 +167,15 @@ public interface RequestHandler {
 				while ((line = reader.readLine()) != null) {
 					String[] prop = SimUtils.parseProperty(line);
 					if (prop != null) {
+						boolean optional = false;
+						if (prop[0].startsWith("*")) {
+							optional = true;
+							prop[0] = prop[0].substring(1);
+						}
 						if (prop[0].endsWith("[]")) {
-							xPathMap.put(prop[0].substring(0, prop[0].length() - 2), new XPathExp(prop[1], XPathConstants.NODESET));
+							xPathMap.put(prop[0].substring(0, prop[0].length() - 2), new XPathExp(prop[1], XPathConstants.NODESET, optional));
 						} else {
-							xPathMap.put(prop[0], new XPathExp(prop[1], XPathConstants.STRING));
+							xPathMap.put(prop[0], new XPathExp(prop[1], XPathConstants.STRING, optional));
 						}
 					}
 				}
@@ -180,11 +194,14 @@ public interface RequestHandler {
 				
 				Map<String, Object> ret = new HashMap<>();
 				for (Map.Entry<String, XPathExp> entry: xPathMap.entrySet()) {
-			        XPathExpression expr = xpath.compile(entry.getValue().getXpath());
-					Object value = expr.evaluate(document, entry.getValue().getType());
+					XPathExp xPathExp = entry.getValue();
+			        XPathExpression expr = xpath.compile(xPathExp.getXpath());
+					Object value = expr.evaluate(document, xPathExp.getType());
 					if (value == null || (value instanceof String && ((String)value).isEmpty()) || (value instanceof NodeList && ((NodeList)value).getLength() == 0)) {
-						SimLogger.getLogger().error("can not find value for xpath [" + entry.getValue().getXpath() + "]");
-						return null;
+						if (!xPathExp.isOptional()) {
+							SimLogger.getLogger().error("can not find value for xpath [" + entry.getValue().getXpath() + "]");
+							return null;
+						}
 					}
 					if (entry.getValue().getType().equals(XPathConstants.NODESET)) {
 						String[] valueArray = new String[((NodeList)value).getLength()];
@@ -208,9 +225,9 @@ public interface RequestHandler {
 		public static final String BODY_TYPE_JSONPATH = "JSonPath";
 
 		@Override
-		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
-			if (BODY_TYPE_JSONPATH.equals(bodyType)) {
+		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
+			if (bodyType != null && BODY_TYPE_JSONPATH.equals(bodyType.getValue())) {
 				return retrievePathValue(request.getBody(), parse(templateBody));
 			}
 			return null;
@@ -220,10 +237,13 @@ public interface RequestHandler {
 			Object document = Configuration.defaultConfiguration().jsonProvider().parse(requestBody);
 			Map<String, Object> ret = new HashMap<>();
 			for (Map.Entry<String, XPathExp> entry: pathMap.entrySet()) {
-				Object value = JsonPath.read(document, entry.getValue().getXpath());
+				XPathExp xPathExp = entry.getValue();
+				Object value = JsonPath.read(document, xPathExp.getXpath());
 				if (value == null || (value instanceof String && ((String)value).isEmpty()) || (value instanceof JSONArray && ((JSONArray)value).isEmpty())) {
-					SimLogger.getLogger().error("can not find value for path [" + entry.getValue().getXpath() + "]");
-					return null;
+					if (!xPathExp.isOptional()) {
+						SimLogger.getLogger().error("can not find value for path [" + entry.getValue().getXpath() + "]");
+						return null;
+					}
 				}
 				if (entry.getValue().getType().equals(XPathConstants.NODESET)) {
 					if (value instanceof JSONArray) {
@@ -251,24 +271,24 @@ public interface RequestHandler {
 		public static final String BODY_TYPE_JSONOBJECT = "JSonObject";
 
 		@Override
-		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
-			if (BODY_TYPE_JSONOBJECT.equals(bodyType)) {
+		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
+			if (bodyType != null && BODY_TYPE_JSONOBJECT.equals(bodyType.getValue())) {
 				return retrieveJSonObject(request.getBody(), headers);
 			}
 			return null;
 		}
 		
-		protected Map<String, Object> retrieveJSonObject(String requestBody, Map<String, String> headers) throws IOException {
+		protected Map<String, Object> retrieveJSonObject(String requestBody, Map<String, HeaderItem> headers) throws IOException {
 			Map<String, Object> ret = new HashMap<>();
 			ObjectMapper mapper = new ObjectMapper();
 			Object obj;
 			try {
-				obj = mapper.readValue(requestBody, Class.forName(headers.get(HEADER_NAME_JSON_CLASS_NAME), true, Thread.currentThread().getContextClassLoader()));
+				obj = mapper.readValue(requestBody, Class.forName(headers.get(HEADER_NAME_JSON_CLASS_NAME).getValue(), true, Thread.currentThread().getContextClassLoader()));
 			} catch (ClassNotFoundException e) {
 				throw new IOException(e);
 			}
-			ret.put(headers.get(HEADER_NAME_JSON_VAR_NAME), obj);
+			ret.put(headers.get(HEADER_NAME_JSON_VAR_NAME).getValue(), obj);
 			return ret;
 		}
 	}
@@ -277,9 +297,9 @@ public interface RequestHandler {
 		public static final String BODY_TYPE_GROOVY = "Groovy";
 
 		@Override
-		public Map<String, Object> handle(Map<String, String> headers, String templateBody, SimRequest request) throws IOException {
-			String bodyType = (String) headers.get(HEADER_NAME_BODY_TYPE);
-			if (BODY_TYPE_GROOVY.equals(bodyType)) {
+		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
+			if (bodyType != null && BODY_TYPE_GROOVY.equals(bodyType.getValue())) {
 				Object value = executeGrovvy(templateBody, request);
 				if (value instanceof Map) {
 					return (Map<String, Object>) value;

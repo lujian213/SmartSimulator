@@ -105,6 +105,11 @@ public class WebbitSimRequest extends AbstractSimRequest {
 	}
 	
 	@Override
+	public byte[] getRawBodyAsBytes() {
+		return this.request.bodyAsBytes();
+	}
+
+	@Override
 	protected void doFillResponse(SimResponse resp) throws IOException {
 		for (Map.Entry<String, Object> entry : resp.getAllInternalHeaders().entrySet()) {
 			if (HEADER_NAME_CONTENT_TYPE.equals(entry.getKey())) {

@@ -16,6 +16,15 @@ public interface SimRequest {
 	public String getAutnenticationLine();
 
 	public String getBody();
+	
+	default public byte[] getRawBodyAsBytes() {
+		String body = getBody();
+		if (body != null) {
+			return body.getBytes();
+		} else {
+			return null;
+		}
+	}
 
 	public String getTopLine();
 

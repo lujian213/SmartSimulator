@@ -11,7 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
@@ -19,8 +19,8 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.Inet4Address;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.KeyStore;
@@ -254,12 +254,12 @@ public class SimUtils {
 				SimLogger.getLogger().info(headerParts[0].trim() + ":" +  headerParts[1].trim());
 			}
 			conn.setRequestMethod(method);
-			String body = request.getBody();
-			if (body != null && !body.isEmpty()) {
+			byte[] body = request.getRawBodyAsBytes();
+			if (body != null) {
 				conn.setDoOutput(true);
 				conn.connect();
-				try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(conn.getOutputStream()))) {
-						pw.print(request.getBody());
+				try (OutputStream os = conn.getOutputStream()) {
+					os.write(body);
 				}
 			} else {
 				conn.connect();
@@ -474,6 +474,19 @@ public class SimUtils {
 			return Inet4Address.getLocalHost().getHostName();
 		} catch (Exception e) {
 			return "localhost";
+		}
+	}
+	
+	public static byte[] readStream2Array(InputStream is) {
+		byte[] buffer = new byte[8192];
+		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+			int count = -1;
+			while ((count = is.read(buffer)) >= 0) {
+				bos.write(buffer, 0, count);
+			}
+			return bos.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
