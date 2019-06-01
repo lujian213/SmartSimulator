@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import io.github.lujian213.simulator.manager.SimulatorFolder;
+import io.github.lujian213.simulator.util.SimLogger;
 
 public class SimulatorFolderTest {
 	@Test
@@ -23,6 +24,7 @@ public class SimulatorFolderTest {
 			assertTrue("init.properties".equals(name) || "step1.sim".equals(name));
 			assertEquals(3, folder.getSubFolders().size());
 			name = folder.getSubFolders().get(0).getName();
+            SimLogger.getLogger().info("name = " + name);
 			assertTrue("hellowebsocket.1".equals(name) || "control".equals(name));
 			assertEquals(3, folder.getSubFolders().get(0).getFiles().size());
 		} catch (IOException e) {
@@ -71,6 +73,7 @@ public class SimulatorFolderTest {
 			assertTrue("init.properties".equals(name) || "step1.sim".equals(name));
 			assertEquals(3, folder.getSubFolders().size());
 			name = folder.getSubFolders().get(0).getName();
+            SimLogger.getLogger().info("name = " + name);
 			assertTrue("hellowebsocket.1".equals(name) || "control".equals(name));
 			assertEquals(3, folder.getSubFolders().get(0).getFiles().size());
 		} catch (IOException e) {
