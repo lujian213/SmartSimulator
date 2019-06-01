@@ -75,7 +75,9 @@ public class BeanRepository {
 
 	public FunctionBean addBean(String className, VelocityContext vc) {
 		try {
-			return addBean(Class.forName(className, true, Thread.currentThread().getContextClassLoader()), vc);
+			ClassLoader cl = Thread.currentThread().getContextClassLoader();
+			SimLogger.getLogger().info("Use " + cl + " to load class [" + className + "]");
+			return addBean(Class.forName(className, true, cl), vc);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException("error to create instance of class [" + className + "]", e);
 		}

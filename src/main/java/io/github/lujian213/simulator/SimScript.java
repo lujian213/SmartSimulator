@@ -70,7 +70,7 @@ public class SimScript {
 	public static final String INIT_FILE = "init.properties"; 
 	
 	private Logger scriptLogger = null;
-	private ClassLoader simClassLoader = ClassLoader.getSystemClassLoader();
+	private ClassLoader simClassLoader = null;
 	
 	private List<TemplatePair> templatePairs = new ArrayList<>();
 	private Map<String, SimScript> subScripts = new HashMap<>();
@@ -210,7 +210,7 @@ public class SimScript {
 	}
 	
 	public ClassLoader getClassLoader() {
-		return simClassLoader;
+		return (simClassLoader != null) ? simClassLoader : parent.getClassLoader();
 	}
 	
 	public SimScript getParent() {

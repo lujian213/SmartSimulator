@@ -68,6 +68,8 @@ public class MessageCounter implements SimulatorListener {
 
 	@Override
 	public void onStart(String simulatorName) {
+		Counter counter = new Counter(simulatorName);
+		counterMap.put(simulatorName, counter);
 	}
 
 	@Override

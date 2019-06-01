@@ -15,6 +15,7 @@ public class SimulatorStatus {
 	private int successfulMessages = 0;
 	private int failedMessages = 0;
 	private String startTime = null;
+	private long startTimeInMillSec = 0;
 	private long duration = 0;
 	
 	public SimulatorStatus(SimSimulator simulator) {
@@ -24,8 +25,9 @@ public class SimulatorStatus {
 		this.runningURL = simulator.getRunningURL();
 		
 		Counter counter = MessageCounter.getInstance().getCounter(simulator.getName());
-		if (counter != null) {
-			this.startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(counter.getStartTime()));
+		if (counter != null && simulator.isRunning()) {
+			this.startTimeInMillSec = counter.getStartTime();
+			this.startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z").format(new Date(counter.getStartTime()));
 			this.duration = counter.getDuration();
 			this.failedMessages = counter.getFailedMessages();
 			this.successfulMessages = counter.getSuccessfulMessages();
@@ -66,6 +68,10 @@ public class SimulatorStatus {
 
 	public long getDuration() {
 		return duration;
+	}
+	
+	public long getStartTimeInMillSec() {
+		return startTimeInMillSec;
 	}
 	
 }
