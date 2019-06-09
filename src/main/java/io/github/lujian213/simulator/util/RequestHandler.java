@@ -48,7 +48,7 @@ public interface RequestHandler {
 			new DefaultRequestHandler()
 	);
 			
-	public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException;
+	public Map<String, Object> handle(Map<String, Object> allContext, Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException;
 	
 	public static RequestHandler getHandlerChain() {
 		return inst;
@@ -72,9 +72,9 @@ public interface RequestHandler {
 		}
 		
 		@Override
-		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, Object> allContext, Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			for (RequestHandler handler: handlerList) {
-				Map<String, Object> ret = handler.handle(headers, templateBody, request);
+				Map<String, Object> ret = handler.handle(allContext, headers, templateBody, request);
 				if (ret != null) {
 					return ret;
 				}
@@ -85,7 +85,7 @@ public interface RequestHandler {
 	
 	static class DefaultRequestHandler implements RequestHandler {
 		@Override
-		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, Object> allContext, Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			if (templateBody != null) {
 				Map<String, Object> ret = new SimTemplate(templateBody).parse(request.getBody());
 				if (ret == null) {
@@ -152,7 +152,7 @@ public interface RequestHandler {
 		}
 		
 		@Override
-		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, Object> allContext, Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
 			if (bodyType != null && BODY_TYPE_XPATH.equals(bodyType.getValue())) {
 				return retrieveXPathValue(request.getBody(), parse(templateBody));
@@ -225,7 +225,7 @@ public interface RequestHandler {
 		public static final String BODY_TYPE_JSONPATH = "JSonPath";
 
 		@Override
-		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, Object> allContext, Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
 			if (bodyType != null && BODY_TYPE_JSONPATH.equals(bodyType.getValue())) {
 				return retrievePathValue(request.getBody(), parse(templateBody));
@@ -271,7 +271,7 @@ public interface RequestHandler {
 		public static final String BODY_TYPE_JSONOBJECT = "JSonObject";
 
 		@Override
-		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, Object> allContext, Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
 			if (bodyType != null && BODY_TYPE_JSONOBJECT.equals(bodyType.getValue())) {
 				return retrieveJSonObject(request.getBody(), headers);
@@ -297,10 +297,10 @@ public interface RequestHandler {
 		public static final String BODY_TYPE_GROOVY = "Groovy";
 
 		@Override
-		public Map<String, Object> handle(Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
+		public Map<String, Object> handle(Map<String, Object> allContext, Map<String, HeaderItem> headers, String templateBody, SimRequest request) throws IOException {
 			HeaderItem bodyType = headers.get(HEADER_NAME_BODY_TYPE);
 			if (bodyType != null && BODY_TYPE_GROOVY.equals(bodyType.getValue())) {
-				Object value = executeGrovvy(templateBody, request);
+				Object value = executeGrovvy(allContext, templateBody, request.getBody());
 				if (value instanceof Map) {
 					return (Map<String, Object>) value;
 				}
@@ -308,9 +308,12 @@ public interface RequestHandler {
 			return null;
 		}
 		
-		protected Object executeGrovvy(String templateBody, SimRequest request) {
+		protected Object executeGrovvy(Map<String, Object> allContext, String templateBody, String requestBody) {
 			Binding binding = new Binding();
-			binding.setVariable("request", request);
+			for (Map.Entry<String, Object> entry: allContext.entrySet()) {
+				binding.setVariable(entry.getKey(), entry.getValue());
+			}
+			binding.setVariable("body", requestBody);
 			GroovyShell shell = new GroovyShell(binding);
 			return shell.evaluate(templateBody);
 		}

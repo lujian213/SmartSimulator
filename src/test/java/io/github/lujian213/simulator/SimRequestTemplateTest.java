@@ -103,7 +103,7 @@ public class SimRequestTemplateTest {
     			}
 
     		};
-    		Map<String, Object> result = srt.match(request);
+    		Map<String, Object> result = srt.match(new HashMap<>(), request);
     		assertEquals(5, result.size());
     		assertEquals("123", result.get("id"));
     		assertEquals("www.baidu.com", result.get("hostName"));
@@ -150,7 +150,7 @@ public class SimRequestTemplateTest {
     			}
 
     		};
-    		Map<String, Object> result = srt.match(request);
+    		Map<String, Object> result = srt.match(new HashMap<>(), request);
     		assertNotNull(result);
     		assertEquals(1, result.size());
     		assertEquals("Select table where fileA=\"A\" and filedB=\"B\"", result.get("queryStr"));
@@ -196,7 +196,7 @@ public class SimRequestTemplateTest {
     			}
 
     		};
-    		Map<String, Object> result = srt.match(request);
+    		Map<String, Object> result = srt.match(new HashMap<>(), request);
     		assertNotNull(result);
     		assertEquals(1, result.size());
     		assertEquals("Select table where fileA=\"A\" and  filedB=\"B\"", result.get("queryStr"));
@@ -264,7 +264,7 @@ public class SimRequestTemplateTest {
     			}
 
     		};
-    		Map<String, Object> result = srt.match(request);
+    		Map<String, Object> result = srt.match(new HashMap<>(), request);
     		assertEquals(4, result.size());
     		assertEquals("123", result.get("id"));
     		assertNull(result.get("hostName"));

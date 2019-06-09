@@ -127,7 +127,7 @@ public class SimRequestTemplate {
 		return this.bodyContent;
 	}
 	
-	public Map<String, Object> match(SimRequest request) throws IOException {
+	public Map<String, Object> match(Map<String, Object> allContext, SimRequest request) throws IOException {
 		Map<String, Object> ret = new HashMap<>();
 		String topLine = request.getTopLine() == null ? null : request.getTopLine().replaceAll("\\r\\n|\\r|\\n", " ");
 		Map<String, Object> res = topLineTemplate.parse(topLine);
@@ -158,7 +158,7 @@ public class SimRequestTemplate {
 				ret.putAll(res);
 			}
 		}
-		res = RequestHandler.getHandlerChain().handle(extraHeader, bodyContent, request);
+		res = RequestHandler.getHandlerChain().handle(allContext, extraHeader, bodyContent, request);
 		if (res == null) {
 			SimUtils.printMismatchInfo("body does not match", bodyContent, request.getBody());
 			return null; 

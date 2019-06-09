@@ -517,16 +517,17 @@ public class SimScript {
 	}
 	
 	public List<SimResponse> genResponse(SimRequest request) throws IOException {
+		Map<String, Object> allContext = new HashMap<>();
+		Iterator<String> keyIt = config.getKeys();
+		while (keyIt.hasNext()) {
+			String key = keyIt.next();
+			allContext.put(key, config.getString(key));
+		}
+		
 		for (TemplatePair pair: getEffectiveTemplatePairs()) {
-			Map<String, Object> context = pair.getReq().match(request);
+			Map<String, Object> context = pair.getReq().match(allContext, request);
 			if (context != null) {
 				SimLogger.getLogger().info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");
-				Map<String, Object> allContext = new HashMap<>();
-				Iterator<String> keyIt = config.getKeys();
-				while (keyIt.hasNext()) {
-					String key = keyIt.next();
-					allContext.put(key, config.getString(key));
-				}
 				allContext.putAll(context);
 				allContext.putAll(request.getReqRespConvertor().getRespContext());
 				List<SimResponse> ret = new ArrayList<>();
