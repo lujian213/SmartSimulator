@@ -82,9 +82,9 @@ public class KafkaSimRequest extends AbstractSimRequest {
 		if (channel == null) {
 			respHeaders.put(HEADER_NAME_CHANNEL, unifiedEndpointName);
 		}
-		String simulatorName = (String) respHeaders.get(PROP_NAME_RESPONSE_TARGETSIMULATOR);
+		String simulatorName = (String) respHeaders.get(HEADER_NAME_RESPONSE_TARGETSIMULATOR);
 		if (simulatorName == null) {
-			respHeaders.put(PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
+			respHeaders.put(HEADER_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
 		}
 	}
 	

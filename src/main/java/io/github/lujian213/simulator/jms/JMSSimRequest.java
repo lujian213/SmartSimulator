@@ -143,7 +143,7 @@ public class JMSSimRequest extends AbstractSimRequest {
 				}
 				respHeaders.put(HEADER_NAME_CHANNEL, unifiedReplyToName);
 			}
-			respHeaders.put(PROP_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
+			respHeaders.put(HEADER_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
 		} catch (JMSException e) {
 			throw new IOException(e);
 		}

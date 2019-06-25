@@ -26,11 +26,8 @@ import io.github.lujian213.simulator.util.SimUtils;
 import static io.github.lujian213.simulator.kafka.KafkaSimulatorConstants.*;
 
 public class KafkaBroker {
-	public static final String PROP_NAME_BOOTSTRAP_SERVERS = "simulator.kafka.bootstrap.servers";
-	public static final String PROP_NAME_BROKER_NAME = "simulator.kafka.broker.name";
 
 	public class KafkaPublisher {
-		public static final String PROP_NAME_PUBLISHER_TOPIC = "simulator.kafka.publisher.topic";
 		private String name;
 		private SimScript script;
 		private String topic;
@@ -97,8 +94,6 @@ public class KafkaBroker {
 	}
 	
 	public class KafkaSubscriber {
-		public static final String PROP_NAME_SUBSCRIBER_TOPICS = "simulator.kafka.subscriber.topics";
-		public static final String PROP_NAME_SUBSCRIBER_POLLINTERVAL = "simulator.kafka.subscriber.pollinterval";
 		private String name;
 		private SimScript script;
 		private List<String> topics = new ArrayList<>();

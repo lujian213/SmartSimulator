@@ -7,10 +7,10 @@ import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 public abstract class AbstractSimRequest implements SimRequest {
 	public void fillResponse(SimResponse response) throws IOException {			
 		Map<String, Object> headers = response.getHeaders();
-		String simulator = (String) headers.remove(PROP_NAME_RESPONSE_TARGETSIMULATOR);
+		String simulator = (String) headers.remove(HEADER_NAME_RESPONSE_TARGETSIMULATOR);
 		if (simulator == null) {
 			doFillResponse(response);
-			simulator = (String) headers.remove(PROP_NAME_RESPONSE_TARGETSIMULATOR);
+			simulator = (String) headers.remove(HEADER_NAME_RESPONSE_TARGETSIMULATOR);
 		}
 		if (simulator != null) {
 			SimSimulator sim = SimulatorRepository.getInstance().getSimulator(simulator);

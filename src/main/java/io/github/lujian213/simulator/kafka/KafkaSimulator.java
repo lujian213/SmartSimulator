@@ -96,7 +96,7 @@ public class KafkaSimulator extends SimSimulator implements SimSesseionLessSimul
 		for (Map.Entry<String, SimScript> entry: this.script.getSubScripts().entrySet()) {
 			SimScript subScript = entry.getValue();
 			SimLogger.getLogger().info("handle folder [" + entry.getKey() + "]");
-			if (subScript.getProperty(KafkaBroker.PROP_NAME_BROKER_NAME) != null) {
+			if (subScript.getProperty(PROP_NAME_BROKER_NAME) != null) {
 				KafkaBroker broker = new KafkaBroker(subScript, convertor);
 				brokerMap.put(broker.getName(), broker);
 			} else if (subScript.getProperty(PROP_NAME_ENDPOINT_NAME) != null) {

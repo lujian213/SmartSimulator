@@ -68,7 +68,7 @@ public class SocketSimRequest extends AbstractSimRequest {
 			headers.put(HEADER_NAME_CHANNEL_ID, channelID);
 		}
 		if (actualChannel != null) {
-			response.getHeaders().put(PROP_NAME_RESPONSE_TARGETSIMULATOR, handler.getScript().getSimulatorName());
+			response.getHeaders().put(HEADER_NAME_RESPONSE_TARGETSIMULATOR, handler.getScript().getSimulatorName());
 		} else {
 			handler.sendResponse(response);
 		}

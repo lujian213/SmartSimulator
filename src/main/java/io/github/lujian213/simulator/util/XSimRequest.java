@@ -66,4 +66,7 @@ public class XSimRequest extends AbstractSimRequest {
 		throw new IOException("Not supported function");
 	}
 
+	public void addHeader(String headerName, String headerValue) {
+		headers.put(headerName, headerValue);
+	}
 }
