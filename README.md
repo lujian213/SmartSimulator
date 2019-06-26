@@ -494,12 +494,58 @@ rawResponse in ReqRespConvertor: ```N/A```
 * Download the project from GitHub. 
 * Create a Java Maven project. 
 * Use the ```maven -install ``` to build the project. There will be a ```SmartSimulator-<version>.jar``` generated in ```target``` folder. Also, a ```lib``` sub-folder will be created in ```target``` with all dependency jar files in it.
-* Change the variable value in the script in ```bin``` folder to fit for your environment. ```startSimulator.bat``` is for windows environment and ```startSimulator.ksh``` is for linux environment.
+* Change the variable value like ```HOME_DIR``` and ```JAVA_HOME``` in the script in ```bin``` folder to fit for your environment. ```startSimulator.bat``` is for windows environment and ```startSimulator.ksh``` is for linux environment.
+### 5.1 Sample Simulator Introduction
+There are multiple sample simulators in current package for demo purpose. All these simulators' scripts are under ```scripts``` folder. 
+#### 5.1.1 dummy
+This is a ```dummy``` type simulator, no sim file defined. Only used to park some special response like Wait.
+#### 5.1.2 dummy2
+Although it has init.properties file, it is not a valid simulator script folder because there is a ```.ignore``` in it. This folder will be ignored.
+#### 5.1.3 file
+This is a ```file``` type simulator. It has ```in``` sub-folder as the input folder and use ```out``` sub-folder to output file.
+#### 5.1.4 foo
+This is a ```Http``` type simulator. Just for testing purpose. ```foo1``` sub-folder will be ignored since it has ```.ignore``` file in it.
+#### 5.1.5 foomanagement
+This is a ```Http``` type simulator. The request will be mapped to some function defined in user-defined class. It also has some user-defined listener and message convertor. All the these user-defined classes are included in the ```lib``` sub-folder as ```dummy.jar```.
+#### 5.1.6 Jira
+This is a ```Http``` type simulator. It shows how to use the proxy mode. All requests will be delegated to the pre-defined target URL except those matching the URL pattern. 
 
-### 4.1 Http/Https Simulator
-SimpleSimulator is based on the simple web server implementation in JDK.
+#### 5.1.7 kafka
+This is a ```kafka``` type simulator. It listens for messages from ```topic1``` with key= ```Dummy``` and value like ```Message {$number}```. Then response with message which has key = ```foo``` and value = ```Response $number``` on topic ```pub```. 
+#### 5.1.8 openjms
+This is a ```JMS``` type simulator. It sits in the other side of openjms server and listens for messages from ```topic1``` and response back to ```queue1```. 
+#### 5.1.9 SimpleEcho
+This is a ```Http``` type simulator. It shows how to send back back different response based on different requests. It also gives samples of redirect, wait, and using groovy script to generate response.
+#### 5.1.10 socket
+This is a ```socket``` type simulator. ```io.github.lujian213.simulator.socket.TelnetClient``` in test ource folder can be used as the socket client to send message to simulator.
+#### 5.1.11 websocket
+This is a ```Https``` type simulator. It also has websocket created in the simulator. The simulator script tells how to assign ```_Channel_ID``` and send back response to some specific ```_Channel```.
+#### 5.1.12 zip files
+*Smart Simulator* can also support zip file in the script folder. It will treat zip file as a folder.
+## 6. Advanced Topic I- Everything is a simulator
+*Smart Simulator* is designed to be modualized and plugable. All the extentions are developed as a simulator.
 
-## 6. Advanced Topic - Everything is a simulator
+### 6.1 Service Management
+It is a ```Http``` type simulator and provides RESTful API to manage all the simulators.
+* {$url}/servicemanagement/v1/simulators: List all simulator information
+* {$url}/servicemanagement/v1/{$simulatorName}/info: Get simulator detail
+* {$url}/servicemanagement/v1/{$simulatorName}/rawinfo: Get simulator raw detail
+* {$url}/servicemanagement/v1/{$simulatorName}/start: Start a simulator
+* {$url}/servicemanagement/v1/{$simulatorName}/stop: Stop a simulator
+* {$url}/servicemanagement/v1/refresh: Refresh simulator settings
+* {$url}/servicemanagement/v1/{$simulatorName}/restart: Restart simulator with updated settings
+* {$url}/servicemanagement/v1/{$simulatorName}/structure: Get folder structure of the simulator
+* {$url}/servicemanagement/v1/servicemanagement.yaml: Get yaml file
 
-### 6.1 Everything is a simulator
-SimpleSimulator is based on the simple web server implementation in JDK.
+### 6.2 swagger-ui
+It is a ```Http``` type simulator and leverage the yaml file provided by Service Management to generate swagger-ui pages for the RESTful API.
+
+### 6.3 Simulator CLI
+It is a ```socket``` type simulator to enable the command line interface to manage simulators.
+![cli output](cli.png "cli output")
+
+### 6.4 Simulator Admin UI
+It is a ```http``` type simulator to enable web UI interface to manage simulators.
+![web UI output](simadmin.png "web UI output")
+
+## 7. Advanced Topic II - Build your own simulator
