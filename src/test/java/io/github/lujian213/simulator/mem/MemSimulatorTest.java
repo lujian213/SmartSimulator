@@ -5,18 +5,17 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.github.lujian213.simulator.SimScript;
 
 public class MemSimulatorTest {
-	private static MemSimulator simulator;
-	
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	@Test
+	public void test1() throws Exception {
 		SimScript script = new SimScript(new File("scripts"));
-		simulator = new MemSimulator(new SimScript(script, new File("scripts/mem")));
+		MemSimulator simulator = new MemSimulator(new SimScript(script, new File("scripts/mem")));
+		assertEquals("Good Morning! Adele", simulator.handleRequest("Hello Adele"));
+		assertEquals("Status Code is COMP", simulator.handleRequest(FileUtils.readFileToString(new File("scripts/mem/sample.xml"), "utf-8")));
 	}
 
 }
