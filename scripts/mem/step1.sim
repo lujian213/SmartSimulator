@@ -1,0 +1,16 @@
+java.lang.String
+
+Hello {$name}
+HTTP/1.1 200 OK
+
+Good Morning! $name
+------------------------------------------------------------------
+
+java.lang.String
+_Body-Type: XPath
+
+code: //*[local-name()='StatusCode']/text()
+HTTP/1.1 200 OK
+
+Status Code is $code
+------------------------------------------------------------------

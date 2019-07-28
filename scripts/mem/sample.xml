@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ca:CorporateActionMessage xmlns:ca="{0}"
+	creationDateTime="2018-06-22T13:01:54-04:00" function="INSUP"
+	referenceId="EMC-GR:19015981840:1:0" sourceId="emcIntegration">
+	<ca:CorporateAction emcp="19015981840"
+		logicalEmcp="19015981846" openConflicts="0" version="1">
+		<ca:Information>
+			<ca:StatusCode>COMP</ca:StatusCode>
+		</ca:Information>
+	</ca:CorporateAction>
+</ca:CorporateActionMessage>
