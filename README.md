@@ -508,6 +508,25 @@ rawRequest in ReqRespConvertor: ```N/A```
 
 rawResponse in ReqRespConvertor: ```N/A```
 
+### 4.8 Memory Simulator
+MemSimulator is a simulator used for local test without staarting a service. 
+#### 4.8.1 Profile
+simulator.class: ```io.github.lujian213.simulator.mem.MemSimulator``` 
+
+type: ```Mem```
+
+sessionless: ```false```
+
+proxy: ```not supported```
+
+proxy url: ```not supported```
+
+request topline: ```<Java class name>```
+
+rawRequest in ReqRespConvertor: ```java.lang.String```
+
+rawResponse in ReqRespConvertor: ```null```
+
 ## 5. Quick Start
 * Download the project from GitHub. 
 * Create a Java Maven project. 
@@ -540,6 +559,8 @@ This is a `socket` type simulator. `io.github.lujian213.simulator.socket.TelnetC
 This is a `Https` type simulator. It also has websocket created in the simulator. The simulator script tells how to assign `_Channel_ID` and send back response to some specific `_Channel`.
 #### 5.1.12 zip files
 *Smart Simulator* can also support zip file in the script folder. It will treat zip file as a folder.
+#### 5.1.13 mem
+This is a `Mem` type simulator. `io.github.lujian213.simulator.mem.MemSimulatorTest` in test source folder shows how to use MemSimulator to do local test without starting service.
 ## 6. Advanced Topic I- Everything is a simulator
 *Smart Simulator* is designed to be modualized and plugable. All the extentions are developed as a simulator.
 
