@@ -80,15 +80,26 @@ Access-Control-Allow-Origin: *
 ------------------------------------------------------------------
 
 POST {$url}/servicemanagement/v1/evaluate HTTP/1.1
+_Body-Type: JSonObject
 _JSonObject.classname: io.github.lujian213.simulator.manager.SimulatorFolder
 _JSonObject.varname: simulatorFolder
 
 HTTP/1.1 200 OK
 _Class.Name: $className
 _Method.Name: evaluateSimulatorStructure
-
 _Content-Type: application/json
 Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS
+Access-Control-Allow-Headers: Content-Type, api_key, Authorization
+
+------------------------------------------------------------------
+
+OPTIONS {$url}/servicemanagement/v1/evaluate HTTP/1.1
+
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS
+Access-Control-Allow-Headers: Content-Type, api_key, Authorization
 
 ------------------------------------------------------------------
 
@@ -98,5 +109,7 @@ HTTP/1.1 200 OK
 _Bridge: ${simulator_url}servicemanagement.yaml
 _Content-Type: application/json
 Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, DELETE, PUT, PATCH, OPTIONS
+Access-Control-Allow-Headers: Content-Type, api_key, Authorization
 
 ------------------------------------------------------------------

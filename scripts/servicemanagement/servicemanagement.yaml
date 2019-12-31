@@ -210,7 +210,34 @@ paths:
             application/json:
               schema:
                 type: string
-components:
+  '/evaluate':
+    post:
+      tags:
+        - service
+      summary: evaluate the given simulator folder structure
+      description: evaluate by the given simulator folder structure
+      operationId: evaluateSimulatorStructure
+
+      requestBody:
+        description: Simulator folder structure
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulatorFolder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulatorDetail'
+        '500':
+          description: operation failure
+          content:
+            application/json:
+              schema:
+                type: stringcomponents:
   schemas:
     SimulatorStatus:
       type: object
@@ -282,7 +309,7 @@ components:
           type: string
         headers:
           type: array
-          items: 
+          items:
             type: integer
         body:
           type: string
@@ -293,7 +320,7 @@ components:
           type: integer
         headers:
           type: array
-          items: 
+          items:
             type: integer
         body:
           type: string
@@ -307,7 +334,7 @@ components:
         subFolders:
           type: array
           items:
-            $ref: '#/components/schemas/SimulatorFolder'    
+            $ref: '#/components/schemas/SimulatorFolder'
         files:
           type: array
           items:
