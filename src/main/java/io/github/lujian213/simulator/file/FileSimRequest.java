@@ -17,7 +17,7 @@ public class FileSimRequest extends AbstractSimRequest {
 	private File file;
 	private ReqRespConvertor convertor;
 	private String body;
-	
+
 	public FileSimRequest(File file, ReqRespConvertor convertor) throws IOException {
 		this.file = file;
 		this.convertor = convertor;
@@ -30,36 +30,36 @@ public class FileSimRequest extends AbstractSimRequest {
 	    }
 		genBody();
 	}
-	
+
 	protected FileSimRequest() {
-		
+
 	}
-	
+
 	@Override
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
 	}
-	
+
 	protected void genBody() throws IOException {
 		this.body = convertor.rawRequestToBody(file);
 	}
-	
+
 	public String getTopLine() {
 		return file.getAbsolutePath().replaceAll("\\\\","/");
 	}
-	
+
 	public String getHeaderLine(String header) {
 		return null;
 	}
-	
-	public String getAutnenticationLine() {
+
+	public String getAuthenticationLine() {
 		return null;
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
 		Map<String, Object> respHeaders = response.getHeaders();
@@ -70,7 +70,7 @@ public class FileSimRequest extends AbstractSimRequest {
 		}
 		convertor.fillRawResponse(outputFile, response);
 	}
-	
+
 	@Override
 	public List<String> getAllHeaderNames() {
 		return new ArrayList<>();

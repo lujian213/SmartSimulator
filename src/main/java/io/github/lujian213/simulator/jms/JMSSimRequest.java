@@ -27,7 +27,7 @@ import static io.github.lujian213.simulator.SimSimulatorConstants.*;
 
 public class JMSSimRequest extends AbstractSimRequest {
 	public static final String CHANNEL_NAME_JMSREPLYTO = "JMSReplyTo";
-	
+
 	private static final String[] JMS_HEADER_NAMES = {"JMSCorrelationID", "JMSDeliveryMode", "JMSDeliveryTime", "JMSDestination", "JMSExpiration", "JMSMessageID", "JMSPriority", "JMSRedelivered", "JMSReplyTo", "JMSTimestamp", "JMSType"};
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private Message message;
@@ -39,7 +39,7 @@ public class JMSSimRequest extends AbstractSimRequest {
 	private ReqRespConvertor convertor;
 	private SimScript script;
 	private ProducerFactory producerFactory;
-	
+
 	public JMSSimRequest(SimScript script, Message message, Session session, ProducerFactory producerFactory, String unifiedDestName, ReqRespConvertor convertor) throws IOException {
 		this.script = script;
 		this.message = message;
@@ -59,16 +59,16 @@ public class JMSSimRequest extends AbstractSimRequest {
 		genHeaders();
 		genBody();
 	}
-	
+
 	protected JMSSimRequest() {
-		
+
 	}
-	
+
 	@Override
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
 	}
-	
+
 	public Message getMessage() {
 		return this.message;
 	}
@@ -87,7 +87,7 @@ public class JMSSimRequest extends AbstractSimRequest {
 			throw new IOException(e);
 		}
 	}
-	
+
 	protected Map<String, Object> getMessageHeaderAsMap(Message message) {
 		Map<String, Object> ret = new HashMap<>();
 		for (String jmsHeader: JMS_HEADER_NAMES) {
@@ -103,28 +103,28 @@ public class JMSSimRequest extends AbstractSimRequest {
 		}
 		return ret;
 	}
-	
+
 	protected void genBody() throws IOException {
 		this.body = convertor.rawRequestToBody(message);
 	}
-	
+
 	public String getTopLine() {
 		return this.topLine;
 	}
-	
+
 	public String getHeaderLine(String header) {
 		Object value = headers.get(header);
 		return SimUtils.formatString(HEADER_LINE_FORMAT, header, value == null ? "" : value.toString());
 	}
-	
-	public String getAutnenticationLine() {
+
+	public String getAuthenticationLine() {
 		return null;
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
 		try {
@@ -148,7 +148,7 @@ public class JMSSimRequest extends AbstractSimRequest {
 			throw new IOException(e);
 		}
 	}
-	
+
 	@Override
 	public List<String> getAllHeaderNames() {
 		return new ArrayList<>(headers.keySet());

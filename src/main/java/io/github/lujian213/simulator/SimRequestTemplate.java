@@ -16,7 +16,7 @@ public class SimRequestTemplate {
 		private String value;
 		private boolean optional = false;
 		private SimTemplate template;
-		
+
 		public HeaderItem(String name, String value) throws IOException {
 			this(name, value, false);
 		}
@@ -39,7 +39,7 @@ public class SimRequestTemplate {
 		public boolean isOptional() {
 			return optional;
 		}
-		
+
 		public SimTemplate getTemplate() {
 			return this.template;
 		}
@@ -53,7 +53,7 @@ public class SimRequestTemplate {
 			return (optional ? "*" : "") + name + ": " + value;
 		}
 	}
-	
+
 	public static final String HEADER_AUTHENTICATION = "Authentication";
 	private SimTemplate topLineTemplate;
 	private Map<String, HeaderItem> headerTemplates = new HashMap<>();
@@ -64,7 +64,7 @@ public class SimRequestTemplate {
 	public SimRequestTemplate(String content) throws IOException {
 		init(content);
 	}
-	
+
 	protected void init(String content) throws IOException {
 		try (BufferedReader reader = new BufferedReader(new StringReader(content))) {
 			int lineNum = 1;
@@ -100,33 +100,33 @@ public class SimRequestTemplate {
 				} else {
 					if (body.length() != 0) {
 						body.append("\n");
-					} 
-					body.append(line);				
+					}
+					body.append(line);
 				}
 				lineNum++;
 			}
 			if (body != null && !body.toString().isEmpty()) {
-				this.bodyContent = body.toString(); 
+				this.bodyContent = body.toString();
 			}
 		}
 	}
-	
+
 	public SimTemplate getTopLineTemplate() {
 		return this.topLineTemplate;
 	}
-	
+
 	public Map<String, HeaderItem> getHeaderTemplate() {
 		return this.headerTemplates;
 	}
-	
+
 	public HeaderItem getAuthenticationsTemplate() {
 		return this.authenticationsTemplate;
 	}
-	
+
 	public String getBody() {
 		return this.bodyContent;
 	}
-	
+
 	public Map<String, Object> match(Map<String, Object> allContext, SimRequest request) throws IOException {
 		Map<String, Object> ret = new HashMap<>();
 		String topLine = request.getTopLine() == null ? null : request.getTopLine().replaceAll("\\r\\n|\\r|\\n", " ");
@@ -141,17 +141,17 @@ public class SimRequestTemplate {
 			if (res == null) {
 				if (!headerItem.isOptional()) {
 					SimUtils.printMismatchInfo("header does not match", entry.getValue().toString(), request.getHeaderLine(entry.getKey()));
-					return null; 
+					return null;
 				}
 			} else {
 				ret.putAll(res);
 			}
 		}
 		if (authenticationsTemplate != null) {
-			res = authenticationsTemplate.parse(request.getAutnenticationLine());
+			res = authenticationsTemplate.parse(request.getAuthenticationLine());
 			if (res == null) {
 				if (!authenticationsTemplate.isOptional()) {
-					SimUtils.printMismatchInfo("authentication does not match", authenticationsTemplate.toString(), request.getAutnenticationLine());
+					SimUtils.printMismatchInfo("authentication does not match", authenticationsTemplate.toString(), request.getAuthenticationLine());
 					return null;
 				}
 			} else {
@@ -161,7 +161,7 @@ public class SimRequestTemplate {
 		res = RequestHandler.getHandlerChain().handle(allContext, extraHeader, bodyContent, request);
 		if (res == null) {
 			SimUtils.printMismatchInfo("body does not match", bodyContent, request.getBody());
-			return null; 
+			return null;
 		} else {
 			ret.putAll(res);
 		}

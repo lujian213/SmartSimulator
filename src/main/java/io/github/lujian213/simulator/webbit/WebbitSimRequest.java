@@ -20,13 +20,13 @@ public class WebbitSimRequest extends AbstractSimRequest {
 	private static final String TOP_LINE_FORMAT = "%s %s %s";
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String AUTHENTICATION_LINE_FORMAT = "Authentication: %s,%s";
-	private HttpRequest request; 
+	private HttpRequest request;
 	private HttpResponse response;
 	private String topLine;
 	private String[] authentications = new String[] {"", ""};
 	private String body;
 	private ReqRespConvertor convertor;
-	
+
 	public WebbitSimRequest(HttpRequest request, HttpResponse response, ReqRespConvertor convertor) throws IOException {
 		this.request = request;
 		this.response = response;
@@ -37,11 +37,11 @@ public class WebbitSimRequest extends AbstractSimRequest {
 		genAuthentications();
 		genBody();
 	}
-	
+
 	protected WebbitSimRequest() {
-		
+
 	}
-	
+
 	@Override
 	public String getRemoteAddress() {
 		if (request != null) {
@@ -57,7 +57,7 @@ public class WebbitSimRequest extends AbstractSimRequest {
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
 	}
-	
+
 	protected void genAuthentications() {
 		try {
 			String val = request.header("Authorization");
@@ -74,15 +74,15 @@ public class WebbitSimRequest extends AbstractSimRequest {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	protected void genBody() throws IOException {
 		this.body = convertor.rawRequestToBody(request);
 	}
-	
+
 	public String getTopLine() {
 		return this.topLine;
 	}
-	
+
 	public String getHeaderLine(String header) {
 		List<String> values = request.headers(header);
 		StringBuffer value = new StringBuffer();
@@ -95,15 +95,15 @@ public class WebbitSimRequest extends AbstractSimRequest {
 		}
 		return SimUtils.formatString(HEADER_LINE_FORMAT, header, value.toString());
 	}
-	
-	public String getAutnenticationLine() {
+
+	public String getAuthenticationLine() {
 		return SimUtils.formatString(AUTHENTICATION_LINE_FORMAT, authentications);
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	@Override
 	public byte[] getRawBodyAsBytes() {
 		return this.request.bodyAsBytes();
@@ -122,10 +122,10 @@ public class WebbitSimRequest extends AbstractSimRequest {
 			if (entry.getKey().equals("Transfer-Encoding")) {
 				ignore = chunked;
 			} else if (entry.getKey().equals(SimResponse.HEADER_CONTENT_ENCODING1) ||
-					   entry.getKey().equals(SimResponse.HEADER_CONTENT_ENCODING2) || 
+					   entry.getKey().equals(SimResponse.HEADER_CONTENT_ENCODING2) ||
 					   entry.getKey().equals(SimResponse.HEADER_CONTENT_ENCODING3)) {
 				ignore = chunked;
-			} 
+			}
 			if (!ignore) {
 				response.header(entry.getKey(), entry.getValue().toString());
 			}
@@ -138,7 +138,7 @@ public class WebbitSimRequest extends AbstractSimRequest {
 
 	@Override
 	public List<String> getAllHeaderNames() {
-		List<String> ret = new ArrayList<>(); 
+		List<String> ret = new ArrayList<>();
 		for (Map.Entry<String, String> entry : request.allHeaders()) {
 			ret.add(entry.getKey());
 		}

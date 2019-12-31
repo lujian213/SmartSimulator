@@ -25,7 +25,7 @@ public class KafkaSimRequest extends AbstractSimRequest {
 	private String body;
 	private ReqRespConvertor convertor;
 	private SimScript script;
-	
+
 	public KafkaSimRequest(SimScript script, ConsumerRecord<?, ?> record, String unifiedEndpointName, ReqRespConvertor convertor) throws IOException {
 		this.script = script;
 		this.record = record;
@@ -35,11 +35,11 @@ public class KafkaSimRequest extends AbstractSimRequest {
 		genHeaders();
 		genBody();
 	}
-	
+
 	protected KafkaSimRequest() {
-		
+
 	}
-	
+
 	@Override
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
@@ -53,28 +53,28 @@ public class KafkaSimRequest extends AbstractSimRequest {
 		}
 		headers.put(HEADER_NAME_MESSGAE_KEY, record.key());
 	}
-	
+
 	protected void genBody() throws IOException {
 		this.body = convertor.rawRequestToBody(record);
 	}
-	
+
 	public String getTopLine() {
 		return this.topLine;
 	}
-	
+
 	public String getHeaderLine(String header) {
 		Object value = headers.get(header);
 		return SimUtils.formatString(HEADER_LINE_FORMAT, header, value == null ? "" : value.toString());
 	}
-	
-	public String getAutnenticationLine() {
+
+	public String getAuthenticationLine() {
 		return null;
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
 		Map<String, Object> respHeaders = response.getHeaders();
@@ -87,7 +87,7 @@ public class KafkaSimRequest extends AbstractSimRequest {
 			respHeaders.put(HEADER_NAME_RESPONSE_TARGETSIMULATOR, script.getSimulatorName());
 		}
 	}
-	
+
 	@Override
 	public List<String> getAllHeaderNames() {
 		return new ArrayList<>(headers.keySet());

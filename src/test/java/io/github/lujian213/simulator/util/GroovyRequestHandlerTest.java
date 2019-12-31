@@ -13,10 +13,10 @@ public class GroovyRequestHandlerTest extends GroovyRequestHandler {
 	@Test
 	public void test() {
 		GroovyRequestHandler handler = new GroovyRequestHandler();
-		String templateBody = "def map = new HashMap()\r\n" + 
-				"map.put(\"key1\", binding.getVariable(\"key1\") + \"1\")\r\n" + 
-				"map.put(\"key2\", binding.getVariable(\"key2\") + \"1\")\r\n" + 
-				"map.put(\"key3\", binding.getVariable(\"body\"))\r\n" + 
+		String templateBody = "def map = new HashMap()\r\n" +
+				"map.put(\"key1\", binding.getVariable(\"key1\") + \"1\")\r\n" +
+				"map.put(\"key2\", binding.getVariable(\"key2\") + \"1\")\r\n" +
+				"map.put(\"key3\", binding.getVariable(\"body\"))\r\n" +
 				"map";
 		HashMap<String, Object> allContext = new HashMap<>();
 		allContext.put("key1", "value1");

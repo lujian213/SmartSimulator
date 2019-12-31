@@ -32,7 +32,7 @@ public class SimpleSimRequest extends AbstractSimRequest {
 	private String body;
 	private byte[] rawBody;
 	private ReqRespConvertor convertor;
-	
+
 	public SimpleSimRequest(HttpExchange exchange, ReqRespConvertor convertor) throws IOException {
 		this.httpExchange = exchange;
 		this.convertor = convertor;
@@ -44,11 +44,11 @@ public class SimpleSimRequest extends AbstractSimRequest {
 		genHeaders(exchange);
 		genBody(exchange);
 	}
-	
+
 	protected SimpleSimRequest() {
-		
+
 	}
-	
+
 	@Override
 	public String getRemoteAddress() {
 		if (this.httpExchange != null) {
@@ -62,11 +62,11 @@ public class SimpleSimRequest extends AbstractSimRequest {
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
 	}
-	
+
 	protected void genHeaders(HttpExchange exchange) {
 		this.headers = exchange.getRequestHeaders();
 	}
-	
+
 	protected void genAuthentications(HttpExchange exchange) {
 		try {
 			List<String> val = exchange.getRequestHeaders().get("Authorization");
@@ -83,7 +83,7 @@ public class SimpleSimRequest extends AbstractSimRequest {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	protected void genBody(HttpExchange exchange) throws IOException {
 		try (BufferedInputStream bis = new BufferedInputStream(exchange.getRequestBody())) {
 			this.rawBody = SimUtils.readStream2Array(bis);
@@ -91,11 +91,11 @@ public class SimpleSimRequest extends AbstractSimRequest {
 		exchange.setStreams(new ByteArrayInputStream(this.rawBody), null);
 		this.body = convertor.rawRequestToBody(exchange);
 	}
-	
+
 	public String getTopLine() {
 		return this.topLine;
 	}
-	
+
 	public String getHeaderLine(String header) {
 		List<String> values = headers.get(header);
 		StringBuffer value = new StringBuffer();
@@ -108,15 +108,15 @@ public class SimpleSimRequest extends AbstractSimRequest {
 		}
 		return SimUtils.formatString(HEADER_LINE_FORMAT, header, value.toString());
 	}
-	
-	public String getAutnenticationLine() {
+
+	public String getAuthenticationLine() {
 		return SimUtils.formatString(AUTHENTICATION_LINE_FORMAT, authentications);
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	@Override
 	public byte[] getRawBodyAsBytes() {
 		return this.rawBody;

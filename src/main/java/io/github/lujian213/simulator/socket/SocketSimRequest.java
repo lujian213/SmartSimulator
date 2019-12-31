@@ -19,14 +19,14 @@ import static io.github.lujian213.simulator.socket.SocketSimulatorConstants.*;
 public class SocketSimRequest extends AbstractSimRequest {
 	private static final String HEADER_LINE_FORMAT = "%s: %s";
 	private static final String TOP_LINE_FORMAT = "%s %s";
-	
+
 	private SocketHandler handler;
 	private ReqRespConvertor convertor;
 	private ChannelHandlerContext ctx;
 	private String topLine;
 	private Map<String, String> headers = new HashMap<>();
 	private String body;
-	
+
 	public SocketSimRequest(SocketHandler handler, ChannelHandlerContext ctx, String type, ByteBuf buf, ReqRespConvertor convertor) throws IOException {
 		this.handler = handler;
 		this.convertor = convertor;
@@ -35,31 +35,31 @@ public class SocketSimRequest extends AbstractSimRequest {
 		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, type, HTTP1_1);
 
 	}
-	
+
 	protected SocketSimRequest() {
 	}
-	
+
 	@Override
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
 	}
-	
+
 	public String getTopLine() {
 		return this.topLine;
 	}
-	
+
 	public String getHeaderLine(String header) {
 		return SimUtils.formatString(HEADER_LINE_FORMAT, header, "");
 	}
-	
-	public String getAutnenticationLine() {
+
+	public String getAuthenticationLine() {
 		return null;
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
 		String actualChannel = (String) response.getHeaders().get(HEADER_NAME_CHANNEL);

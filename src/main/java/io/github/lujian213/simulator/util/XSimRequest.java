@@ -16,11 +16,11 @@ public class XSimRequest extends AbstractSimRequest {
 	private String topLine;
 	private Map<String, String> headers = new HashMap<>();
 	private String body;
-	
+
 	public XSimRequest(String method, String url) {
 		this.topLine = SimUtils.formatString(TOP_LINE_FORMAT, method, url, HTTP1_1);
 	}
-	
+
 	public XSimRequest(String method, String url, String body) {
 		this(method, url);
 		this.body = body;
@@ -38,7 +38,7 @@ public class XSimRequest extends AbstractSimRequest {
 	}
 
 	@Override
-	public String getAutnenticationLine() {
+	public String getAuthenticationLine() {
 		return null;
 	}
 

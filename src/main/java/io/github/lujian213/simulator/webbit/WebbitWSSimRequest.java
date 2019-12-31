@@ -24,7 +24,7 @@ public class WebbitWSSimRequest extends AbstractSimRequest {
 	private WebSocketConnection connection;
 	private Map<String, String> headers = new HashMap<>();
 	private ReqRespConvertor convertor;
-	
+
 	public WebbitWSSimRequest(WebbitWSHandler handler, WebSocketConnection connection, String channel, String type, byte[] message, ReqRespConvertor convertor) {
 		this.handler = handler;
 		this.connection = connection;
@@ -35,16 +35,16 @@ public class WebbitWSSimRequest extends AbstractSimRequest {
 		} catch (IOException e) {
 		}
 	}
-	
+
 	protected WebbitWSSimRequest() {
-		
+
 	}
-	
+
 	@Override
 	public ReqRespConvertor getReqRespConvertor() {
 		return this.convertor;
 	}
-	
+
 	public WebSocketConnection getConnection() {
 		return connection;
 	}
@@ -52,7 +52,7 @@ public class WebbitWSSimRequest extends AbstractSimRequest {
 	public String getTopLine() {
 		return this.topLine;
 	}
-	
+
 	public String getHeaderLine(String header) {
 		String value = headers.get(header);
 		if (value == null) {
@@ -61,15 +61,15 @@ public class WebbitWSSimRequest extends AbstractSimRequest {
 			return SimUtils.formatString(HEADER_LINE_FORMAT, header, value);
 		}
 	}
-	
-	public String getAutnenticationLine() {
+
+	public String getAuthenticationLine() {
 		return null;
 	}
-	
+
 	public String getBody() {
 		return this.body;
 	}
-	
+
 	@Override
 	protected void doFillResponse(SimResponse resp) throws IOException {
 		String actualChannel = (String) resp.getHeaders().get(HEADER_NAME_CHANNEL);

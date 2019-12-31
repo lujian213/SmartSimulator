@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.velocity.VelocityContext;
 
@@ -18,13 +19,13 @@ import io.github.lujian213.simulator.util.function.SimParam;
 
 public class BeanRepository {
 	private static BeanRepository repository = new BeanRepository();
-	
+
 	Map<String, Map<String,FunctionBean>> beanMap = new HashMap<>();
-	
+
 	public static BeanRepository getInstance() {
 		return repository;
 	}
-	
+
 	protected Object createInstance(Class<?> clazz, VelocityContext vc) {
 		Constructor<?>[] cons = clazz.getConstructors();
 		Constructor<?> constructor = null;
@@ -47,7 +48,7 @@ public class BeanRepository {
 			}
 		}
 	}
-	
+
 	public FunctionBean addBean(Class<?> clazz, VelocityContext vc) {
 		String simulatorName = (String) vc.get(PROP_NAME_SIMULATOR_NAME);
 		FunctionBean bean = null;
@@ -82,7 +83,23 @@ public class BeanRepository {
 			throw new RuntimeException("error to create instance of class [" + className + "]", e);
 		}
 	}
-	
+
+	public FunctionBean addBean(Class<?> clazz, Properties props) {
+		VelocityContext vc = new VelocityContext();
+		props.forEach((key, value)-> vc.put((String) key, value));
+		return addBean(clazz, vc);
+	}
+
+	public FunctionBean addBean(String className, Properties props) {
+		try {
+			ClassLoader cl = Thread.currentThread().getContextClassLoader();
+			SimLogger.getLogger().info("Use " + cl + " to load class [" + className + "]");
+			return addBean(Class.forName(className, true, cl), props);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("error to create instance of class [" + className + "]", e);
+		}
+	}
+
 	public void removeSimulatorBeans(String simulatorName) {
 		Map<String, FunctionBean> simMap = null;
 		synchronized (beanMap) {
@@ -109,7 +126,7 @@ public class BeanRepository {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	protected String getParameterName(Parameter parameter) {
 		String paramName = parameter.getName();
 		SimParam sp = parameter.getAnnotation(SimParam.class);
@@ -118,7 +135,7 @@ public class BeanRepository {
 		}
 		return paramName;
 	}
-	
+
 	protected Object[] prepareMethodParameters(Parameter[] parameters, VelocityContext vc) {
 		Object[] paramValues = new Object[parameters.length];
 		for (int i = 1; i <= parameters.length; i++) {
@@ -127,7 +144,7 @@ public class BeanRepository {
 		}
 		return paramValues;
 	}
-	
+
 	protected Object invoke(Object obj, Method m, VelocityContext vc) {
 		Object[] paramValues = prepareMethodParameters(m.getParameters(), vc);
 		try {
@@ -138,7 +155,7 @@ public class BeanRepository {
 			throw new RuntimeException(e.getCause().getMessage(), e.getCause());
 		}
 	}
-	
+
 	protected Object smartValuePickup(Class<?> paramType, String paramName, Object value) {
 		if (!(value instanceof String) && value != null) {
 			return value;
@@ -246,7 +263,7 @@ public class BeanRepository {
 		}
 		throw new RuntimeException("Can not use [" + valueStr + "] as parameter [" + paramName + "]");
 	}
-	
+
 	public Object invoke(String className, String methodName, VelocityContext vc) {
 		FunctionBean bean = addBean(className, vc);
 		Method targetMethod = findMethod(bean.getBean(), methodName);

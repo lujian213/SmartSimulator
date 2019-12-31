@@ -1,4 +1,4 @@
-package io.github.lujian213.simulator.mem;
+package io.github.lujian213.simulator.thrift;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,21 +6,19 @@ import java.util.List;
 
 import io.github.lujian213.simulator.AbstractSimRequest;
 import io.github.lujian213.simulator.SimResponse;
+import io.github.lujian213.simulator.thrift.ThriftSimulator.CallTrace;
 import io.github.lujian213.simulator.util.ReqRespConvertor;
 
-public class MemSimRequest extends AbstractSimRequest {
+public class ThriftSimRequest extends AbstractSimRequest {
 	private ReqRespConvertor convertor;
-	private String body;
-	private Object inputObj;
+	private CallTrace<?> trace;
 
-	public MemSimRequest(Object inputObj, ReqRespConvertor convertor) throws IOException {
-		this.inputObj = inputObj;
+	public ThriftSimRequest(CallTrace<?> trace, ReqRespConvertor convertor) throws IOException {
 		this.convertor = convertor;
-		genBody();
+		this.trace = trace;
 	}
 
-	protected MemSimRequest() {
-
+	protected ThriftSimRequest() {
 	}
 
 	@Override
@@ -28,12 +26,8 @@ public class MemSimRequest extends AbstractSimRequest {
 		return this.convertor;
 	}
 
-	protected void genBody() throws IOException {
-		this.body = convertor.rawRequestToBody(inputObj);
-	}
-
 	public String getTopLine() {
-		return inputObj.getClass().getName();
+		return trace.getFunction().getMethodName();
 	}
 
 	public String getHeaderLine(String header) {
@@ -45,12 +39,12 @@ public class MemSimRequest extends AbstractSimRequest {
 	}
 
 	public String getBody() {
-		return this.body;
+		return null;
 	}
 
 	@Override
 	protected void doFillResponse(SimResponse response) throws IOException {
-		convertor.fillRawResponse(null, response);
+		convertor.fillRawResponse(trace, response);
 	}
 
 	@Override
@@ -60,6 +54,7 @@ public class MemSimRequest extends AbstractSimRequest {
 
 	@Override
 	public String getRemoteAddress() {
-		return null;
+		return trace.getRemoteAddress();
 	}
+
 }
