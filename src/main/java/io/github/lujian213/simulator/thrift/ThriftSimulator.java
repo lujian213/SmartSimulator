@@ -134,7 +134,7 @@ public class ThriftSimulator extends SimSimulator {
 		private T iface;
 		private Map<String, ProcessFunction<T, ? extends TBase>> map;
 
-		public ProcessorWrapper(T iface, TBaseProcessor<T> processor) {
+		public ProcessorWrapper(T iface, TBaseProcessor processor) {
 			super(iface, processor.getProcessMapView());
 			this.iface = iface;
 			this.map = processor.getProcessMapView();
