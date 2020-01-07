@@ -15,19 +15,19 @@ import io.github.lujian213.simulator.util.function.SimParam;
 public class BeanRepositoryTest {
 	public static class C1 {
 		public C1() {
-			
+
 		}
 	}
-	
+
 	public static class C2 {
 	}
-	
+
 	public static class C3 {
 		private String name;
 		public C3(String name) {
 			this.name = name;
 		}
-		
+
 		public String getName() {
 			return this.name;
 		}
@@ -39,7 +39,7 @@ public class BeanRepositoryTest {
 		public C4(@SimParam("name") String name) {
 			this.name = name;
 		}
-		
+
 		public String getName() {
 			return this.name;
 		}
@@ -51,7 +51,7 @@ public class BeanRepositoryTest {
 		public C5(@SimParam("name") String name) {
 			this.name = name;
 		}
-		
+
 		public C5() {
 		}
 
@@ -59,14 +59,14 @@ public class BeanRepositoryTest {
 			return this.name;
 		}
 	}
-	
+
 	public static class C6 {
 		private int num;
 		@SimConstructor
 		public C6(@SimParam("num") int num) {
 			this.num = num;
 		}
-		
+
 		public C6() {
 		}
 
@@ -81,7 +81,7 @@ public class BeanRepositoryTest {
 		public C7(@SimParam("num") int num) {
 			this.num = num;
 		}
-		
+
 		public C7() {
 		}
 
@@ -103,7 +103,7 @@ public class BeanRepositoryTest {
 			BeanRepository.getInstance().createInstance(BeanRepositoryTest.C3.class, new VelocityContext());
 			fail("RuntimeException expected");
 		} catch (RuntimeException e) {
-			
+
 		}
 
 		VelocityContext vc = new VelocityContext();
@@ -121,7 +121,7 @@ public class BeanRepositoryTest {
 		C6 c6Inst = (C6) BeanRepository.getInstance().createInstance(BeanRepositoryTest.C6.class, vc);
 		assertEquals(101, c6Inst.getNum());
 	}
-	
+
 	@Test
 	public void testRemoveSimulatorBeans() {
 		VelocityContext vc = new VelocityContext();
@@ -129,10 +129,8 @@ public class BeanRepositoryTest {
 		vc.put(PROP_NAME_SIMULATOR_NAME, "dummy");
 		FunctionBean c7Inst = BeanRepository.getInstance().addBean(BeanRepositoryTest.C7.class, vc);
 		assertEquals(101, ((C7)c7Inst.getBean()).getNum());
-		assertEquals(1, BeanRepository.getInstance().beanMap.size());
 		assertEquals(1, BeanRepository.getInstance().beanMap.get("dummy").size());
 		BeanRepository.getInstance().removeSimulatorBeans("dummy");
-		assertEquals(0, BeanRepository.getInstance().beanMap.size());
 		assertEquals(200, ((C7)c7Inst.getBean()).getNum());
 	}
 

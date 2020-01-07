@@ -7,5 +7,6 @@ public class SocketSimulatorConstants extends SimSimulatorConstants {
 	public static final String PROP_NAME_FRAME_DELIMITERS = "simulator.socket.frame.delimiters";
 	public static final String PROP_NAME_FRAME_MAXLENGTH = "simulator.socket.frame.maxlength";
 	public static final String PROP_NAME_USE_SSL = "simulator.socket.useSSL";
+	public static final String PROP_NAME_FRAME_ENCODER_DECODER_CLASS = "simulator.socket.frame.encoderdecoder.class";
 	public static final String HEADER_NAME_CHANNEL_ID = "_Channel_ID";
 }

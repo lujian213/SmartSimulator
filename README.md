@@ -371,6 +371,7 @@ rawResponse in ReqRespConvertor: ```io.netty.buffer.ByteBuf```
 | simulator.socket.useSSL | true or false | Whether it is using ssl. By defalut, it is false.|
 | simulator.socket.frame.maxlength | *max length of the tcp frame* | Max length of the TCP frame. By default, it is 8192. |
 | simulator.socket.frame.delimiters | *Frame delimiter* | TCP frame delimiters. By default, it is ```0x0D0x0A,0x0A``` |
+| simulator.socket.frame.encoderdecoder.class | *Frame encoder decoder class name* | The name of the class implements ```io.github.lujian213.simulator.socket.FrameEncoderDecoder```. By default, it is ```io.github.lujian213.simulator.socket.DefaultFrameEncoderDecoder``` |
 
 
 #### 4.3.3 Specific Headers

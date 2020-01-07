@@ -3,13 +3,9 @@ package io.github.lujian213.simulator.socket;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
@@ -41,7 +37,7 @@ public class SocketClient {
 		}
 		this.handlers = handlers;
 	}
-	
+
     public void start() throws IOException {
         // Configure SSL.
         final SslContext sslCtx;
@@ -60,7 +56,7 @@ public class SocketClient {
              .handler(new ChannelInitializer<SocketChannel>() {
             	    @Override
             	    public void initChannel(SocketChannel ch) {
-            	    	
+
             	        ChannelPipeline pipeline = ch.pipeline();
 
             	        if (sslCtx != null) {
@@ -77,12 +73,7 @@ public class SocketClient {
 				throw new IOException(e);
 			}
     }
-    
-    public void sendMsg(String msg) {
-    	ByteBuf bb = ByteBufUtil.encodeString(UnpooledByteBufAllocator.DEFAULT, CharBuffer.wrap((msg + "\r\n")), Charset.defaultCharset());
-    	ch.writeAndFlush(bb);
-    }
-    
+
     public void sendMsg(ByteBuf msg) {
     	ch.writeAndFlush(msg);
     }
