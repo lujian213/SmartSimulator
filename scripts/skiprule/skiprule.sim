@@ -1,0 +1,19 @@
+GET {$url}/hello/{$name} HTTP/1.1
+
+HTTP/1.1 200 OK
+_Class.Name: io.github.lujian213.simulator.http.SkipServer
+_Method.Name: hello
+_Content-Type: application/json
+Access-Control-Allow-Origin: *
+
+------------------------------------------------------------------
+
+GET {$url}/hello/v1/{$name} HTTP/1.1
+
+HTTP/1.1 200 OK
+_Class.Name: io.github.lujian213.simulator.http.SkipServer
+_Method.Name: hellov1
+_Content-Type: application/json
+Access-Control-Allow-Origin: *
+
+------------------------------------------------------------------

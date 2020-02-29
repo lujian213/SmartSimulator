@@ -526,19 +526,23 @@ public class SimScript {
 		
 		for (TemplatePair pair: getEffectiveTemplatePairs()) {
 			Map<String, Object> context = pair.getReq().match(allContext, request);
-			if (context != null) {
-				SimLogger.getLogger().info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");
-				allContext.putAll(context);
-				allContext.putAll(request.getReqRespConvertor().getRespContext());
-				List<SimResponse> ret = new ArrayList<>();
-				for (SimResponseTemplate respTemplate: pair.getResps()) {
-					SimResponse response = new SimResponse(allContext, respTemplate);
-					request.fillResponse(response);
-					ret.add(response);
+			try {
+				if (context != null) {
+					SimLogger.getLogger().info("match with template: [" + pair.getReq().getTopLineTemplate() + "]");
+					allContext.putAll(context);
+					allContext.putAll(request.getReqRespConvertor().getRespContext());
+					List<SimResponse> ret = new ArrayList<>();
+					for (SimResponseTemplate respTemplate: pair.getResps()) {
+						SimResponse response = new SimResponse(allContext, respTemplate);
+						request.fillResponse(response);
+						ret.add(response);
+					}
+					return ret;
 				}
-				return ret;
-			}
-		}
+			} catch (SimMatchSkipException e) {
+				SimLogger.getLogger().info("skil and try next rule");
+            }		
+        }
 		msgLogger.info(request);
 		msgLogger.info(SEP_LINE);
 		throw new IOException("Can not match request: [" + request.getTopLine() + "]");

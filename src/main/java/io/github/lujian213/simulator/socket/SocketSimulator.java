@@ -220,7 +220,8 @@ public class SocketSimulator extends SimSimulator implements SimSesseionLessSimu
 
 	@Override
 	protected void init() throws IOException {
-		super.init();
+        super.init();
+        SimUtils.setThreadContext(script);
 		port = script.getMandatoryIntProperty(PROP_NAME_PORT, "no socket port defined");
 		frameMaxLength = script.getIntProperty(PROP_NAME_FRAME_MAXLENGTH, 8192);
 		String delimStr = script.getProperty(PROP_NAME_FRAME_DELIMITERS, "0x0D0x0A,0x0A");

@@ -152,6 +152,9 @@ public class BeanRepository {
 		} catch (IllegalAccessException|IllegalArgumentException e) {
 			throw new RuntimeException("invoke error", e);
 		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof RuntimeException) {
+				throw (RuntimeException)e.getCause();
+			}
 			throw new RuntimeException(e.getCause().getMessage(), e.getCause());
 		}
 	}

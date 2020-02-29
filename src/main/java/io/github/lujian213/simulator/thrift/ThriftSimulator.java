@@ -194,7 +194,7 @@ public class ThriftSimulator extends SimSimulator {
 					try {
 						sendErrorMessage(in, out, msg, "match and fill error '" + msg.name + "'");
 					} catch (Exception e1) {
-						SimLogger.getLogger().error("send to remote ...");
+						SimLogger.getLogger().error("send error message error", e1);
 					}
 					respList.add(response);
 				}
