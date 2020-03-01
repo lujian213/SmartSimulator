@@ -560,6 +560,36 @@ rawResponse in ReqRespConvertor: ```io.github.lujian213.simulator.thrift.ThriftS
 | simulator.thrift.proxy.trustmanager.type | *trust manager for secured thrift client* | Trust manager for secured thrift client. Only used when simulator.thrift.useSSL is true and simulator.proxy is true. |
 | simulator.thrift.proxy.truststore.type | *trust store for secured thrift client* | Trust store for secured thrift client. Only used when simulator.thrift.useSSL is true and simulator.proxy is true. |
 
+### 4.10 GRPC Simulator
+GRPCSimulator is used to simulate services based on protocolbuf/gRPC protocol.
+#### 4.10.1 Profile
+simulator.class: ```io.github.lujian213.simulator.grpc.GRPCSimulator```
+
+type: ```gRPC```
+
+sessionless: ```false```
+
+proxy: ```supported```
+
+proxy url: ```gRPC://<host:port>```
+
+request topline: ```<method name>```
+
+rawRequest in ReqRespConvertor: ```NA```
+
+rawResponse in ReqRespConvertor: ```io.github.lujian213.simulator.grpc.GRPCSimulator$CallTrace```
+#### 4.9.2 Specific Configuration
+| Property Name | Property Value | Comments
+| ------ | ------ | ----- |
+| simulator.grpc.port | *port number* | grpc port number.|
+| simulator.grpc.useSSL | true or false | Whether it is using ssl. By defalut, it is false.|
+| simulator.grpc.handler.classname | *grpc service base class name* | Class name of the grpc base impl class. |
+| simulator.grpc.handler.sim.classname | *class name of simulated grpc service* | Class name of the simulated grpc service. |
+| simulator.grpc.certchain.file | *certification chain file* | Certification chain file for the secured grpc service. Only used when simulator.grpc.useSSL is true. |
+| simulator.grpc.privatekey.file | *private key file for secured grpc service* | private key file for the secured grpc service. Only used when simulator.grpc.useSSL is true. |
+| simulator.grpc.trustcert.file | *trust certification file for the secured grpc client* | Truct certification file for the secured grpc client. Only used when simulator.grpc.useSSL is true and simulator.proxy is true. |
+| simulator.grpc.client.authority | *client authority in the trust certification for the secured grpc client* | Client authority for the secured grpc client. Only used when simulator.grpc.useSSL is true and simulator.proxy is true. |
+
 ## 5. Quick Start
 * Download the project from GitHub.
 * Create a Java Maven project.
@@ -577,22 +607,26 @@ This is a `file` type simulator. It has `in` sub-folder as the input folder and 
 This is a `Http` type simulator. Just for testing purpose. `foo1` sub-folder will be ignored since it has `.ignore` file in it.
 #### 5.1.5 foomanagement
 This is a `Http` type simulator. The request will be mapped to some function defined in user-defined class. It also has some user-defined listener and message convertor. All the these user-defined classes are included in the `lib` sub-folder as `dummy.jar`.
-#### 5.1.6 Jira
+#### 5.1.6 grpc
+This is a `gRPC` type simulator. It shows how to simulate GRPC service in a normal or proxy modeuse the proxy mode.
+#### 5.1.7 thrift
+This is a `thrift` type simulator. It shows how to simulate thrift service in a normal or proxy modeuse the proxy mode.
+#### 5.1.8 Jira
 This is a `Http` type simulator. It shows how to use the proxy mode. All requests will be delegated to the pre-defined target URL except those matching the URL pattern.
 
-#### 5.1.7 kafka
+#### 5.1.9 kafka
 This is a `kafka` type simulator. It listens for messages from `topic1` with key= `Dummy` and value like `Message {$number}`. Then response with message which has key = `foo` and value = `Response $number` on topic `pub`.
-#### 5.1.8 openjms
+#### 5.1.10 openjms
 This is a `JMS` type simulator. It sits in the other side of openjms server and listens for messages from `topic1` and response back to `queue1`.
-#### 5.1.9 SimpleEcho
+#### 5.1.11 SimpleEcho
 This is a `Http` type simulator. It shows how to send back back different response based on different requests. It also gives samples of redirect, wait, and using groovy script to generate response.
-#### 5.1.10 socket
+#### 5.1.12 socket
 This is a `socket` type simulator. `io.github.lujian213.simulator.socket.TelnetClient` in test source folder can be used as the socket client to send message to simulator.
-#### 5.1.11 websocket
+#### 5.1.13 websocket
 This is a `Https` type simulator. It also has websocket created in the simulator. The simulator script tells how to assign `_Channel_ID` and send back response to some specific `_Channel`.
-#### 5.1.12 zip files
+#### 5.1.14 zip files
 *Smart Simulator* can also support zip file in the script folder. It will treat zip file as a folder.
-#### 5.1.13 mem
+#### 5.1.15 mem
 This is a `Mem` type simulator. `io.github.lujian213.simulator.mem.MemSimulatorTest` in test source folder shows how to use MemSimulator to do local test without starting service.
 ## 6. Advanced Topic I- Everything is a simulator
 *Smart Simulator* is designed to be modualized and plugable. All the extentions are developed as a simulator.
